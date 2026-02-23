@@ -3,60 +3,84 @@ import logo from "@/assets/shishuful-logo.jpg";
 
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-foreground text-background">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <img src={logo} alt="শিশুফুল" className="h-10 rounded-lg" />
-              <span className="text-xl font-bold font-heading">শিশুফুল</span>
+    <footer id="contact" className="relative overflow-hidden">
+      {/* Wave separator */}
+      <div className="relative h-16 bg-background">
+        <svg className="absolute bottom-0 w-full" viewBox="0 0 1440 60" fill="none" preserveAspectRatio="none">
+          <path d="M0,30 C360,60 720,0 1080,30 C1260,45 1380,40 1440,30 L1440,60 L0,60Z" fill="hsl(var(--foreground))" />
+        </svg>
+      </div>
+
+      <div className="bg-foreground text-background relative">
+        {/* Floating shapes */}
+        <div className="absolute top-10 right-20 w-24 h-24 rounded-full bg-primary/10 floating-shape" />
+        <div className="absolute bottom-10 left-10 w-16 h-16 rounded-full bg-accent/10 floating-shape-reverse" />
+
+        <div className="container mx-auto px-4 py-12 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <img src={logo} alt="শিশুফুল" className="h-12 rounded-xl shadow-lg" />
+                <span className="text-xl font-bold font-heading">শিশুফুল</span>
+              </div>
+              <p className="text-sm opacity-70 leading-relaxed">
+                প্রতিটি শিশুর মুখে হাসি ফোটানো আমাদের অঙ্গীকার। আমরা একটি মানবিক সংগঠন।
+              </p>
             </div>
-            <p className="text-sm opacity-80 leading-relaxed">
-              প্রতিটি শিশুর মুখে হাসি ফোটানো আমাদের অঙ্গীকার। আমরা একটি মানবিক সংগঠন।
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="font-bold font-heading mb-4 text-lg">দ্রুত লিংক</h4>
+              <ul className="space-y-2.5 text-sm">
+                {[
+                  { label: "আমাদের সম্পর্কে", href: "#about" },
+                  { label: "প্রকল্পসমূহ", href: "#projects" },
+                  { label: "অনুদান দিন", href: "#donate" },
+                  { label: "ইভেন্ট", href: "#events" },
+                  { label: "ব্লগ", href: "#blog" },
+                ].map((link) => (
+                  <li key={link.href}>
+                    <a href={link.href} className="opacity-70 hover:opacity-100 hover:text-primary transition-all duration-200 inline-block hover:translate-x-1">
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h4 className="font-bold font-heading mb-4 text-lg">যোগাযোগ</h4>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-center gap-2 opacity-70"><Mail className="h-4 w-4 text-primary" /> info@shishuful.org</li>
+                <li className="flex items-center gap-2 opacity-70"><Phone className="h-4 w-4 text-primary" /> +880 1XXX-XXXXXX</li>
+                <li className="flex items-center gap-2 opacity-70"><MapPin className="h-4 w-4 text-primary" /> বাংলাদেশ</li>
+              </ul>
+            </div>
+
+            {/* Social */}
+            <div>
+              <h4 className="font-bold font-heading mb-4 text-lg">সোশ্যাল মিডিয়া</h4>
+              <div className="flex gap-3">
+                {[Facebook, Youtube].map((Icon, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    className="p-3 rounded-xl bg-background/10 hover:bg-primary hover:scale-110 transition-all duration-300"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-background/10 mt-10 pt-6 text-center text-sm opacity-50">
+            <p className="flex items-center justify-center gap-1">
+              © {new Date().getFullYear()} শিশুফুল। সর্বস্বত্ব সংরক্ষিত। তৈরি করা হয়েছে <Heart className="h-3 w-3 text-primary" /> দিয়ে
             </p>
           </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-bold font-heading mb-4">দ্রুত লিংক</h4>
-            <ul className="space-y-2 text-sm opacity-80">
-              <li><a href="#about" className="hover:opacity-100 transition-opacity">আমাদের সম্পর্কে</a></li>
-              <li><a href="#projects" className="hover:opacity-100 transition-opacity">প্রকল্পসমূহ</a></li>
-              <li><a href="#donate" className="hover:opacity-100 transition-opacity">অনুদান দিন</a></li>
-              <li><a href="#events" className="hover:opacity-100 transition-opacity">ইভেন্ট</a></li>
-              <li><a href="#blog" className="hover:opacity-100 transition-opacity">ব্লগ</a></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="font-bold font-heading mb-4">যোগাযোগ</h4>
-            <ul className="space-y-3 text-sm opacity-80">
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> info@shishuful.org</li>
-              <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +880 1XXX-XXXXXX</li>
-              <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> বাংলাদেশ</li>
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div>
-            <h4 className="font-bold font-heading mb-4">সোশ্যাল মিডিয়া</h4>
-            <div className="flex gap-3">
-              <a href="#" className="p-2 rounded-lg bg-background/10 hover:bg-background/20 transition-colors duration-200">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="p-2 rounded-lg bg-background/10 hover:bg-background/20 transition-colors duration-200">
-                <Youtube className="h-5 w-5" />
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-background/10 mt-8 pt-6 text-center text-sm opacity-60">
-          <p className="flex items-center justify-center gap-1">
-            © {new Date().getFullYear()} শিশুফুল। সর্বস্বত্ব সংরক্ষিত। তৈরি করা হয়েছে <Heart className="h-3 w-3 text-primary" /> দিয়ে
-          </p>
         </div>
       </div>
     </footer>
