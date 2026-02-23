@@ -1,13 +1,15 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { canViewModule, type Module } from "@/lib/permissions";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "admin" | "super_admin" | "editor";
+  requiredRole?: string;
+  requiredModule?: Module;
 }
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { user, loading, hasRole, isAdmin, isSuperAdmin } = useAuth();
+const ProtectedRoute = ({ children, requiredRole, requiredModule }: ProtectedRouteProps) => {
+  const { user, loading, hasRole, isAdmin, isSuperAdmin, roles } = useAuth();
 
   if (loading) {
     return (
@@ -19,6 +21,20 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   if (!user) return <Navigate to="/login" replace />;
 
+  // Check module-level access
+  if (requiredModule && !canViewModule(roles, requiredModule)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-destructive">অ্যাক্সেস অস্বীকৃত</h1>
+          <p className="text-muted-foreground">এই মডিউলে প্রবেশের অনুমতি নেই।</p>
+          <a href="/admin" className="text-primary hover:underline">ড্যাশবোর্ডে ফিরুন</a>
+        </div>
+      </div>
+    );
+  }
+
+  // Legacy role check
   if (requiredRole) {
     const allowed =
       requiredRole === "super_admin" ? isSuperAdmin :

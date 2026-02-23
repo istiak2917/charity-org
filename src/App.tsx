@@ -33,6 +33,7 @@ import ContactInbox from "./pages/admin/ContactInbox";
 import RoleManager from "./pages/admin/RoleManager";
 import SettingsPage from "./pages/admin/SettingsPage";
 import HomepageBuilder from "./pages/admin/HomepageBuilder";
+import AuditLogViewer from "./pages/admin/AuditLogViewer";
 import SeedData from "./pages/admin/SeedData";
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
@@ -87,6 +88,7 @@ const App = () => (
             <Route path="/admin/roles" element={<AdminRoute><RoleManager /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
             <Route path="/admin/homepage" element={<AdminRoute><HomepageBuilder /></AdminRoute>} />
+            <Route path="/admin/audit" element={<AdminRoute><AuditLogViewer /></AdminRoute>} />
             <Route path="/admin/seed" element={<AdminRoute><SeedData /></AdminRoute>} />
 
             {/* Member Routes */}
