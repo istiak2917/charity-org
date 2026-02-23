@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Heart, Users, Calendar, Menu, X, LogOut, ChevronLeft,
   Newspaper, FolderOpen, Shield, Settings, DollarSign, Image, Droplets,
-  ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home
+  ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -26,6 +26,7 @@ const menuItems = [
   { icon: Shield, label: "রোল", path: "/admin/roles" },
   { icon: Home, label: "হোমপেজ", path: "/admin/homepage" },
   { icon: Settings, label: "সেটিংস", path: "/admin/settings" },
+  { icon: Database, label: "ডেমো ডেটা", path: "/admin/seed" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
