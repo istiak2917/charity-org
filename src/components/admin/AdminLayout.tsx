@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Heart, Users, Calendar, Menu, X, LogOut, ChevronLeft,
   Newspaper, FolderOpen, Shield, Settings, DollarSign, Image, Droplets,
   ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database,
-  ScrollText
+  ScrollText, Contact, HandHeart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -15,7 +15,7 @@ import NotificationCenter from "@/components/NotificationCenter";
 const ICON_MAP: Record<string, any> = {
   LayoutDashboard, FolderOpen, Heart, Megaphone, DollarSign, Users, ClipboardList,
   Calendar, Droplets, Newspaper, Image, UserCircle, FileText, MessageSquare,
-  Shield, Home, ScrollText, Settings, Database,
+  Shield, Home, ScrollText, Settings, Database, Contact, HandHeart,
 };
 
 interface MenuItem {
@@ -45,6 +45,8 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { module: "audit", label: "অডিট লগ", path: "/admin/audit", icon: "ScrollText" },
   { module: "settings", label: "সেটিংস", path: "/admin/settings", icon: "Settings" },
   { module: "seed", label: "ডেমো ডেটা", path: "/admin/seed", icon: "Database" },
+  { module: "donations", label: "ডোনার CRM", path: "/admin/donor-crm", icon: "Contact" },
+  { module: "projects", label: "উপকারভোগী", path: "/admin/beneficiaries", icon: "HandHeart" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {

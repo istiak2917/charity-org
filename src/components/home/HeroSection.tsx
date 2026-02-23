@@ -20,7 +20,7 @@ const collageImages = [
 ];
 
 const HeroSection = () => {
-  const [headline, setHeadline] = useState("প্রতিটি শিশুর মুখে হাসি");
+  const [headline, setHeadline] = useState("প্রতিটি শিশুর মুখে হাসি ফোটানো আমাদের অঙ্গীকার");
   const [subtext, setSubtext] = useState("আমরা একসাথে গড়ি মানবতার সুন্দর ভবিষ্যৎ।");
   const [ctaText, setCtaText] = useState("অনুদান করুন");
 

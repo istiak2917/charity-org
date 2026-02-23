@@ -36,6 +36,8 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import HomepageBuilder from "./pages/admin/HomepageBuilder";
 import AuditLogViewer from "./pages/admin/AuditLogViewer";
 import SeedData from "./pages/admin/SeedData";
+import DonorCRM from "./pages/admin/DonorCRM";
+import BeneficiaryManager from "./pages/admin/BeneficiaryManager";
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
 import VolunteerPanel from "./pages/member/VolunteerPanel";
@@ -92,6 +94,8 @@ const App = () => (
             <Route path="/admin/homepage" element={<AdminRoute><HomepageBuilder /></AdminRoute>} />
             <Route path="/admin/audit" element={<AdminRoute><AuditLogViewer /></AdminRoute>} />
             <Route path="/admin/seed" element={<AdminRoute><SeedData /></AdminRoute>} />
+            <Route path="/admin/donor-crm" element={<AdminRoute><DonorCRM /></AdminRoute>} />
+            <Route path="/admin/beneficiaries" element={<AdminRoute><BeneficiaryManager /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />
