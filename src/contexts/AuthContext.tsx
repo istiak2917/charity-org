@@ -35,9 +35,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (data && data.length > 0) {
       setRoles(data.map((r) => r.role as UserRole));
     } else if (email === "istiakahmed.2163@gmail.com") {
-      // Fallback: assign super_admin client-side if DB role missing
-      // The SQL script should have already inserted the role
+      // Fallback: if no roles found for super admin email, assign super_admin client-side
+      // and attempt to insert the role
       setRoles(["super_admin"]);
+      supabase.from("user_roles").insert({ user_id: userId, role: "super_admin" }).then(() => {});
+      supabase.from("profiles").upsert({ id: userId, full_name: "Istiak Ahmed" }).then(() => {});
     }
   };
 
