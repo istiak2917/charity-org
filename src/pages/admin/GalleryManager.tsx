@@ -7,16 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 interface GalleryItem {
-  id: string; title: string; image_url: string; category: string; caption: string;
+  id: string; title: string; image_url: string; category: string; [key: string]: any;
 }
 
 const GalleryManager = () => {
   const { items, loading, create, update, remove } = useAdminCrud<GalleryItem>({ table: "gallery_items" });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<GalleryItem | null>(null);
-  const [form, setForm] = useState({ title: "", image_url: "", category: "", caption: "" });
+  const [form, setForm] = useState({ title: "", image_url: "", category: "" });
 
-  const resetForm = () => { setForm({ title: "", image_url: "", category: "", caption: "" }); setEditing(null); };
+  const resetForm = () => { setForm({ title: "", image_url: "", category: "" }); setEditing(null); };
 
   const handleSubmit = async () => {
     if (!form.image_url) return;
@@ -27,7 +27,7 @@ const GalleryManager = () => {
 
   const handleEdit = (g: GalleryItem) => {
     setEditing(g);
-    setForm({ title: g.title || "", image_url: g.image_url, category: g.category || "", caption: g.caption || "" });
+    setForm({ title: g.title || "", image_url: g.image_url, category: g.category || "" });
     setOpen(true);
   };
 
@@ -45,7 +45,6 @@ const GalleryManager = () => {
               <Input placeholder="শিরোনাম" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
               <Input placeholder="ছবির URL" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
               <Input placeholder="ক্যাটাগরি" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-              <Input placeholder="ক্যাপশন" value={form.caption} onChange={(e) => setForm({ ...form, caption: e.target.value })} />
               <Button onClick={handleSubmit} className="w-full">{editing ? "আপডেট" : "যোগ করুন"}</Button>
             </div>
           </DialogContent>

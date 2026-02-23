@@ -12,16 +12,16 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 
 interface Campaign {
   id: string; title: string; description: string; target_amount: number;
-  current_amount: number; is_active: boolean; image_url: string; end_date: string;
+  current_amount: number; is_active: boolean; [key: string]: any;
 }
 
 const CampaignManager = () => {
   const { items, loading, create, update, remove } = useAdminCrud<Campaign>({ table: "donation_campaigns" });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Campaign | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", target_amount: 0, current_amount: 0, is_active: true, image_url: "", end_date: "" });
+  const [form, setForm] = useState({ title: "", description: "", target_amount: 0, current_amount: 0, is_active: true });
 
-  const resetForm = () => { setForm({ title: "", description: "", target_amount: 0, current_amount: 0, is_active: true, image_url: "", end_date: "" }); setEditing(null); };
+  const resetForm = () => { setForm({ title: "", description: "", target_amount: 0, current_amount: 0, is_active: true }); setEditing(null); };
 
   const handleSubmit = async () => {
     if (!form.title) return;
@@ -32,7 +32,7 @@ const CampaignManager = () => {
 
   const handleEdit = (c: Campaign) => {
     setEditing(c);
-    setForm({ title: c.title, description: c.description || "", target_amount: c.target_amount, current_amount: c.current_amount, is_active: c.is_active, image_url: c.image_url || "", end_date: c.end_date || "" });
+    setForm({ title: c.title, description: c.description || "", target_amount: c.target_amount, current_amount: c.current_amount, is_active: c.is_active });
     setOpen(true);
   };
 
@@ -53,8 +53,6 @@ const CampaignManager = () => {
                 <Input type="number" placeholder="টার্গেট পরিমাণ" value={form.target_amount || ""} onChange={(e) => setForm({ ...form, target_amount: Number(e.target.value) })} />
                 <Input type="number" placeholder="সংগৃহীত" value={form.current_amount || ""} onChange={(e) => setForm({ ...form, current_amount: Number(e.target.value) })} />
               </div>
-              <Input placeholder="ছবির URL" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
-              <Input type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> সক্রিয়
               </label>
@@ -65,7 +63,7 @@ const CampaignManager = () => {
       </div>
       <Card>
         <Table>
-          <TableHeader><TableRow><TableHead>ক্যাম্পেইন</TableHead><TableHead>অগ্রগতি</TableHead><TableHead>শেষ তারিখ</TableHead><TableHead>স্ট্যাটাস</TableHead><TableHead className="text-right">অ্যাকশন</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>ক্যাম্পেইন</TableHead><TableHead>অগ্রগতি</TableHead><TableHead>স্ট্যাটাস</TableHead><TableHead className="text-right">অ্যাকশন</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((c) => (
               <TableRow key={c.id}>
@@ -76,7 +74,6 @@ const CampaignManager = () => {
                     <Progress value={c.target_amount > 0 ? ((c.current_amount || 0) / c.target_amount) * 100 : 0} className="h-2" />
                   </div>
                 </TableCell>
-                <TableCell>{c.end_date ? new Date(c.end_date).toLocaleDateString("bn-BD") : "-"}</TableCell>
                 <TableCell><Badge variant={c.is_active ? "default" : "secondary"}>{c.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}</Badge></TableCell>
                 <TableCell className="text-right space-x-1">
                   <Button size="icon" variant="ghost" onClick={() => handleEdit(c)}><Pencil className="h-4 w-4" /></Button>
@@ -84,7 +81,7 @@ const CampaignManager = () => {
                 </TableCell>
               </TableRow>
             ))}
-            {items.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">কোনো ক্যাম্পেইন নেই</TableCell></TableRow>}
+            {items.length === 0 && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">কোনো ক্যাম্পেইন নেই</TableCell></TableRow>}
           </TableBody>
         </Table>
       </Card>

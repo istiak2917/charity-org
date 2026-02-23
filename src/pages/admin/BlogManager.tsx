@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useAdminCrud } from "@/hooks/useAdminCrud";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,11 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 
-interface BlogPost { id: string; title: string; content: string; excerpt: string; image_url: string; is_published: boolean; is_featured: boolean; created_at: string; }
+interface BlogPost { id: string; title: string; content: string; excerpt: string; image_url: string; is_published: boolean; is_featured: boolean; created_at: string; [key: string]: any; }
 
 const BlogManager = () => {
   const { items, loading, create, update, remove } = useAdminCrud<BlogPost>({ table: "blog_posts" });
-  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<BlogPost | null>(null);
   const [form, setForm] = useState({ title: "", content: "", excerpt: "", image_url: "", is_published: false, is_featured: false });
@@ -23,7 +21,7 @@ const BlogManager = () => {
 
   const handleSubmit = async () => {
     if (!form.title) return;
-    if (editing) { await update(editing.id, form); } else { await create({ ...form, author_id: user?.id } as any); }
+    if (editing) { await update(editing.id, form); } else { await create(form); }
     setOpen(false); resetForm();
   };
 

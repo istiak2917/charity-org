@@ -12,20 +12,25 @@ const SettingsPage = () => {
   const [org, setOrg] = useState<any>({});
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [settingsRows, setSettingsRows] = useState<any[]>([]);
+  const [settingsTable, setSettingsTable] = useState("site_settings");
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [orgRes, settingsRes] = await Promise.all([
-        supabase.from("organizations").select("*").limit(1).maybeSingle(),
-        supabase.from("site_settings").select("*"),
-      ]);
+      const orgRes = await supabase.from("organizations").select("*").limit(1).maybeSingle();
       if (orgRes.data) setOrg(orgRes.data);
-      if (settingsRes.data) {
-        setSettingsRows(settingsRes.data);
+
+      // Try site_settings first, fall back to settings
+      let sRes = await supabase.from("site_settings").select("*");
+      if (sRes.error && sRes.error.message?.includes("schema cache")) {
+        sRes = await supabase.from("settings").select("*");
+        setSettingsTable("settings");
+      }
+      if (sRes.data) {
+        setSettingsRows(sRes.data);
         const map: Record<string, string> = {};
-        settingsRes.data.forEach((s: any) => {
+        sRes.data.forEach((s: any) => {
           const k = s.key || s.setting_key || s.name || "";
           const raw = s.value || s.setting_value || "";
           if (k) map[k] = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
@@ -38,20 +43,25 @@ const SettingsPage = () => {
   }, []);
 
   const saveOrg = async () => {
-    if (!org.id) return;
+    if (!org.id) {
+      // Create new org
+      const { error } = await supabase.from("organizations").insert(org);
+      if (error) toast({ title: "সেভ ব্যর্থ", description: error.message, variant: "destructive" });
+      else toast({ title: "সংগঠনের তথ্য সেভ হয়েছে!" });
+      return;
+    }
     const { error } = await supabase.from("organizations").update(org).eq("id", org.id);
     if (error) toast({ title: "সেভ ব্যর্থ", description: error.message, variant: "destructive" });
     else toast({ title: "সংগঠনের তথ্য সেভ হয়েছে!" });
   };
 
   const saveSiteSettings = async () => {
-    // Detect column names from existing rows
     const sample = settingsRows[0] || {};
-    const keyCol = "key" in sample ? "key" : "setting_key" in sample ? "setting_key" : "name";
-    const valCol = "value" in sample ? "value" : "setting_value";
+    const keyCol = "key" in sample ? "key" : "setting_key" in sample ? "setting_key" : "key";
+    const valCol = "value" in sample ? "value" : "setting_value" in sample ? "setting_value" : "value";
     
     const promises = Object.entries(settings).map(([key, value]) =>
-      supabase.from("site_settings").upsert({ [keyCol]: key, [valCol]: JSON.stringify(value) }, { onConflict: keyCol })
+      supabase.from(settingsTable).upsert({ [keyCol]: key, [valCol]: JSON.stringify(value) }, { onConflict: keyCol })
     );
     await Promise.all(promises);
     toast({ title: "সাইট সেটিংস সেভ হয়েছে!" });
@@ -116,40 +126,18 @@ const SettingsPage = () => {
           <Card className="p-6 space-y-4">
             <h2 className="font-semibold text-lg">হিরো সেকশন</h2>
             <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">হিরো হেডলাইন</label>
-                <Input value={settings.hero_headline || ""} onChange={(e) => updateSetting("hero_headline", e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">হিরো সাবটেক্সট</label>
-                <Input value={settings.hero_subtext || ""} onChange={(e) => updateSetting("hero_subtext", e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">CTA বাটন টেক্সট</label>
-                <Input value={settings.cta_button_text || ""} onChange={(e) => updateSetting("cta_button_text", e.target.value)} />
-              </div>
+              <div className="space-y-1"><label className="text-sm font-medium">হিরো হেডলাইন</label><Input value={settings.hero_headline || ""} onChange={(e) => updateSetting("hero_headline", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">হিরো সাবটেক্সট</label><Input value={settings.hero_subtext || ""} onChange={(e) => updateSetting("hero_subtext", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">CTA বাটন টেক্সট</label><Input value={settings.cta_button_text || ""} onChange={(e) => updateSetting("cta_button_text", e.target.value)} /></div>
             </div>
           </Card>
           <Card className="p-6 space-y-4">
             <h2 className="font-semibold text-lg">ফুটার ও পেমেন্ট</h2>
             <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">ফুটার টেক্সট</label>
-                <Input value={settings.footer_text || ""} onChange={(e) => updateSetting("footer_text", e.target.value)} />
-              </div>
+              <div className="space-y-1"><label className="text-sm font-medium">ফুটার টেক্সট</label><Input value={settings.footer_text || ""} onChange={(e) => updateSetting("footer_text", e.target.value)} /></div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">বিকাশ নম্বর</label>
-                  <Input value={settings.payment_bkash || ""} onChange={(e) => updateSetting("payment_bkash", e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">নগদ নম্বর</label>
-                  <Input value={settings.payment_nagad || ""} onChange={(e) => updateSetting("payment_nagad", e.target.value)} />
-                </div>
-                <div className="space-y-1 md:col-span-2">
-                  <label className="text-sm font-medium">ব্যাংক তথ্য</label>
-                  <Input value={settings.payment_bank || ""} onChange={(e) => updateSetting("payment_bank", e.target.value)} />
-                </div>
+                <div className="space-y-1"><label className="text-sm font-medium">বিকাশ নম্বর</label><Input value={settings.payment_bkash || ""} onChange={(e) => updateSetting("payment_bkash", e.target.value)} /></div>
+                <div className="space-y-1"><label className="text-sm font-medium">নগদ নম্বর</label><Input value={settings.payment_nagad || ""} onChange={(e) => updateSetting("payment_nagad", e.target.value)} /></div>
               </div>
             </div>
           </Card>

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAdminCrud } from "@/hooks/useAdminCrud";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,16 +11,16 @@ import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react";
 
 interface Report {
   id: string; title: string; report_type: string; file_url: string;
-  year: number; description: string;
+  year: number; [key: string]: any;
 }
 
 const ReportsManager = () => {
   const { items, loading, create, update, remove } = useAdminCrud<Report>({ table: "reports" });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Report | null>(null);
-  const [form, setForm] = useState({ title: "", report_type: "annual", file_url: "", year: new Date().getFullYear(), description: "" });
+  const [form, setForm] = useState({ title: "", report_type: "annual", file_url: "", year: new Date().getFullYear() });
 
-  const resetForm = () => { setForm({ title: "", report_type: "annual", file_url: "", year: new Date().getFullYear(), description: "" }); setEditing(null); };
+  const resetForm = () => { setForm({ title: "", report_type: "annual", file_url: "", year: new Date().getFullYear() }); setEditing(null); };
 
   const handleSubmit = async () => {
     if (!form.title) return;
@@ -32,7 +31,7 @@ const ReportsManager = () => {
 
   const handleEdit = (r: Report) => {
     setEditing(r);
-    setForm({ title: r.title, report_type: r.report_type || "annual", file_url: r.file_url || "", year: r.year || new Date().getFullYear(), description: r.description || "" });
+    setForm({ title: r.title, report_type: r.report_type || "annual", file_url: r.file_url || "", year: r.year || new Date().getFullYear() });
     setOpen(true);
   };
 
@@ -59,7 +58,6 @@ const ReportsManager = () => {
               </Select>
               <Input type="number" placeholder="সাল" value={form.year} onChange={(e) => setForm({ ...form, year: Number(e.target.value) })} />
               <Input placeholder="ফাইল URL" value={form.file_url} onChange={(e) => setForm({ ...form, file_url: e.target.value })} />
-              <Textarea placeholder="বিবরণ" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               <Button onClick={handleSubmit} className="w-full">{editing ? "আপডেট" : "যোগ করুন"}</Button>
             </div>
           </DialogContent>
