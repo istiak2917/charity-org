@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, FileText, Heart, Users, Calendar, Image, MessageSquare,
   Settings, Shield, ToggleLeft, Palette, Home, Menu, X, LogOut, ChevronLeft,
-  UserCircle, Newspaper, FolderOpen, Bell
+  UserCircle, Newspaper, FolderOpen, Droplets, DollarSign, ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -14,11 +14,15 @@ const menuItems = [
   { icon: Palette, label: "থিম কাস্টমাইজার", path: "/admin/theme" },
   { icon: FolderOpen, label: "প্রকল্প", path: "/admin/projects" },
   { icon: Heart, label: "অনুদান", path: "/admin/donations" },
+  { icon: DollarSign, label: "আয়-ব্যয়", path: "/admin/expenses" },
   { icon: Users, label: "স্বেচ্ছাসেবক", path: "/admin/volunteers" },
+  { icon: ClipboardList, label: "টাস্ক", path: "/admin/tasks" },
   { icon: Calendar, label: "ইভেন্ট", path: "/admin/events" },
+  { icon: Droplets, label: "রক্তদান", path: "/admin/blood" },
   { icon: UserCircle, label: "টিম", path: "/admin/team" },
   { icon: Newspaper, label: "ব্লগ", path: "/admin/blog" },
   { icon: Image, label: "গ্যালারি", path: "/admin/gallery" },
+  { icon: FileText, label: "রিপোর্ট", path: "/admin/reports" },
   { icon: MessageSquare, label: "মেসেজ", path: "/admin/messages" },
   { icon: Shield, label: "রোল ম্যানেজার", path: "/admin/roles" },
   { icon: ToggleLeft, label: "ফিচার টগল", path: "/admin/features" },
@@ -38,12 +42,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar overlay on mobile */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="p-4 border-b border-border flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -84,7 +86,6 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen">
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-4 h-14 flex items-center gap-4">
           <button className="lg:hidden" onClick={() => setSidebarOpen(true)}>
