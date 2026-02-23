@@ -244,46 +244,54 @@
   opacity: 1;
 }
 
-/* Collage container — compact on all screens */
-.hero-collage-container {
-  width: 320px;
-  height: 420px;
+/* Image grid layout */
+.hero-image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 480px;
+  width: 100%;
 }
 @media (min-width: 768px) {
-  .hero-collage-container {
-    width: 500px;
-    height: 520px;
+  .hero-image-grid {
+    max-width: 600px;
+    gap: 16px;
   }
 }
 @media (min-width: 1024px) {
-  .hero-collage-container {
-    width: 560px;
-    height: 540px;
+  .hero-image-grid {
+    max-width: 700px;
+    gap: 18px;
   }
 }
 
-/* Center circle */
-.hero-center-circle {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: hsl(var(--warm-cream));
+.hero-grid-card {
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  overflow: hidden;
   box-shadow:
-    0 0 60px hsl(var(--primary) / 0.1),
-    0 0 120px hsl(var(--warm-gold) / 0.05);
-  animation: center-circle-enter 0.6s ease-out forwards;
-  z-index: 5;
+    0 8px 30px hsl(var(--foreground) / 0.1),
+    0 2px 8px hsl(var(--foreground) / 0.05);
+  animation: grid-card-enter 0.5s ease-out forwards;
+  opacity: 0;
+  cursor: pointer;
+  transition: transform 300ms ease, box-shadow 300ms ease;
 }
 
-@keyframes center-circle-enter {
-  0% { opacity: 0; transform: scale(0.9); }
+.hero-grid-card:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 12px 40px hsl(var(--primary) / 0.2),
+    0 0 20px hsl(var(--primary) / 0.1);
+  z-index: 20;
+}
+
+@keyframes grid-card-enter {
+  0% { opacity: 0; transform: scale(0.85); }
   100% { opacity: 1; transform: scale(1); }
 }
 
+/* Center circle glow (reused for logo) */
 .hero-center-glow {
   position: absolute;
   inset: -20px;
@@ -295,60 +303,6 @@
 @keyframes center-glow {
   0% { transform: scale(1); opacity: 0.5; }
   100% { transform: scale(1.15); opacity: 0.8; }
-}
-
-/* Collage cards */
-.hero-collage-card {
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow:
-    0 8px 30px hsl(var(--foreground) / 0.1),
-    0 2px 8px hsl(var(--foreground) / 0.05);
-  animation: collage-card-enter 0.5s ease-out forwards;
-  opacity: 0;
-  cursor: pointer;
-  transition: transform 300ms ease, box-shadow 300ms ease;
-}
-
-.hero-collage-card:hover {
-  transform: rotate(0deg) scale(1.05) !important;
-  box-shadow:
-    0 12px 40px hsl(var(--primary) / 0.2),
-    0 0 20px hsl(var(--primary) / 0.1);
-  z-index: 20;
-}
-
-@keyframes collage-card-enter {
-  0% { opacity: 0; transform: scale(0.8) rotate(0deg); }
-  100% { opacity: 1; }
-}
-
-/* Floating animations for collage */
-.hero-float-1 {
-  animation: collage-card-enter 0.5s ease-out forwards, hero-float-a 7s ease-in-out infinite;
-  animation-delay: inherit;
-}
-.hero-float-2 {
-  animation: collage-card-enter 0.5s ease-out forwards, hero-float-b 8s ease-in-out infinite;
-  animation-delay: inherit;
-}
-.hero-float-3 {
-  animation: collage-card-enter 0.5s ease-out forwards, hero-float-c 6s ease-in-out infinite;
-  animation-delay: inherit;
-}
-
-@keyframes hero-float-a {
-  0%, 100% { transform: translateY(0) rotate(var(--rotate, 0deg)); }
-  50% { transform: translateY(-12px) rotate(var(--rotate, 0deg)); }
-}
-@keyframes hero-float-b {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  33% { transform: translateY(-8px) translateX(4px); }
-  66% { transform: translateY(-14px) translateX(-3px); }
-}
-@keyframes hero-float-c {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  50% { transform: translateY(-10px) translateX(-5px); }
 }
 
 /* ===== DONATION PULSE ===== */
@@ -396,24 +350,8 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .hero-collage-card {
-    width: 100px !important;
-    height: 100px !important;
-  }
-  .hero-center-circle {
-    width: 140px;
-    height: 140px;
-  }
   .hero-bengali-texture {
     font-size: 2rem;
     line-height: 3rem;
-  }
-}
-
-@media (max-width: 1024px) {
-  .hero-float-1,
-  .hero-float-2,
-  .hero-float-3 {
-    animation-duration: 10s;
   }
 }
