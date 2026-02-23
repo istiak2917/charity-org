@@ -15,7 +15,8 @@ import { BlockRenderer } from "@/components/builder/BlockRenderer";
 import { BLOCK_TYPES, BLOCK_CATEGORIES, type HomepageSection, type SectionBlock, type SectionConfig } from "@/types/homepage-builder";
 import {
   Plus, Trash2, Copy, ArrowUp, ArrowDown, Eye, EyeOff,
-  Settings, Layers, Save, Download, Upload, GripVertical, PanelLeft, PanelRight
+  Settings, Layers, Save, Download, Upload, GripVertical, PanelLeft, PanelRight,
+  Undo2, Redo2
 } from "lucide-react";
 
 // ========== Safe DB helpers ==========
@@ -63,6 +64,36 @@ const HomepageBuilder = () => {
   const [showLeftPanel, setShowLeftPanel] = useState(true);
   const [showRightPanel, setShowRightPanel] = useState(true);
   const [inspectorTab, setInspectorTab] = useState("content");
+
+  // Undo/Redo history
+  type Snapshot = { sections: HomepageSection[]; blocks: Record<string, SectionBlock[]> };
+  const [undoStack, setUndoStack] = useState<Snapshot[]>([]);
+  const [redoStack, setRedoStack] = useState<Snapshot[]>([]);
+
+  const pushSnapshot = () => {
+    setUndoStack(prev => [...prev.slice(-30), { sections: JSON.parse(JSON.stringify(sections)), blocks: JSON.parse(JSON.stringify(blocks)) }]);
+    setRedoStack([]);
+  };
+
+  const undo = () => {
+    if (undoStack.length === 0) return;
+    const prev = undoStack[undoStack.length - 1];
+    setRedoStack(r => [...r, { sections: JSON.parse(JSON.stringify(sections)), blocks: JSON.parse(JSON.stringify(blocks)) }]);
+    setUndoStack(u => u.slice(0, -1));
+    setSections(prev.sections);
+    setBlocks(prev.blocks);
+    toast({ title: "আনডু হয়েছে" });
+  };
+
+  const redo = () => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setUndoStack(u => [...u, { sections: JSON.parse(JSON.stringify(sections)), blocks: JSON.parse(JSON.stringify(blocks)) }]);
+    setRedoStack(r => r.slice(0, -1));
+    setSections(next.sections);
+    setBlocks(next.blocks);
+    toast({ title: "রিডু হয়েছে" });
+  };
 
   // Section edit state
   const [editSectionDialog, setEditSectionDialog] = useState(false);
@@ -116,6 +147,7 @@ const HomepageBuilder = () => {
   // ========== Section Operations ==========
   const addSection = async () => {
     if (!newSectionKey.trim() || !newSectionTitle.trim()) return;
+    pushSnapshot();
     const maxPos = sections.length > 0 ? Math.max(...sections.map(s => s.position || 0)) : -1;
     const payload: any = {
       section_key: newSectionKey.trim().toLowerCase().replace(/\s+/g, "_"),
@@ -141,6 +173,7 @@ const HomepageBuilder = () => {
   };
 
   const deleteSection = async (id: string) => {
+    pushSnapshot();
     // Delete blocks first
     await supabase.from("section_blocks").delete().eq("section_id", id);
     const { error } = await supabase.from("homepage_sections").delete().eq("id", id);
@@ -225,6 +258,7 @@ const HomepageBuilder = () => {
 
   // ========== Block Operations ==========
   const addBlock = async (sectionId: string, blockType: string) => {
+    pushSnapshot();
     const sectionBlocks = blocks[sectionId] || [];
     const maxPos = sectionBlocks.length > 0 ? Math.max(...sectionBlocks.map(b => b.position || 0)) : -1;
     const blockInfo = BLOCK_TYPES.find(bt => bt.type === blockType);
@@ -240,6 +274,7 @@ const HomepageBuilder = () => {
   };
 
   const deleteBlock = async (blockId: string) => {
+    pushSnapshot();
     const { error } = await supabase.from("section_blocks").delete().eq("id", blockId);
     if (error) toast({ title: "ডিলিট ব্যর্থ", variant: "destructive" });
     else {
@@ -338,6 +373,12 @@ const HomepageBuilder = () => {
           <PanelLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-lg font-bold font-heading flex-1">হোমপেজ বিল্ডার</h1>
+        <Button variant="outline" size="icon" className="h-8 w-8" onClick={undo} disabled={undoStack.length === 0} title="আনডু">
+          <Undo2 className="h-4 w-4" />
+        </Button>
+        <Button variant="outline" size="icon" className="h-8 w-8" onClick={redo} disabled={redoStack.length === 0} title="রিডু">
+          <Redo2 className="h-4 w-4" />
+        </Button>
         <Button variant="outline" size="sm" onClick={exportTemplate}>
           <Download className="h-3 w-3 mr-1" />এক্সপোর্ট
         </Button>
