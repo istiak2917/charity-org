@@ -1,9 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { BlockRenderer } from "@/components/builder/BlockRenderer";
 import type { HomepageSection, SectionBlock, SectionConfig } from "@/types/homepage-builder";
+
+// Fallback components for sections without blocks
+const FALLBACK_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
+  hero: lazy(() => import("@/components/home/HeroSection")),
+  about: lazy(() => import("@/components/home/AboutSection")),
+  projects: lazy(() => import("@/components/home/ProjectsSection")),
+  impact: lazy(() => import("@/components/home/ImpactSection")),
+  donation: lazy(() => import("@/components/home/DonationSection")),
+  events: lazy(() => import("@/components/home/EventsSection")),
+  team: lazy(() => import("@/components/home/TeamSection")),
+  blog: lazy(() => import("@/components/home/BlogSection")),
+  gallery: lazy(() => import("@/components/home/GallerySection")),
+  contact: lazy(() => import("@/components/home/ContactSection")),
+  transparency: lazy(() => import("@/components/home/TransparencySection")),
+};
 
 const Index = () => {
   const [sections, setSections] = useState<HomepageSection[]>([]);
@@ -93,8 +108,18 @@ const Index = () => {
                     <BlockRenderer key={block.id} block={block} />
                   ))
               ) : (
-                // Fallback: section has no blocks, show nothing
-                null
+                // Fallback: render original component if available
+                (() => {
+                  const FallbackComp = FALLBACK_COMPONENTS[section.section_key];
+                  if (FallbackComp) {
+                    return (
+                      <Suspense fallback={<div className="py-12 flex justify-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>}>
+                        <FallbackComp />
+                      </Suspense>
+                    );
+                  }
+                  return null;
+                })()
               )}
             </section>
           );
