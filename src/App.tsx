@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import GalleryPage from "./pages/GalleryPage";
 import ReportsPage from "./pages/ReportsPage";
+import TransparencyPage from "./pages/TransparencyPage";
 import BloodPage from "./pages/BloodPage";
 import AdminHome from "./pages/admin/AdminHome";
 import ProjectManager from "./pages/admin/ProjectManager";
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/transparency" element={<TransparencyPage />} />
             <Route path="/blood" element={<BloodPage />} />
 
             {/* Admin Routes */}
