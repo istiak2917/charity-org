@@ -10,13 +10,15 @@ const DonationSection = () => {
   const [payment, setPayment] = useState({ bkash: "", nagad: "", bank: "" });
 
   useEffect(() => {
-    supabase.from("settings").select("key, value").in("key", ["payment_bkash", "payment_nagad", "payment_bank"]).then(({ data }) => {
+    supabase.from("site_settings").select("*").then(({ data }) => {
       if (data) {
-        data.forEach((s) => {
-          const val = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : JSON.stringify(s.value).replace(/^"|"$/g, "");
-          if (s.key === "payment_bkash") setPayment(p => ({ ...p, bkash: val }));
-          if (s.key === "payment_nagad") setPayment(p => ({ ...p, nagad: val }));
-          if (s.key === "payment_bank") setPayment(p => ({ ...p, bank: val }));
+        data.forEach((s: any) => {
+          const k = s.key || s.setting_key || s.name || "";
+          const raw = s.value || s.setting_value || "";
+          const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
+          if (k === "payment_bkash") setPayment(p => ({ ...p, bkash: val }));
+          if (k === "payment_nagad") setPayment(p => ({ ...p, nagad: val }));
+          if (k === "payment_bank") setPayment(p => ({ ...p, bank: val }));
         });
       }
     });

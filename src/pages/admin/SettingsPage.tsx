@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAdminCrud } from "@/hooks/useAdminCrud";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,29 +8,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Settings, Save } from "lucide-react";
 
-interface Organization {
-  id: string; name: string; description: string; mission: string; vision: string; history: string;
-  email: string; phone: string; address: string; website: string; facebook: string; youtube: string;
-  logo_url: string; cover_image_url: string; founded_year: number;
-}
-
 const SettingsPage = () => {
-  const [org, setOrg] = useState<Partial<Organization>>({});
+  const [org, setOrg] = useState<any>({});
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [settingsRows, setSettingsRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchAll = async () => {
       const [orgRes, settingsRes] = await Promise.all([
-        supabase.from("organizations").select("*").limit(1).single(),
-        supabase.from("settings").select("key, value"),
+        supabase.from("organizations").select("*").limit(1).maybeSingle(),
+        supabase.from("site_settings").select("*"),
       ]);
       if (orgRes.data) setOrg(orgRes.data);
       if (settingsRes.data) {
+        setSettingsRows(settingsRes.data);
         const map: Record<string, string> = {};
-        settingsRes.data.forEach((s) => {
-          map[s.key] = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : JSON.stringify(s.value).replace(/^"|"$/g, "");
+        settingsRes.data.forEach((s: any) => {
+          const k = s.key || s.setting_key || s.name || "";
+          const raw = s.value || s.setting_value || "";
+          if (k) map[k] = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
         });
         setSettings(map);
       }
@@ -48,8 +45,13 @@ const SettingsPage = () => {
   };
 
   const saveSiteSettings = async () => {
+    // Detect column names from existing rows
+    const sample = settingsRows[0] || {};
+    const keyCol = "key" in sample ? "key" : "setting_key" in sample ? "setting_key" : "name";
+    const valCol = "value" in sample ? "value" : "setting_value";
+    
     const promises = Object.entries(settings).map(([key, value]) =>
-      supabase.from("settings").upsert({ key, value: JSON.stringify(value) }, { onConflict: "key" })
+      supabase.from("site_settings").upsert({ [keyCol]: key, [valCol]: JSON.stringify(value) }, { onConflict: keyCol })
     );
     await Promise.all(promises);
     toast({ title: "সাইট সেটিংস সেভ হয়েছে!" });
@@ -59,13 +61,13 @@ const SettingsPage = () => {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
-  const orgField = (label: string, key: keyof Organization, type: "text" | "textarea" | "number" = "text") => (
+  const orgField = (label: string, key: string, type: "text" | "textarea" | "number" = "text") => (
     <div className="space-y-1">
       <label className="text-sm font-medium">{label}</label>
       {type === "textarea" ? (
-        <Textarea rows={3} value={(org[key] as string) || ""} onChange={(e) => setOrg({ ...org, [key]: e.target.value })} />
+        <Textarea rows={3} value={org[key] || ""} onChange={(e) => setOrg({ ...org, [key]: e.target.value })} />
       ) : (
-        <Input type={type} value={(org[key] as string) || ""} onChange={(e) => setOrg({ ...org, [key]: type === "number" ? Number(e.target.value) : e.target.value })} />
+        <Input type={type} value={org[key] || ""} onChange={(e) => setOrg({ ...org, [key]: type === "number" ? Number(e.target.value) : e.target.value })} />
       )}
     </div>
   );
@@ -89,7 +91,6 @@ const SettingsPage = () => {
             <h2 className="font-semibold text-lg">মৌলিক তথ্য</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {orgField("সংগঠনের নাম", "name")}
-              {orgField("ইমেইল", "email")}
               {orgField("ফোন", "phone")}
               {orgField("ওয়েবসাইট", "website")}
               {orgField("প্রতিষ্ঠার সাল", "founded_year", "number")}
@@ -97,17 +98,13 @@ const SettingsPage = () => {
             </div>
           </Card>
           <Card className="p-6 space-y-4">
-            <h2 className="font-semibold text-lg">মিশন, ভিশন ও ইতিহাস</h2>
+            <h2 className="font-semibold text-lg">বিবরণ</h2>
             {orgField("বিবরণ", "description", "textarea")}
-            {orgField("মিশন", "mission", "textarea")}
-            {orgField("ভিশন", "vision", "textarea")}
-            {orgField("ইতিহাস", "history", "textarea")}
           </Card>
           <Card className="p-6 space-y-4">
             <h2 className="font-semibold text-lg">ছবি ও সোশ্যাল মিডিয়া</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {orgField("লোগো URL", "logo_url")}
-              {orgField("কভার ইমেজ URL", "cover_image_url")}
               {orgField("Facebook", "facebook")}
               {orgField("YouTube", "youtube")}
             </div>
@@ -116,19 +113,6 @@ const SettingsPage = () => {
         </TabsContent>
 
         <TabsContent value="site" className="space-y-4">
-          <Card className="p-6 space-y-4">
-            <h2 className="font-semibold text-lg">সাইট পরিচিতি</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">সাইট টাইটেল</label>
-                <Input value={settings.site_title || ""} onChange={(e) => updateSetting("site_title", e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">CTA বাটন টেক্সট</label>
-                <Input value={settings.cta_button_text || ""} onChange={(e) => updateSetting("cta_button_text", e.target.value)} />
-              </div>
-            </div>
-          </Card>
           <Card className="p-6 space-y-4">
             <h2 className="font-semibold text-lg">হিরো সেকশন</h2>
             <div className="space-y-3">
@@ -140,10 +124,14 @@ const SettingsPage = () => {
                 <label className="text-sm font-medium">হিরো সাবটেক্সট</label>
                 <Input value={settings.hero_subtext || ""} onChange={(e) => updateSetting("hero_subtext", e.target.value)} />
               </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">CTA বাটন টেক্সট</label>
+                <Input value={settings.cta_button_text || ""} onChange={(e) => updateSetting("cta_button_text", e.target.value)} />
+              </div>
             </div>
           </Card>
           <Card className="p-6 space-y-4">
-            <h2 className="font-semibold text-lg">ফুটার ও সোশ্যাল</h2>
+            <h2 className="font-semibold text-lg">ফুটার ও পেমেন্ট</h2>
             <div className="space-y-3">
               <div className="space-y-1">
                 <label className="text-sm font-medium">ফুটার টেক্সট</label>
@@ -151,15 +139,15 @@ const SettingsPage = () => {
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">পেমেন্ট তথ্য (বিকাশ)</label>
+                  <label className="text-sm font-medium">বিকাশ নম্বর</label>
                   <Input value={settings.payment_bkash || ""} onChange={(e) => updateSetting("payment_bkash", e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">পেমেন্ট তথ্য (নগদ)</label>
+                  <label className="text-sm font-medium">নগদ নম্বর</label>
                   <Input value={settings.payment_nagad || ""} onChange={(e) => updateSetting("payment_nagad", e.target.value)} />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">পেমেন্ট তথ্য (ব্যাংক)</label>
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-sm font-medium">ব্যাংক তথ্য</label>
                   <Input value={settings.payment_bank || ""} onChange={(e) => updateSetting("payment_bank", e.target.value)} />
                 </div>
               </div>

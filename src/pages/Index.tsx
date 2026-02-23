@@ -37,9 +37,16 @@ const Index = () => {
     supabase
       .from("homepage_sections")
       .select("*")
-      .order("display_order", { ascending: true })
       .then(({ data }) => {
-        if (data && data.length > 0) setSections(data);
+        if (data && data.length > 0) {
+          // Sort by whatever order column exists
+          const sorted = [...data].sort((a: any, b: any) => {
+            const aOrder = a.sort_order ?? a.display_order ?? a.order_index ?? 0;
+            const bOrder = b.sort_order ?? b.display_order ?? b.order_index ?? 0;
+            return aOrder - bOrder;
+          });
+          setSections(sorted);
+        }
         setLoaded(true);
       });
   }, []);
@@ -48,7 +55,7 @@ const Index = () => {
   const visibleSections = loaded && sections.length > 0
     ? sections.filter((s) => s.is_visible)
     : Object.keys(sectionComponents).map((key, i) => ({
-        id: key, section_key: key, title: key, is_visible: true, display_order: i, config: {},
+        id: key, section_key: key, title: key, is_visible: true, config: {},
       }));
 
   return (

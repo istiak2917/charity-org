@@ -9,14 +9,16 @@ const Footer = () => {
 
   useEffect(() => {
     Promise.all([
-      supabase.from("organizations").select("name, description, email, phone, address, facebook, youtube, logo_url").limit(1).single(),
-      supabase.from("settings").select("key, value").in("key", ["footer_text", "social_facebook", "social_youtube"]),
+      supabase.from("organizations").select("*").limit(1).maybeSingle(),
+      supabase.from("site_settings").select("*"),
     ]).then(([orgRes, settingsRes]) => {
       if (orgRes.data) setOrg(orgRes.data);
       if (settingsRes.data) {
         const map: Record<string, string> = {};
-        settingsRes.data.forEach((s) => {
-          map[s.key] = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : JSON.stringify(s.value).replace(/^"|"$/g, "");
+        settingsRes.data.forEach((s: any) => {
+          const k = s.key || s.setting_key || s.name || "";
+          const raw = s.value || s.setting_value || "";
+          if (k) map[k] = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
         });
         setSettings(map);
       }
@@ -69,8 +71,8 @@ const Footer = () => {
             <div>
               <h4 className="font-bold font-heading mb-4 text-lg">যোগাযোগ</h4>
               <ul className="space-y-3 text-sm">
-                <li className="flex items-center gap-2 opacity-70"><Mail className="h-4 w-4 text-primary" /> {org?.email || "info@shishuful.org"}</li>
-                <li className="flex items-center gap-2 opacity-70"><Phone className="h-4 w-4 text-primary" /> {org?.phone || "+880 1XXX-XXXXXX"}</li>
+                <li className="flex items-center gap-2 opacity-70"><Mail className="h-4 w-4 text-primary" /> {org?.email || org?.contact_email || "info@shishuful.org"}</li>
+                <li className="flex items-center gap-2 opacity-70"><Phone className="h-4 w-4 text-primary" /> {org?.phone || org?.contact_phone || "+880 1XXX-XXXXXX"}</li>
                 <li className="flex items-center gap-2 opacity-70"><MapPin className="h-4 w-4 text-primary" /> {org?.address || "বাংলাদেশ"}</li>
               </ul>
             </div>

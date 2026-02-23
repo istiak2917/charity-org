@@ -34,10 +34,10 @@ const AdminHome = () => {
           const { count } = await supabase.from(t.table).select("*", { count: "exact", head: true });
           return { icon: t.icon, label: t.label, count: count || 0, color: t.color, link: t.link };
         })),
-        supabase.from("donations").select("amount, created_at"),
-        supabase.from("income_records").select("amount"),
-        supabase.from("expenses").select("amount"),
-        supabase.from("projects").select("status"),
+        supabase.from("donations").select("*"),
+        supabase.from("income_records").select("*"),
+        supabase.from("expenses").select("*"),
+        supabase.from("projects").select("*"),
       ]);
 
       // Donations
