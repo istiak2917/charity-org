@@ -53,8 +53,8 @@ const Index = () => {
 
   // Fallback: if no homepage_sections data, show default order
   const visibleSections = loaded && sections.length > 0
-    ? sections.filter((s) => s.is_visible)
-    : Object.keys(sectionComponents).map((key, i) => ({
+    ? sections.filter((s: any) => s.is_visible !== false)
+    : Object.keys(sectionComponents).map((key) => ({
         id: key, section_key: key, title: key, is_visible: true, config: {},
       }));
 

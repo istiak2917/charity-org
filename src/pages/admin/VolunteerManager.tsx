@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 
-interface Volunteer { id: string; full_name: string; email: string; phone: string; skills: string; status: string; badge: string; hours_logged: number; }
+interface Volunteer { id: string; full_name: string; email: string; phone: string; skills: string; status: string; badge: string; hours_logged: number; [key: string]: any; }
 
 const VolunteerManager = () => {
   const { items, loading, update } = useAdminCrud<Volunteer>({ table: "volunteers" });
@@ -34,7 +34,7 @@ const VolunteerManager = () => {
                 <TableCell>{v.email}</TableCell>
                 <TableCell>{v.skills || "-"}</TableCell>
                 <TableCell><Badge variant={v.status === "approved" ? "default" : v.status === "rejected" ? "destructive" : "secondary"}>{v.status}</Badge></TableCell>
-                <TableCell>{v.hours_logged}h</TableCell>
+                <TableCell>{v.hours_logged || 0}h</TableCell>
                 <TableCell className="text-right space-x-2">
                   {v.status === "pending" && (
                     <>

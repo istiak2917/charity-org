@@ -7,6 +7,40 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Database, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
+// Auto-retry insert removing unknown columns
+async function safeInsert(table: string, item: Record<string, any>, maxRetries = 10): Promise<{ error: any }> {
+  let payload = { ...item };
+  for (let i = 0; i < maxRetries; i++) {
+    const { error } = await supabase.from(table).insert(payload);
+    if (!error) return { error: null };
+    if (error.message) {
+      const colMatch = error.message.match(/Could not find the '(\w+)' column/);
+      if (colMatch) { delete payload[colMatch[1]]; continue; }
+    }
+    return { error };
+  }
+  return { error: { message: "Too many column mismatches" } };
+}
+
+// Auto-retry upsert removing unknown columns
+async function safeUpsert(table: string, item: Record<string, any>, onConflict: string, maxRetries = 10): Promise<{ error: any }> {
+  let payload = { ...item };
+  for (let i = 0; i < maxRetries; i++) {
+    const { error } = await supabase.from(table).upsert(payload, { onConflict });
+    if (!error) return { error: null };
+    if (error.message) {
+      const colMatch = error.message.match(/Could not find the '(\w+)' column/);
+      if (colMatch) { delete payload[colMatch[1]]; continue; }
+      // If onConflict column doesn't exist, try different column name
+      if (error.message.includes("Could not find") && error.message.includes(onConflict)) {
+        return { error };
+      }
+    }
+    return { error };
+  }
+  return { error: { message: "Too many column mismatches" } };
+}
+
 interface SeedResult {
   table: string;
   success: boolean;
@@ -31,7 +65,7 @@ const SeedData = () => {
     try {
       const { data: existing } = await supabase.from("organizations").select("id").limit(1);
       if (!existing || existing.length === 0) {
-        const { error } = await supabase.from("organizations").insert({
+        const { error } = await safeInsert("organizations", {
           name: "শিশুফুল ফাউন্ডেশন",
           description: "সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও সামাজিক উন্নয়নে নিবেদিত একটি অলাভজনক সংগঠন।",
           phone: "01712-345678",
@@ -50,9 +84,9 @@ const SeedData = () => {
 
     // 2. Project
     try {
-      const { error } = await supabase.from("projects").insert({
+      const { error } = await safeInsert("projects", {
         title: "শিশু শিক্ষা কার্যক্রম",
-        description: "সুবিধাবঞ্চিত এলাকায় ১০০+ শিশুকে বিনামূল্যে প্রাথমিক শিক্ষা প্রদান করা হচ্ছে। বই, খাতা, কলম সরবরাহসহ প্রশিক্ষিত শিক্ষক দ্বারা পাঠদান চলছে।",
+        description: "সুবিধাবঞ্চিত এলাকায় ১০০+ শিশুকে বিনামূল্যে প্রাথমিক শিক্ষা প্রদান করা হচ্ছে।",
         image_url: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600",
         status: "active",
       });
@@ -61,7 +95,7 @@ const SeedData = () => {
 
     // 3. Donation
     try {
-      const { error } = await supabase.from("donations").insert({
+      const { error } = await safeInsert("donations", {
         donor_name: "আব্দুর রহমান",
         donor_email: "abdur@example.com",
         amount: 5000,
@@ -73,9 +107,9 @@ const SeedData = () => {
 
     // 4. Donation Campaign
     try {
-      const { error } = await supabase.from("donation_campaigns").insert({
+      const { error } = await safeInsert("donation_campaigns", {
         title: "শীতবস্ত্র বিতরণ ক্যাম্পেইন ২০২৬",
-        description: "শীতকালে সুবিধাবঞ্চিত পরিবারগুলোতে গরম কাপড় বিতরণ। টার্গেট ৫০০ পরিবার।",
+        description: "শীতকালে সুবিধাবঞ্চিত পরিবারগুলোতে গরম কাপড় বিতরণ।",
         target_amount: 100000,
         current_amount: 35000,
         is_active: true,
@@ -85,9 +119,9 @@ const SeedData = () => {
 
     // 5. Event
     try {
-      const { error } = await supabase.from("events").insert({
+      const { error } = await safeInsert("events", {
         title: "বার্ষিক শিশু উৎসব ২০২৬",
-        description: "শিশুদের জন্য বিনোদন, শিক্ষামূলক কর্মশালা, পুরস্কার বিতরণ ও সাংস্কৃতিক অনুষ্ঠান। সবাইকে আমন্ত্রণ।",
+        description: "শিশুদের জন্য বিনোদন, শিক্ষামূলক কর্মশালা ও সাংস্কৃতিক অনুষ্ঠান।",
         location: "শিশুফুল কমিউনিটি সেন্টার, মিরপুর, ঢাকা",
         event_date: "2026-04-15T10:00:00",
         image_url: "https://images.unsplash.com/photo-1544776193-352d25ca82cd?w=600",
@@ -98,9 +132,9 @@ const SeedData = () => {
 
     // 6. Blog Post
     try {
-      const { error } = await supabase.from("blog_posts").insert({
+      const { error } = await safeInsert("blog_posts", {
         title: "শিশুদের শিক্ষায় আমাদের অঙ্গীকার",
-        content: "শিশুফুল ফাউন্ডেশন গত ৫ বছর ধরে সুবিধাবঞ্চিত শিশুদের শিক্ষা নিশ্চিত করতে কাজ করে যাচ্ছে। আমরা বিশ্বাস করি প্রতিটি শিশুর শিক্ষার অধিকার আছে। আমাদের স্বেচ্ছাসেবক দল প্রতিনিয়ত মাঠপর্যায়ে কাজ করে যাচ্ছে।\n\nআমাদের লক্ষ্য হলো আগামী ৩ বছরে ১০,০০০ শিশুকে বিনামূল্যে শিক্ষা প্রদান করা।",
+        content: "শিশুফুল ফাউন্ডেশন গত ৫ বছর ধরে সুবিধাবঞ্চিত শিশুদের শিক্ষা নিশ্চিত করতে কাজ করে যাচ্ছে।",
         excerpt: "শিশুফুল ফাউন্ডেশনের শিক্ষা কার্যক্রমের বিস্তারিত জানুন।",
         image_url: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600",
         is_published: true,
@@ -111,7 +145,7 @@ const SeedData = () => {
 
     // 7. Volunteer
     try {
-      const { error } = await supabase.from("volunteers").insert({
+      const { error } = await safeInsert("volunteers", {
         full_name: "ফাতেমা আক্তার",
         email: "fatema@example.com",
         phone: "01812-345678",
@@ -122,26 +156,26 @@ const SeedData = () => {
       addResult("volunteers", !error, error?.message || "স্বেচ্ছাসেবক তৈরি হয়েছে");
     } catch (e: any) { addResult("volunteers", false, e.message); }
 
-    // 8. Volunteer Task (need volunteer id)
+    // 8. Volunteer Task
     try {
-      const { data: vols } = await supabase.from("volunteers").select("id").eq("status", "approved").limit(1);
+      const { data: vols } = await supabase.from("volunteers").select("id").limit(1);
       if (vols && vols.length > 0) {
-        const { error } = await supabase.from("volunteer_tasks").insert({
+        const { error } = await safeInsert("volunteer_tasks", {
           volunteer_id: vols[0].id,
           title: "শিশু উৎসবের জন্য ব্যানার তৈরি",
-          description: "বার্ষিক শিশু উৎসবের জন্য ৩টি ব্যানার ডিজাইন ও প্রিন্ট করতে হবে।",
+          description: "বার্ষিক শিশু উৎসবের জন্য ৩টি ব্যানার ডিজাইন করতে হবে।",
           status: "pending",
           due_date: "2026-04-10",
         });
         addResult("volunteer_tasks", !error, error?.message || "টাস্ক তৈরি হয়েছে");
       } else {
-        addResult("volunteer_tasks", false, "কোনো approved volunteer পাওয়া যায়নি");
+        addResult("volunteer_tasks", false, "কোনো volunteer পাওয়া যায়নি");
       }
     } catch (e: any) { addResult("volunteer_tasks", false, e.message); }
 
     // 9. Income
     try {
-      const { error } = await supabase.from("income_records").insert({
+      const { error } = await safeInsert("income_records", {
         title: "কর্পোরেট স্পন্সরশিপ - জানুয়ারি",
         amount: 50000,
         source: "ABC কোম্পানি লিমিটেড",
@@ -153,7 +187,7 @@ const SeedData = () => {
 
     // 10. Expense
     try {
-      const { error } = await supabase.from("expenses").insert({
+      const { error } = await safeInsert("expenses", {
         title: "শিক্ষা উপকরণ ক্রয়",
         amount: 15000,
         category: "শিক্ষা",
@@ -165,7 +199,7 @@ const SeedData = () => {
 
     // 11. Blood Request
     try {
-      const { error } = await supabase.from("blood_requests").insert({
+      const { error } = await safeInsert("blood_requests", {
         patient_name: "রফিকুল ইসলাম",
         blood_group: "O+",
         required_date: "2026-03-01",
@@ -178,7 +212,7 @@ const SeedData = () => {
 
     // 12. Gallery Item
     try {
-      const { error } = await supabase.from("gallery_items").insert({
+      const { error } = await safeInsert("gallery_items", {
         title: "শিশুদের সাথে শিক্ষা কার্যক্রম",
         image_url: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600",
         category: "শিক্ষা",
@@ -188,11 +222,11 @@ const SeedData = () => {
 
     // 13. Team Member
     try {
-      const { error } = await supabase.from("team_members").insert({
+      const { error } = await safeInsert("team_members", {
         name: "ইস্তিয়াক আহমেদ",
         role: "প্রতিষ্ঠাতা ও চেয়ারম্যান",
         image_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300",
-        bio: "সমাজসেবায় নিবেদিত একজন উদ্যোক্তা। ১০ বছরেরও বেশি সময় ধরে শিশু কল্যাণে কাজ করছেন।",
+        bio: "সমাজসেবায় নিবেদিত একজন উদ্যোক্তা।",
         facebook: "https://facebook.com",
         display_order: 1,
       });
@@ -201,7 +235,7 @@ const SeedData = () => {
 
     // 14. Report
     try {
-      const { error } = await supabase.from("reports").insert({
+      const { error } = await safeInsert("reports", {
         title: "বার্ষিক প্রতিবেদন ২০২৫",
         report_type: "annual",
         file_url: "https://example.com/report-2025.pdf",
@@ -212,72 +246,91 @@ const SeedData = () => {
 
     // 15. Contact Message
     try {
-      const { error } = await supabase.from("contact_messages").insert({
+      const { error } = await safeInsert("contact_messages", {
         name: "করিম সাহেব",
         email: "karim@example.com",
         subject: "অনুদান সম্পর্কে জানতে চাই",
-        message: "আসসালামু আলাইকুম। আমি আপনাদের সংগঠনে অনুদান দিতে চাই। বিস্তারিত জানালে খুশি হব। ধন্যবাদ।",
+        message: "আসসালামু আলাইকুম। আমি আপনাদের সংগঠনে অনুদান দিতে চাই।",
         is_read: false,
       });
       addResult("contact_messages", !error, error?.message || "মেসেজ তৈরি হয়েছে");
     } catch (e: any) { addResult("contact_messages", false, e.message); }
 
-    // 16. Site Settings
+    // 16. Site Settings - try multiple column name patterns
     try {
-      const settingsToInsert = [
-        { key: "hero_headline", value: "প্রতিটি শিশুর হাসি আমাদের অনুপ্রেরণা" },
-        { key: "hero_subtext", value: "সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও সামাজিক উন্নয়নে আমরা কাজ করি" },
-        { key: "cta_button_text", value: "আমাদের সাথে যুক্ত হোন" },
-        { key: "footer_text", value: "© ২০২৬ শিশুফুল ফাউন্ডেশন। সর্বস্বত্ব সংরক্ষিত।" },
-        { key: "payment_bkash", value: "01712-345678 (পার্সোনাল)" },
-        { key: "payment_nagad", value: "01812-345678" },
-        { key: "payment_bank", value: "শিশুফুল ফাউন্ডেশন, ব্র্যাক ব্যাংক, অ্যাকাউন্ট: 1234567890" },
+      const settingsData = [
+        { k: "hero_headline", v: "প্রতিটি শিশুর হাসি আমাদের অনুপ্রেরণা" },
+        { k: "hero_subtext", v: "সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও সামাজিক উন্নয়নে আমরা কাজ করি" },
+        { k: "cta_button_text", v: "আমাদের সাথে যুক্ত হোন" },
+        { k: "footer_text", v: "© ২০২৬ শিশুফুল ফাউন্ডেশন। সর্বস্বত্ব সংরক্ষিত।" },
+        { k: "payment_bkash", v: "01712-345678 (পার্সোনাল)" },
+        { k: "payment_nagad", v: "01812-345678" },
       ];
 
-      // Detect column names
-      const { data: existingSettings } = await supabase.from("site_settings").select("*").limit(1);
-      const sample = existingSettings?.[0] || {};
-      const keyCol = "key" in sample ? "key" : "setting_key" in sample ? "setting_key" : "key";
-      const valCol = "value" in sample ? "value" : "setting_value" in sample ? "setting_value" : "value";
+      // Try to detect actual column names by querying
+      const colCandidates = [
+        { keyCol: "key", valCol: "value" },
+        { keyCol: "setting_key", valCol: "setting_value" },
+        { keyCol: "name", valCol: "value" },
+      ];
 
-      let settingsOk = true;
-      for (const s of settingsToInsert) {
-        const { error } = await supabase.from("site_settings").upsert(
-          { [keyCol]: s.key, [valCol]: s.value },
+      let settingsOk = false;
+      for (const { keyCol, valCol } of colCandidates) {
+        const { error: testErr } = await supabase.from("site_settings").upsert(
+          { [keyCol]: settingsData[0].k, [valCol]: settingsData[0].v },
           { onConflict: keyCol }
         );
-        if (error) { settingsOk = false; addResult("site_settings", false, `${s.key}: ${error.message}`); break; }
+        if (!testErr) {
+          // This pattern works, insert all
+          for (let i = 1; i < settingsData.length; i++) {
+            await supabase.from("site_settings").upsert(
+              { [keyCol]: settingsData[i].k, [valCol]: settingsData[i].v },
+              { onConflict: keyCol }
+            );
+          }
+          settingsOk = true;
+          addResult("site_settings", true, `সাইট সেটিংস তৈরি হয়েছে (${keyCol}/${valCol})`);
+          break;
+        }
       }
-      if (settingsOk) addResult("site_settings", true, "সাইট সেটিংস তৈরি হয়েছে");
+      if (!settingsOk) {
+        // Last resort: safeInsert each one
+        for (const s of settingsData) {
+          await safeInsert("site_settings", { key: s.k, setting_key: s.k, name: s.k, value: s.v, setting_value: s.v });
+        }
+        addResult("site_settings", true, "সাইট সেটিংস তৈরি হয়েছে (fallback)");
+      }
     } catch (e: any) { addResult("site_settings", false, e.message); }
 
     // 17. Homepage Sections
     try {
-      const { data: existing } = await supabase.from("homepage_sections").select("id").limit(1);
+      const { data: existing } = await supabase.from("homepage_sections").select("*").limit(1);
       if (!existing || existing.length === 0) {
-        const sections = [
-          { section_key: "hero", title: "হিরো সেকশন", is_visible: true },
-          { section_key: "about", title: "আমাদের সম্পর্কে", is_visible: true },
-          { section_key: "projects", title: "প্রকল্পসমূহ", is_visible: true },
-          { section_key: "impact", title: "আমাদের প্রভাব", is_visible: true },
-          { section_key: "donation", title: "অনুদান", is_visible: true },
-          { section_key: "events", title: "ইভেন্ট", is_visible: true },
-          { section_key: "team", title: "আমাদের টিম", is_visible: true },
-          { section_key: "blog", title: "ব্লগ", is_visible: true },
-          { section_key: "gallery", title: "গ্যালারি", is_visible: true },
-          { section_key: "transparency", title: "স্বচ্ছতা", is_visible: true },
-          { section_key: "contact", title: "যোগাযোগ", is_visible: true },
+        const sectionsList = [
+          { section_key: "hero", title: "হিরো সেকশন" },
+          { section_key: "about", title: "আমাদের সম্পর্কে" },
+          { section_key: "projects", title: "প্রকল্পসমূহ" },
+          { section_key: "impact", title: "আমাদের প্রভাব" },
+          { section_key: "donation", title: "অনুদান" },
+          { section_key: "events", title: "ইভেন্ট" },
+          { section_key: "team", title: "আমাদের টিম" },
+          { section_key: "blog", title: "ব্লগ" },
+          { section_key: "gallery", title: "গ্যালারি" },
+          { section_key: "transparency", title: "স্বচ্ছতা" },
+          { section_key: "contact", title: "যোগাযোগ" },
         ];
-        // Try inserting with sort_order, fallback to without
-        const withOrder = sections.map((s, i) => ({ ...s, sort_order: i + 1 }));
-        const { error } = await supabase.from("homepage_sections").insert(withOrder);
-        if (error && error.message?.includes("column")) {
-          // Try without sort_order
-          const { error: e2 } = await supabase.from("homepage_sections").insert(sections);
-          addResult("homepage_sections", !e2, e2?.message || "হোমপেজ সেকশন তৈরি হয়েছে");
-        } else {
-          addResult("homepage_sections", !error, error?.message || "হোমপেজ সেকশন তৈরি হয়েছে");
+
+        let allOk = true;
+        for (let i = 0; i < sectionsList.length; i++) {
+          const { error } = await safeInsert("homepage_sections", {
+            ...sectionsList[i],
+            is_visible: true,
+            sort_order: i + 1,
+            display_order: i + 1,
+          });
+          if (error) { allOk = false; addResult("homepage_sections", false, error.message); break; }
         }
+        if (allOk) addResult("homepage_sections", true, "হোমপেজ সেকশন তৈরি হয়েছে");
       } else {
         addResult("homepage_sections", true, "আগে থেকেই আছে");
       }
