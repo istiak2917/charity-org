@@ -19,6 +19,7 @@ import ThemeCustomizer from "./pages/admin/ThemeCustomizer";
 import ProjectManager from "./pages/admin/ProjectManager";
 import DonationManager from "./pages/admin/DonationManager";
 import VolunteerManager from "./pages/admin/VolunteerManager";
+import VolunteerTaskManager from "./pages/admin/VolunteerTaskManager";
 import EventManager from "./pages/admin/EventManager";
 import TeamManager from "./pages/admin/TeamManager";
 import BlogManager from "./pages/admin/BlogManager";
@@ -27,6 +28,9 @@ import ContactInbox from "./pages/admin/ContactInbox";
 import RoleManager from "./pages/admin/RoleManager";
 import FeatureToggles from "./pages/admin/FeatureToggles";
 import SettingsPage from "./pages/admin/SettingsPage";
+import BloodDonationManager from "./pages/admin/BloodDonationManager";
+import ExpenseManager from "./pages/admin/ExpenseManager";
+import ReportsManager from "./pages/admin/ReportsManager";
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
 import VolunteerPanel from "./pages/member/VolunteerPanel";
@@ -65,11 +69,15 @@ const App = () => (
             <Route path="/admin/theme" element={<AdminRoute><ThemeCustomizer /></AdminRoute>} />
             <Route path="/admin/projects" element={<AdminRoute><ProjectManager /></AdminRoute>} />
             <Route path="/admin/donations" element={<AdminRoute><DonationManager /></AdminRoute>} />
+            <Route path="/admin/expenses" element={<AdminRoute><ExpenseManager /></AdminRoute>} />
             <Route path="/admin/volunteers" element={<AdminRoute><VolunteerManager /></AdminRoute>} />
+            <Route path="/admin/tasks" element={<AdminRoute><VolunteerTaskManager /></AdminRoute>} />
             <Route path="/admin/events" element={<AdminRoute><EventManager /></AdminRoute>} />
+            <Route path="/admin/blood" element={<AdminRoute><BloodDonationManager /></AdminRoute>} />
             <Route path="/admin/team" element={<AdminRoute><TeamManager /></AdminRoute>} />
             <Route path="/admin/blog" element={<AdminRoute><BlogManager /></AdminRoute>} />
             <Route path="/admin/gallery" element={<AdminRoute><GalleryManager /></AdminRoute>} />
+            <Route path="/admin/reports" element={<AdminRoute><ReportsManager /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><ContactInbox /></AdminRoute>} />
             <Route path="/admin/roles" element={<AdminRoute><RoleManager /></AdminRoute>} />
             <Route path="/admin/features" element={<AdminRoute><FeatureToggles /></AdminRoute>} />
