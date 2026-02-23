@@ -1,44 +1,87 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { canViewModule, type Module } from "@/lib/permissions";
+import { isSessionExpired, updateLastActivity } from "@/lib/security";
 import {
   LayoutDashboard, Heart, Users, Calendar, Menu, X, LogOut, ChevronLeft,
   Newspaper, FolderOpen, Shield, Settings, DollarSign, Image, Droplets,
-  ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database
+  ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database,
+  ScrollText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "ড্যাশবোর্ড", path: "/admin" },
-  { icon: FolderOpen, label: "প্রকল্প", path: "/admin/projects" },
-  { icon: Heart, label: "অনুদান", path: "/admin/donations" },
-  { icon: Megaphone, label: "ক্যাম্পেইন", path: "/admin/campaigns" },
-  { icon: DollarSign, label: "আয়-ব্যয়", path: "/admin/finance" },
-  { icon: Users, label: "স্বেচ্ছাসেবক", path: "/admin/volunteers" },
-  { icon: ClipboardList, label: "টাস্ক", path: "/admin/tasks" },
-  { icon: Calendar, label: "ইভেন্ট", path: "/admin/events" },
-  { icon: Droplets, label: "রক্তদান", path: "/admin/blood" },
-  { icon: Newspaper, label: "ব্লগ", path: "/admin/blog" },
-  { icon: Image, label: "গ্যালারি", path: "/admin/gallery" },
-  { icon: UserCircle, label: "টিম", path: "/admin/team" },
-  { icon: FileText, label: "রিপোর্ট", path: "/admin/reports" },
-  { icon: MessageSquare, label: "মেসেজ", path: "/admin/messages" },
-  { icon: Shield, label: "রোল", path: "/admin/roles" },
-  { icon: Home, label: "হোমপেজ", path: "/admin/homepage" },
-  { icon: Settings, label: "সেটিংস", path: "/admin/settings" },
-  { icon: Database, label: "ডেমো ডেটা", path: "/admin/seed" },
+const ICON_MAP: Record<string, any> = {
+  LayoutDashboard, FolderOpen, Heart, Megaphone, DollarSign, Users, ClipboardList,
+  Calendar, Droplets, Newspaper, Image, UserCircle, FileText, MessageSquare,
+  Shield, Home, ScrollText, Settings, Database,
+};
+
+interface MenuItem {
+  module: Module;
+  label: string;
+  path: string;
+  icon: string;
+}
+
+const ALL_MENU_ITEMS: MenuItem[] = [
+  { module: "dashboard", label: "ড্যাশবোর্ড", path: "/admin", icon: "LayoutDashboard" },
+  { module: "projects", label: "প্রকল্প", path: "/admin/projects", icon: "FolderOpen" },
+  { module: "donations", label: "অনুদান", path: "/admin/donations", icon: "Heart" },
+  { module: "campaigns", label: "ক্যাম্পেইন", path: "/admin/campaigns", icon: "Megaphone" },
+  { module: "finance", label: "আয়-ব্যয়", path: "/admin/finance", icon: "DollarSign" },
+  { module: "volunteers", label: "স্বেচ্ছাসেবক", path: "/admin/volunteers", icon: "Users" },
+  { module: "tasks", label: "টাস্ক", path: "/admin/tasks", icon: "ClipboardList" },
+  { module: "events", label: "ইভেন্ট", path: "/admin/events", icon: "Calendar" },
+  { module: "blood", label: "রক্তদান", path: "/admin/blood", icon: "Droplets" },
+  { module: "blog", label: "ব্লগ", path: "/admin/blog", icon: "Newspaper" },
+  { module: "gallery", label: "গ্যালারি", path: "/admin/gallery", icon: "Image" },
+  { module: "team", label: "টিম", path: "/admin/team", icon: "UserCircle" },
+  { module: "reports", label: "রিপোর্ট", path: "/admin/reports", icon: "FileText" },
+  { module: "messages", label: "মেসেজ", path: "/admin/messages", icon: "MessageSquare" },
+  { module: "roles", label: "রোল ও পারমিশন", path: "/admin/roles", icon: "Shield" },
+  { module: "homepage", label: "হোমপেজ", path: "/admin/homepage", icon: "Home" },
+  { module: "audit", label: "অডিট লগ", path: "/admin/audit", icon: "ScrollText" },
+  { module: "settings", label: "সেটিংস", path: "/admin/settings", icon: "Settings" },
+  { module: "seed", label: "ডেমো ডেটা", path: "/admin/seed", icon: "Database" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
+  const { signOut, user, roles } = useAuth();
+
+  // Session timeout check
+  useEffect(() => {
+    updateLastActivity();
+    const interval = setInterval(() => {
+      if (isSessionExpired()) {
+        signOut();
+        navigate("/login");
+      }
+    }, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  // Track activity
+  useEffect(() => {
+    const handler = () => updateLastActivity();
+    window.addEventListener("click", handler);
+    window.addEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener("click", handler);
+      window.removeEventListener("keydown", handler);
+    };
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
     navigate("/");
   };
+
+  // Filter menu items by role permissions
+  const visibleMenu = ALL_MENU_ITEMS.filter(item => canViewModule(roles, item.module));
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -58,8 +101,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {menuItems.map((item) => {
+          {visibleMenu.map((item) => {
             const active = location.pathname === item.path;
+            const IconComp = ICON_MAP[item.icon] || LayoutDashboard;
             return (
               <Link
                 key={item.path}
@@ -71,7 +115,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                     : "text-foreground/70 hover:bg-muted hover:text-foreground"
                 }`}
               >
-                <item.icon className="h-4 w-4" />
+                <IconComp className="h-4 w-4" />
                 {item.label}
               </Link>
             );
@@ -80,6 +124,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
         <div className="p-3 border-t border-border space-y-2">
           <div className="text-xs text-muted-foreground truncate px-3">{user?.email}</div>
+          <div className="text-[10px] text-muted-foreground px-3">
+            রোল: {roles.join(", ") || "—"}
+          </div>
           <Button variant="ghost" className="w-full justify-start gap-2 text-sm" onClick={handleLogout}>
             <LogOut className="h-4 w-4" /> লগআউট
           </Button>

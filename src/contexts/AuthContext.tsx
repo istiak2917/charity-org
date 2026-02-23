@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { recordLastLogin } from "@/lib/security";
 
-type UserRole = "super_admin" | "admin" | "editor" | "volunteer" | "member";
+type UserRole = string; // Now supports all roles from permissions.ts
 
 interface AuthContextType {
   user: User | null;
@@ -14,7 +15,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (password: string) => Promise<{ error: any }>;
-  hasRole: (role: UserRole) => boolean;
+  hasRole: (role: string) => boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
 }
@@ -35,8 +36,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (data && data.length > 0) {
       setRoles(data.map((r) => r.role as UserRole));
     } else if (email === "istiakahmed.2163@gmail.com") {
-      // Fallback: if no roles found for super admin email, assign super_admin client-side
-      // and attempt to insert the role
       setRoles(["super_admin"]);
       supabase.from("user_roles").insert({ user_id: userId, role: "super_admin" }).then(() => {});
       supabase.from("profiles").upsert({ id: userId, full_name: "Istiak Ahmed" }).then(() => {});
@@ -50,6 +49,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchRoles(session.user.id, session.user.email), 0);
+          if (_event === "SIGNED_IN") {
+            recordLastLogin(session.user.id);
+          }
         } else {
           setRoles([]);
         }
@@ -105,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error };
   };
 
-  const hasRole = (role: UserRole) => roles.includes(role);
+  const hasRole = (role: string) => roles.includes(role);
   const isAdmin = hasRole("admin") || hasRole("super_admin");
   const isSuperAdmin = hasRole("super_admin");
 
