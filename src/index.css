@@ -8,34 +8,24 @@
   :root {
     --background: 30 100% 97%;
     --foreground: 340 20% 15%;
-
     --card: 30 60% 98%;
     --card-foreground: 340 20% 15%;
-
     --popover: 30 100% 97%;
     --popover-foreground: 340 20% 15%;
-
     --primary: 330 80% 55%;
     --primary-foreground: 0 0% 100%;
-
     --secondary: 30 60% 92%;
     --secondary-foreground: 340 20% 20%;
-
     --muted: 30 40% 94%;
     --muted-foreground: 340 10% 45%;
-
     --accent: 340 70% 60%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 30 30% 88%;
     --input: 30 30% 88%;
     --ring: 330 80% 55%;
-
     --radius: 0.75rem;
-
     --sidebar-background: 30 60% 96%;
     --sidebar-foreground: 340 20% 20%;
     --sidebar-primary: 330 80% 55%;
@@ -44,8 +34,6 @@
     --sidebar-accent-foreground: 340 20% 20%;
     --sidebar-border: 30 30% 88%;
     --sidebar-ring: 330 80% 55%;
-
-    /* Custom humanitarian tokens */
     --warm-cream: 30 100% 97%;
     --soft-pink: 330 80% 55%;
     --gentle-rose: 340 60% 75%;
@@ -58,32 +46,23 @@
   .dark {
     --background: 340 20% 8%;
     --foreground: 30 60% 95%;
-
     --card: 340 20% 10%;
     --card-foreground: 30 60% 95%;
-
     --popover: 340 20% 10%;
     --popover-foreground: 30 60% 95%;
-
     --primary: 330 75% 60%;
     --primary-foreground: 0 0% 100%;
-
     --secondary: 340 20% 15%;
     --secondary-foreground: 30 60% 90%;
-
     --muted: 340 15% 18%;
     --muted-foreground: 30 30% 60%;
-
     --accent: 340 65% 55%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 340 15% 18%;
     --input: 340 15% 18%;
     --ring: 330 75% 60%;
-
     --sidebar-background: 340 20% 8%;
     --sidebar-foreground: 30 60% 90%;
     --sidebar-primary: 330 75% 60%;
@@ -99,36 +78,16 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
     font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   }
-
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
   }
 }
 
-/* Subtle background text texture */
-.bg-texture-bengali {
-  position: relative;
-}
-.bg-texture-bengali::before {
-  content: 'শিশুফুল ভালোবাসা মানবতা শিশুফুল ভালোবাসা মানবতা শিশুফুল ভালোবাসা মানবতা শিশুফুল ভালোবাসা মানবতা শিশুফুল ভালোবাসা মানবতা';
-  position: absolute;
-  inset: 0;
-  font-size: 2rem;
-  line-height: 3rem;
-  color: hsl(var(--primary));
-  opacity: 0.05;
-  overflow: hidden;
-  word-break: break-all;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Button press animation */
+/* ===== BUTTON EFFECTS ===== */
 .btn-press {
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
@@ -137,4 +96,306 @@
 }
 .btn-press:hover {
   box-shadow: 0 4px 12px hsl(var(--primary) / 0.2);
+}
+
+/* ===== HERO SECTION ===== */
+
+/* Animated gradient background */
+.hero-gradient-bg {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--warm-cream)) 0%,
+    hsl(30 80% 95%) 30%,
+    hsl(var(--gentle-rose) / 0.15) 60%,
+    hsl(var(--warm-cream)) 100%
+  );
+  animation: hero-bg-shift 20s ease-in-out infinite alternate;
+}
+
+@keyframes hero-bg-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Bengali text texture */
+.hero-bengali-texture {
+  font-size: 3rem;
+  line-height: 4.5rem;
+  color: hsl(var(--primary));
+  opacity: 0.06;
+  overflow: hidden;
+  word-break: break-all;
+  animation: texture-drift 30s linear infinite;
+}
+
+@keyframes texture-drift {
+  0% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-10px) translateX(5px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+
+/* Vignette */
+.hero-vignette {
+  background: radial-gradient(ellipse at center, transparent 50%, hsl(var(--background) / 0.4) 100%);
+}
+
+/* Light rays */
+.hero-light-rays {
+  background: radial-gradient(
+    ellipse at 60% 40%,
+    hsl(var(--warm-gold) / 0.08) 0%,
+    transparent 60%
+  );
+  animation: light-rays-pulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes light-rays-pulse {
+  0% { opacity: 0.5; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+/* Floating particles */
+.hero-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: hsl(var(--primary) / 0.3);
+  animation: particle-float 8s ease-in-out infinite;
+}
+
+@keyframes particle-float {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  25% { transform: translateY(-15px) translateX(5px); opacity: 0.6; }
+  50% { transform: translateY(-8px) translateX(-3px); opacity: 0.4; }
+  75% { transform: translateY(-20px) translateX(8px); opacity: 0.5; }
+}
+
+/* Hero text entrance */
+.hero-text-entrance {
+  animation: hero-text-enter 0.8s ease-out forwards;
+}
+
+@keyframes hero-text-enter {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Shimmer text effect */
+.hero-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--foreground)) 0%,
+    hsl(var(--foreground)) 40%,
+    hsl(var(--primary)) 50%,
+    hsl(var(--foreground)) 60%,
+    hsl(var(--foreground)) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: -200% center; }
+  50% { background-position: 200% center; }
+}
+
+/* Hero subtext */
+.hero-subtext {
+  animation: hero-sub-enter 0.8s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+@keyframes hero-sub-enter {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* CTA entrance */
+.hero-cta-entrance {
+  animation: hero-cta-enter 0.6s ease-out 0.6s forwards;
+  opacity: 0;
+}
+
+@keyframes hero-cta-enter {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Button glow */
+.hero-btn-glow {
+  position: relative;
+  overflow: hidden;
+}
+.hero-btn-glow::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--accent) / 0.4));
+  z-index: -1;
+  filter: blur(12px);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.hero-btn-glow:hover::after {
+  opacity: 1;
+}
+
+/* Center circle */
+.hero-center-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: hsl(var(--warm-cream));
+  box-shadow:
+    0 0 60px hsl(var(--primary) / 0.1),
+    0 0 120px hsl(var(--warm-gold) / 0.05);
+  animation: center-circle-enter 0.6s ease-out forwards;
+  z-index: 5;
+}
+
+@keyframes center-circle-enter {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.hero-center-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.1), transparent 70%);
+  animation: center-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes center-glow {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.15); opacity: 0.8; }
+}
+
+/* Collage cards */
+.hero-collage-card {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow:
+    0 8px 30px hsl(var(--foreground) / 0.1),
+    0 2px 8px hsl(var(--foreground) / 0.05);
+  animation: collage-card-enter 0.5s ease-out forwards;
+  opacity: 0;
+  cursor: pointer;
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.hero-collage-card:hover {
+  transform: rotate(0deg) scale(1.05) !important;
+  box-shadow:
+    0 12px 40px hsl(var(--primary) / 0.2),
+    0 0 20px hsl(var(--primary) / 0.1);
+  z-index: 20;
+}
+
+@keyframes collage-card-enter {
+  0% { opacity: 0; transform: scale(0.8) rotate(0deg); }
+  100% { opacity: 1; }
+}
+
+/* Floating animations for collage */
+.hero-float-1 {
+  animation: collage-card-enter 0.5s ease-out forwards, hero-float-a 7s ease-in-out infinite;
+  animation-delay: inherit;
+}
+.hero-float-2 {
+  animation: collage-card-enter 0.5s ease-out forwards, hero-float-b 8s ease-in-out infinite;
+  animation-delay: inherit;
+}
+.hero-float-3 {
+  animation: collage-card-enter 0.5s ease-out forwards, hero-float-c 6s ease-in-out infinite;
+  animation-delay: inherit;
+}
+
+@keyframes hero-float-a {
+  0%, 100% { transform: translateY(0) rotate(var(--rotate, 0deg)); }
+  50% { transform: translateY(-12px) rotate(var(--rotate, 0deg)); }
+}
+@keyframes hero-float-b {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33% { transform: translateY(-8px) translateX(4px); }
+  66% { transform: translateY(-14px) translateX(-3px); }
+}
+@keyframes hero-float-c {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-10px) translateX(-5px); }
+}
+
+/* ===== DONATION PULSE ===== */
+.donation-pulse {
+  animation: donation-heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes donation-heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.15); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+  60% { transform: scale(1); }
+}
+
+/* ===== ANIMATED PROGRESS BARS ===== */
+.animated-progress {
+  width: 0;
+  animation: progress-fill 1.5s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes progress-fill {
+  0% { width: 0; }
+  100% { width: var(--target-width); }
+}
+
+/* ===== FLOATING SHAPES ===== */
+.floating-shape {
+  animation: float-shape 6s ease-in-out infinite;
+}
+.floating-shape-reverse {
+  animation: float-shape-reverse 7s ease-in-out infinite;
+}
+
+@keyframes float-shape {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(5deg); }
+}
+
+@keyframes float-shape-reverse {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(-3deg); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .hero-collage-card {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  .hero-center-circle {
+    width: 140px;
+    height: 140px;
+  }
+  .hero-bengali-texture {
+    font-size: 2rem;
+    line-height: 3rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .hero-float-1,
+  .hero-float-2,
+  .hero-float-3 {
+    animation-duration: 10s;
+  }
 }
