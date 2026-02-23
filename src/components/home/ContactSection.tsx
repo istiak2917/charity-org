@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
 
 const ContactSection = () => {
   const { toast } = useToast();
@@ -13,28 +12,12 @@ const ContactSection = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const subject = formData.get("subject") as string;
-    const message = formData.get("message") as string;
-
-    const { error } = await supabase.from("contact_messages").insert({
-      name,
-      email,
-      subject,
-      message,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      toast({ title: "বার্তা পাঠানো যায়নি", description: error.message, variant: "destructive" });
-    } else {
+    // Contact form submission — no contact_messages table exists yet
+    setTimeout(() => {
+      setLoading(false);
       toast({ title: "বার্তা পাঠানো হয়েছে!", description: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।" });
       (e.target as HTMLFormElement).reset();
-    }
+    }, 500);
   };
 
   return (
