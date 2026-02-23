@@ -14,6 +14,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 const PIE_COLORS = ["hsl(330, 80%, 55%)", "hsl(340, 70%, 60%)", "hsl(38, 80%, 60%)", "hsl(145, 40%, 55%)", "hsl(200, 60%, 70%)", "hsl(270, 50%, 60%)"];
 
 interface Report { id: string; title: string; report_type: string; file_url: string; year: number; description?: string; }
+interface ProjectInfo { id: string; title: string; budget?: number; status: string; }
 
 const TransparencyPage = () => {
   const [totalDonations, setTotalDonations] = useState(0);
@@ -23,16 +24,18 @@ const TransparencyPage = () => {
   const [monthlyData, setMonthlyData] = useState<{ month: string; আয়: number; ব্যয়: number }[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [donRes, expRes, incRes, campRes, repRes] = await Promise.all([
+      const [donRes, expRes, incRes, campRes, repRes, projRes] = await Promise.all([
         supabase.from("donations").select("amount, created_at, campaign_id"),
-        supabase.from("expenses").select("amount, category, expense_date"),
+        supabase.from("expenses").select("amount, category, expense_date, project_id"),
         supabase.from("income_records").select("amount, income_date"),
         supabase.from("donation_campaigns").select("*").eq("is_active", true),
         supabase.from("reports").select("*").order("year", { ascending: false }).limit(10),
+        supabase.from("projects").select("id, title, budget, status"),
       ]);
 
       const donData = donRes.data || [];
@@ -72,6 +75,15 @@ const TransparencyPage = () => {
       });
       setCampaigns(campData);
       setReports(repRes.data || []);
+
+      // Project funding
+      const projData = (projRes.data || []).map((p: any) => {
+        const projExpenses = expData.filter((e: any) => e.project_id === p.id);
+        const spent = projExpenses.reduce((s: number, e: any) => s + (e.amount || 0), 0);
+        return { ...p, spent };
+      });
+      setProjects(projData);
+
       setLoading(false);
     };
     fetchAll();
@@ -181,6 +193,30 @@ const TransparencyPage = () => {
                   );
                 })}
               </div>
+            </div>
+          </ScrollReveal>
+        )}
+
+        {/* Project Funding */}
+        {projects.filter((p: any) => p.budget > 0).length > 0 && (
+          <ScrollReveal>
+            <div className="mb-10">
+              <h2 className="text-2xl font-bold font-heading mb-6 text-center">প্রকল্প তহবিল অগ্রগতি</h2>
+              <Card className="p-5">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={projects.filter((p: any) => p.budget > 0).map((p: any) => ({
+                    name: p.title.length > 15 ? p.title.slice(0, 15) + "…" : p.title,
+                    বাজেট: p.budget,
+                    ব্যয়: p.spent || 0,
+                  }))}>
+                    <XAxis dataKey="name" fontSize={11} />
+                    <YAxis fontSize={11} />
+                    <Tooltip formatter={(v: number) => `৳${v.toLocaleString("bn-BD")}`} />
+                    <Bar dataKey="বাজেট" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="ব্যয়" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
             </div>
           </ScrollReveal>
         )}
