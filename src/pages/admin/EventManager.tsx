@@ -6,18 +6,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 
-interface Event { id: string; title: string; description: string; location: string; event_date: string; image_url: string; is_featured: boolean; budget: number; collected_amount: number; }
+interface Event { id: string; title: string; description: string; location: string; event_date: string; image_url: string; is_featured: boolean; [key: string]: any; }
 
 const EventManager = () => {
   const { items, loading, create, update, remove } = useAdminCrud<Event>({ table: "events" });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Event | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", location: "", event_date: "", image_url: "", is_featured: false, budget: 0, collected_amount: 0 });
+  const [form, setForm] = useState({ title: "", description: "", location: "", event_date: "", image_url: "", is_featured: false });
 
-  const resetForm = () => { setForm({ title: "", description: "", location: "", event_date: "", image_url: "", is_featured: false, budget: 0, collected_amount: 0 }); setEditing(null); };
+  const resetForm = () => { setForm({ title: "", description: "", location: "", event_date: "", image_url: "", is_featured: false }); setEditing(null); };
 
   const handleSubmit = async () => {
     if (!form.title) return;
@@ -28,7 +28,7 @@ const EventManager = () => {
 
   const handleEdit = (e: Event) => {
     setEditing(e);
-    setForm({ title: e.title, description: e.description || "", location: e.location || "", event_date: e.event_date || "", image_url: e.image_url || "", is_featured: e.is_featured, budget: e.budget || 0, collected_amount: e.collected_amount || 0 });
+    setForm({ title: e.title, description: e.description || "", location: e.location || "", event_date: e.event_date || "", image_url: e.image_url || "", is_featured: e.is_featured || false });
     setOpen(true);
   };
 
@@ -48,10 +48,9 @@ const EventManager = () => {
               <Input placeholder="স্থান" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
               <Input type="datetime-local" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
               <Input placeholder="ছবির URL" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
-              <div className="grid grid-cols-2 gap-3">
-                <Input type="number" placeholder="বাজেট" value={form.budget || ""} onChange={(e) => setForm({ ...form, budget: Number(e.target.value) })} />
-                <Input type="number" placeholder="সংগৃহীত" value={form.collected_amount || ""} onChange={(e) => setForm({ ...form, collected_amount: Number(e.target.value) })} />
-              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} /> ফিচার্ড
+              </label>
               <Button onClick={handleSubmit} className="w-full">{editing ? "আপডেট করুন" : "তৈরি করুন"}</Button>
             </div>
           </DialogContent>
@@ -59,21 +58,14 @@ const EventManager = () => {
       </div>
       <Card>
         <Table>
-          <TableHeader><TableRow><TableHead>ইভেন্ট</TableHead><TableHead>স্থান</TableHead><TableHead>তারিখ</TableHead><TableHead>বাজেট</TableHead><TableHead className="text-right">অ্যাকশন</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>ইভেন্ট</TableHead><TableHead>স্থান</TableHead><TableHead>তারিখ</TableHead><TableHead>ফিচার্ড</TableHead><TableHead className="text-right">অ্যাকশন</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((e) => (
               <TableRow key={e.id}>
                 <TableCell className="font-medium">{e.title}</TableCell>
                 <TableCell>{e.location || "-"}</TableCell>
                 <TableCell>{e.event_date ? new Date(e.event_date).toLocaleDateString("bn-BD") : "-"}</TableCell>
-                <TableCell>
-                  {e.budget > 0 ? (
-                    <div className="space-y-1">
-                      <div className="text-xs">৳{e.collected_amount || 0} / ৳{e.budget}</div>
-                      <Progress value={e.budget > 0 ? ((e.collected_amount || 0) / e.budget) * 100 : 0} className="h-2" />
-                    </div>
-                  ) : "-"}
-                </TableCell>
+                <TableCell>{e.is_featured ? <Badge>হ্যাঁ</Badge> : "-"}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <Button size="icon" variant="ghost" onClick={() => handleEdit(e)}><Pencil className="h-4 w-4" /></Button>
                   <Button size="icon" variant="ghost" onClick={() => remove(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>

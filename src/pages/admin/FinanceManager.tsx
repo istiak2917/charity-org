@@ -11,11 +11,11 @@ import { Plus, Pencil, Trash2, Download } from "lucide-react";
 
 interface Expense {
   id: string; title: string; amount: number; category: string;
-  description: string; expense_date: string; receipt_url: string;
+  description: string; expense_date: string; [key: string]: any;
 }
 interface Income {
   id: string; title: string; amount: number; source: string;
-  description: string; income_date: string;
+  description: string; income_date: string; [key: string]: any;
 }
 
 const FinanceManager = () => {
@@ -27,7 +27,7 @@ const FinanceManager = () => {
   const [editExp, setEditExp] = useState<Expense | null>(null);
   const [editInc, setEditInc] = useState<Income | null>(null);
 
-  const [expForm, setExpForm] = useState({ title: "", amount: 0, category: "", description: "", expense_date: "", receipt_url: "" });
+  const [expForm, setExpForm] = useState({ title: "", amount: 0, category: "", description: "", expense_date: "" });
   const [incForm, setIncForm] = useState({ title: "", amount: 0, source: "", description: "", income_date: "" });
 
   const totalExpense = expenses.items.reduce((s, e) => s + (e.amount || 0), 0);
@@ -38,7 +38,7 @@ const FinanceManager = () => {
     if (editExp) await expenses.update(editExp.id, expForm);
     else await expenses.create(expForm);
     setExpOpen(false); setEditExp(null);
-    setExpForm({ title: "", amount: 0, category: "", description: "", expense_date: "", receipt_url: "" });
+    setExpForm({ title: "", amount: 0, category: "", description: "", expense_date: "" });
   };
 
   const handleIncSubmit = async () => {
@@ -90,7 +90,6 @@ const FinanceManager = () => {
                   <Input placeholder="ক্যাটাগরি" value={expForm.category} onChange={(e) => setExpForm({ ...expForm, category: e.target.value })} />
                   <Input type="date" value={expForm.expense_date} onChange={(e) => setExpForm({ ...expForm, expense_date: e.target.value })} />
                   <Textarea placeholder="বিবরণ" value={expForm.description} onChange={(e) => setExpForm({ ...expForm, description: e.target.value })} />
-                  <Input placeholder="রসিদ URL (ঐচ্ছিক)" value={expForm.receipt_url} onChange={(e) => setExpForm({ ...expForm, receipt_url: e.target.value })} />
                   <Button onClick={handleExpSubmit} className="w-full">{editExp ? "আপডেট" : "যোগ করুন"}</Button>
                 </div>
               </DialogContent>
@@ -107,7 +106,7 @@ const FinanceManager = () => {
                     <TableCell>{e.category || "-"}</TableCell>
                     <TableCell>{e.expense_date || "-"}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button size="icon" variant="ghost" onClick={() => { setEditExp(e); setExpForm({ title: e.title, amount: e.amount, category: e.category || "", description: e.description || "", expense_date: e.expense_date || "", receipt_url: e.receipt_url || "" }); setExpOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" onClick={() => { setEditExp(e); setExpForm({ title: e.title, amount: e.amount, category: e.category || "", description: e.description || "", expense_date: e.expense_date || "" }); setExpOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => expenses.remove(e.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </TableCell>
                   </TableRow>
