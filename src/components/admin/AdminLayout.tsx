@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  LayoutDashboard, FileText, Heart, Users, Calendar, Image, MessageSquare,
-  Settings, Shield, ToggleLeft, Palette, Home, Menu, X, LogOut, ChevronLeft,
-  UserCircle, Newspaper, FolderOpen, Droplets, DollarSign, ClipboardList
+  LayoutDashboard, Heart, Users, Calendar, Menu, X, LogOut, ChevronLeft,
+  Newspaper, FolderOpen, Shield, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +14,7 @@ const menuItems = [
   { icon: Users, label: "স্বেচ্ছাসেবক", path: "/admin/volunteers" },
   { icon: Calendar, label: "ইভেন্ট", path: "/admin/events" },
   { icon: Newspaper, label: "ব্লগ", path: "/admin/blog" },
+  { icon: Shield, label: "রোল ম্যানেজার", path: "/admin/roles" },
   { icon: Settings, label: "সেটিংস", path: "/admin/settings" },
 ];
 
