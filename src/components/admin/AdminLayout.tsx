@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Heart, Users, Calendar, Menu, X, LogOut, ChevronLeft,
-  Newspaper, FolderOpen, Shield, Settings
+  Newspaper, FolderOpen, Shield, Settings, DollarSign, Image, Droplets,
+  ClipboardList, MessageSquare, UserCircle, FileText, Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,10 +12,18 @@ const menuItems = [
   { icon: LayoutDashboard, label: "ড্যাশবোর্ড", path: "/admin" },
   { icon: FolderOpen, label: "প্রকল্প", path: "/admin/projects" },
   { icon: Heart, label: "অনুদান", path: "/admin/donations" },
+  { icon: Megaphone, label: "ক্যাম্পেইন", path: "/admin/campaigns" },
+  { icon: DollarSign, label: "আয়-ব্যয়", path: "/admin/finance" },
   { icon: Users, label: "স্বেচ্ছাসেবক", path: "/admin/volunteers" },
+  { icon: ClipboardList, label: "টাস্ক", path: "/admin/tasks" },
   { icon: Calendar, label: "ইভেন্ট", path: "/admin/events" },
+  { icon: Droplets, label: "রক্তদান", path: "/admin/blood" },
   { icon: Newspaper, label: "ব্লগ", path: "/admin/blog" },
-  { icon: Shield, label: "রোল ম্যানেজার", path: "/admin/roles" },
+  { icon: Image, label: "গ্যালারি", path: "/admin/gallery" },
+  { icon: UserCircle, label: "টিম", path: "/admin/team" },
+  { icon: FileText, label: "রিপোর্ট", path: "/admin/reports" },
+  { icon: MessageSquare, label: "মেসেজ", path: "/admin/messages" },
+  { icon: Shield, label: "রোল", path: "/admin/roles" },
   { icon: Settings, label: "সেটিংস", path: "/admin/settings" },
 ];
 
