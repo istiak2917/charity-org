@@ -2,7 +2,21 @@
 -- SHISHUFUL EXAMPLE/SEED DATA
 -- Run this in Supabase SQL Editor AFTER master-schema.sql and schema-update-v2.sql
 -- ============================================
-
+-- FIX: Add missing columns to organizations table
+ALTER TABLE public.organizations
+  ADD COLUMN IF NOT EXISTS description TEXT,
+  ADD COLUMN IF NOT EXISTS email TEXT,
+  ADD COLUMN IF NOT EXISTS phone TEXT,
+  ADD COLUMN IF NOT EXISTS address TEXT,
+  ADD COLUMN IF NOT EXISTS website TEXT,
+  ADD COLUMN IF NOT EXISTS facebook TEXT,
+  ADD COLUMN IF NOT EXISTS youtube TEXT,
+  ADD COLUMN IF NOT EXISTS founded_year INT,
+  ADD COLUMN IF NOT EXISTS logo_url TEXT,
+  ADD COLUMN IF NOT EXISTS mission TEXT,
+  ADD COLUMN IF NOT EXISTS vision TEXT,
+  ADD COLUMN IF NOT EXISTS history TEXT,
+  ADD COLUMN IF NOT EXISTS cover_image_url TEXT;
 -- 1. ORGANIZATION
 INSERT INTO public.organizations (name, description, email, phone, address, website, facebook, youtube, founded_year, mission, vision, history, logo_url, cover_image_url)
 VALUES (
