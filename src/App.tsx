@@ -13,6 +13,9 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import GalleryPage from "./pages/GalleryPage";
+import ReportsPage from "./pages/ReportsPage";
+import BloodPage from "./pages/BloodPage";
 import AdminHome from "./pages/admin/AdminHome";
 import ProjectManager from "./pages/admin/ProjectManager";
 import DonationManager from "./pages/admin/DonationManager";
@@ -29,6 +32,7 @@ import ReportsManager from "./pages/admin/ReportsManager";
 import ContactInbox from "./pages/admin/ContactInbox";
 import RoleManager from "./pages/admin/RoleManager";
 import SettingsPage from "./pages/admin/SettingsPage";
+import HomepageBuilder from "./pages/admin/HomepageBuilder";
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
 import VolunteerPanel from "./pages/member/VolunteerPanel";
@@ -60,6 +64,9 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/blood" element={<BloodPage />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
@@ -78,6 +85,7 @@ const App = () => (
             <Route path="/admin/messages" element={<AdminRoute><ContactInbox /></AdminRoute>} />
             <Route path="/admin/roles" element={<AdminRoute><RoleManager /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
+            <Route path="/admin/homepage" element={<AdminRoute><HomepageBuilder /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />

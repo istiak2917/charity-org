@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { Heart, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/shishuful-logo.jpg";
@@ -18,89 +20,69 @@ const collageImages = [
 ];
 
 const HeroSection = () => {
+  const [headline, setHeadline] = useState("প্রতিটি শিশুর মুখে হাসি");
+  const [subtext, setSubtext] = useState("আমরা একসাথে গড়ি মানবতার সুন্দর ভবিষ্যৎ।");
+  const [ctaText, setCtaText] = useState("অনুদান করুন");
+
+  useEffect(() => {
+    supabase.from("settings").select("key, value").in("key", ["hero_headline", "hero_subtext", "cta_button_text"]).then(({ data }) => {
+      if (data) {
+        data.forEach((s) => {
+          const val = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : JSON.stringify(s.value).replace(/^"|"$/g, "");
+          if (s.key === "hero_headline") setHeadline(val);
+          if (s.key === "hero_subtext") setSubtext(val);
+          if (s.key === "cta_button_text") setCtaText(val);
+        });
+      }
+    });
+  }, []);
+
+  // Split headline at space near middle for two-line display
+  const headlineParts = headline.split(" ");
+  const mid = Math.ceil(headlineParts.length / 2);
+  const line1 = headlineParts.slice(0, mid).join(" ");
+  const line2 = headlineParts.slice(mid).join(" ");
+
   return (
     <section id="home" className="relative overflow-hidden">
-      {/* Animated gradient background */}
       <div className="absolute inset-0 hero-gradient-bg" />
-
-      {/* Bengali text texture */}
       <div className="absolute inset-0 hero-bengali-texture select-none pointer-events-none" aria-hidden="true">
         <span>শিশুফুল মানবতা ভালোবাসা শিশুর হাসি শিশুফুল মানবতা ভালোবাসা শিশুর হাসি শিশুফুল মানবতা ভালোবাসা শিশুর হাসি শিশুফুল মানবতা ভালোবাসা শিশুর হাসি</span>
       </div>
-
-      {/* Soft vignette */}
       <div className="absolute inset-0 hero-vignette pointer-events-none" />
-
-      {/* Cinematic light rays */}
       <div className="absolute inset-0 hero-light-rays pointer-events-none" />
-
-      {/* Floating particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {Array.from({ length: 10 }).map((_, i) => (
-          <div
-            key={i}
-            className="hero-particle"
-            style={{
-              left: `${8 + Math.random() * 84}%`,
-              top: `${10 + Math.random() * 80}%`,
-              animationDelay: `${i * 0.7}s`,
-              width: `${3 + Math.random() * 5}px`,
-              height: `${3 + Math.random() * 5}px`,
-            }}
-          />
+          <div key={i} className="hero-particle" style={{ left: `${8 + Math.random() * 84}%`, top: `${10 + Math.random() * 80}%`, animationDelay: `${i * 0.7}s`, width: `${3 + Math.random() * 5}px`, height: `${3 + Math.random() * 5}px` }} />
         ))}
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        {/* ===== TOP: Logo + Image Collage ===== */}
         <div className="pt-8 pb-6 md:pt-12 md:pb-8 flex flex-col items-center">
-          {/* Logo */}
           <div className="hero-text-entrance mb-6 md:mb-8">
             <div className="relative">
               <div className="hero-center-glow" />
-              <img
-                src={logo}
-                alt="শিশুফুল লোগো"
-                className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full object-cover shadow-xl relative z-10 border-4 border-white/60"
-                loading="lazy"
-              />
+              <img src={logo} alt="শিশুফুল লোগো" className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full object-cover shadow-xl relative z-10 border-4 border-white/60" loading="lazy" />
             </div>
           </div>
-
-          {/* Image Grid */}
           <div className="hero-image-grid">
             {collageImages.map((img, i) => (
-              <div
-                key={i}
-                className="hero-grid-card"
-                style={{ animationDelay: `${img.delay}s` }}
-              >
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  className="w-full h-full object-cover rounded-2xl"
-                  loading="lazy"
-                />
+              <div key={i} className="hero-grid-card" style={{ animationDelay: `${img.delay}s` }}>
+                <img src={img.src} alt={img.alt} className="w-full h-full object-cover rounded-2xl" loading="lazy" />
               </div>
             ))}
           </div>
         </div>
 
-        {/* ===== BOTTOM: Text + CTA ===== */}
         <div className="pb-12 md:pb-16 flex flex-col items-center text-center space-y-5">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.4rem] font-bold leading-tight text-foreground font-heading hero-text-entrance">
-            <span className="hero-shimmer-text inline-block">
-              প্রতিটি শিশুর মুখে হাসি
-            </span>
-            <br />
-            <span className="text-primary">আমাদের অঙ্গীকার</span>
+            <span className="hero-shimmer-text inline-block">{line1}</span>
+            {line2 && <><br /><span className="text-primary">{line2}</span></>}
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed hero-subtext max-w-xl">
-            আমরা একসাথে গড়ি মানবতার সুন্দর ভবিষ্যৎ।
-          </p>
+          <p className="text-lg text-muted-foreground leading-relaxed hero-subtext max-w-xl">{subtext}</p>
           <div className="flex flex-wrap justify-center gap-3 hero-cta-entrance">
             <Button className="btn-press gap-2 text-base px-7 py-5 bg-gradient-to-r from-primary to-accent shadow-lg hero-btn-glow" size="lg">
-              <Heart className="h-5 w-5" /> অনুদান করুন
+              <Heart className="h-5 w-5" /> {ctaText}
             </Button>
             <Button variant="outline" className="btn-press gap-2 text-base px-7 py-5 border-primary text-primary hover:bg-primary hover:text-primary-foreground" size="lg">
               <Users className="h-5 w-5" /> স্বেচ্ছাসেবক হোন

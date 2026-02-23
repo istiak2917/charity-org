@@ -1,21 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import ScrollReveal from "@/components/ScrollReveal";
 
-const galleryItems = [
-  { title: "শিক্ষা কার্যক্রম", category: "শিক্ষা" },
-  { title: "খাদ্য বিতরণ", category: "পুষ্টি" },
-  { title: "শীতবস্ত্র বিতরণ", category: "সেবা" },
-  { title: "শিশু দিবস", category: "ইভেন্ট" },
-  { title: "বই বিতরণ", category: "শিক্ষা" },
-  { title: "স্বেচ্ছাসেবক প্রশিক্ষণ", category: "সেবা" },
-  { title: "স্বাস্থ্য ক্যাম্প", category: "স্বাস্থ্য" },
-  { title: "পরিবেশ সচেতনতা", category: "ইভেন্ট" },
-];
-
-const heights = ["h-48", "h-64", "h-52", "h-56", "h-60", "h-48", "h-56", "h-52"];
+interface GalleryItem { id: string; title: string; image_url: string; category: string; caption: string; }
 
 const GallerySection = () => {
+  const [items, setItems] = useState<GalleryItem[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase.from("gallery_items").select("*").order("created_at", { ascending: false }).limit(8).then(({ data }) => {
+      if (data) setItems(data);
+    });
+  }, []);
+
+  const heights = ["h-48", "h-64", "h-52", "h-56", "h-60", "h-48", "h-56", "h-52"];
 
   return (
     <section id="gallery" className="py-20 bg-card relative overflow-hidden">
@@ -28,35 +27,26 @@ const GallerySection = () => {
             <p className="text-muted-foreground mt-4">আমাদের কার্যক্রমের কিছু মুহূর্ত</p>
           </div>
         </ScrollReveal>
-
-        {/* Masonry grid */}
         <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-          {galleryItems.map((item, i) => (
-            <ScrollReveal key={i} delay={i * 80}>
+          {items.map((item, i) => (
+            <ScrollReveal key={item.id} delay={i * 80}>
               <div
-                className={`group relative ${heights[i]} rounded-2xl overflow-hidden cursor-pointer break-inside-avoid bg-gradient-to-br from-primary/8 to-accent/8`}
+                className={`group relative ${heights[i % heights.length]} rounded-2xl overflow-hidden cursor-pointer break-inside-avoid`}
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
-                {/* Placeholder content */}
-                <div className="absolute inset-0 flex items-center justify-center text-primary/15 text-5xl font-bold">
-                  📷
-                </div>
-
-                {/* Hover overlay */}
+                <img src={item.image_url} alt={item.title || "Gallery"} className={`w-full h-full object-cover transition-transform duration-500 ${hoveredIndex === i ? "scale-110" : "scale-100"}`} loading="lazy" />
                 <div className={`absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent transition-opacity duration-300 ${hoveredIndex === i ? "opacity-100" : "opacity-0"}`}>
                   <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <span className="text-xs text-primary-foreground/70 bg-primary/50 px-2 py-0.5 rounded-full">{item.category}</span>
-                    <h4 className="text-primary-foreground font-bold mt-1">{item.title}</h4>
+                    {item.category && <span className="text-xs text-primary-foreground/70 bg-primary/50 px-2 py-0.5 rounded-full">{item.category}</span>}
+                    <h4 className="text-primary-foreground font-bold mt-1">{item.title || item.caption}</h4>
                   </div>
                 </div>
-
-                {/* Zoom effect */}
-                <div className={`absolute inset-0 transition-transform duration-500 ${hoveredIndex === i ? "scale-110" : "scale-100"}`} />
               </div>
             </ScrollReveal>
           ))}
         </div>
+        {items.length === 0 && <div className="text-center text-muted-foreground py-8">গ্যালারিতে কোনো ছবি নেই</div>}
       </div>
     </section>
   );

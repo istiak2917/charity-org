@@ -1,33 +1,40 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { Target, Eye, Heart } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 
-const items = [
-  { icon: Heart, title: "আমাদের লক্ষ্য", desc: "প্রতিটি সুবিধাবঞ্চিত শিশুর জীবনে আলো জ্বালানো এবং তাদের মৌলিক অধিকার নিশ্চিত করা।" },
-  { icon: Target, title: "আমাদের মিশন", desc: "শিক্ষা, স্বাস্থ্যসেবা এবং সামাজিক সহায়তার মাধ্যমে শিশুদের ক্ষমতায়ন করা।" },
-  { icon: Eye, title: "আমাদের ভিশন", desc: "এমন একটি সমাজ গড়া যেখানে প্রতিটি শিশু নিরাপদ, শিক্ষিত এবং সুখী।" },
-];
+const icons = [Heart, Target, Eye];
 
 const AboutSection = () => {
+  const [org, setOrg] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.from("organizations").select("description, mission, vision").limit(1).single().then(({ data }) => {
+      if (data) setOrg(data);
+    });
+  }, []);
+
+  const items = [
+    { icon: Heart, title: "আমাদের লক্ষ্য", desc: org?.description || "প্রতিটি সুবিধাবঞ্চিত শিশুর জীবনে আলো জ্বালানো।" },
+    { icon: Target, title: "আমাদের মিশন", desc: org?.mission || "শিক্ষা, স্বাস্থ্যসেবা এবং সামাজিক সহায়তা।" },
+    { icon: Eye, title: "আমাদের ভিশন", desc: org?.vision || "প্রতিটি শিশু নিরাপদ, শিক্ষিত এবং সুখী।" },
+  ];
+
   return (
     <section id="about" className="py-20 bg-card relative overflow-hidden">
-      {/* Decorative shapes */}
       <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary/5 -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-accent/5 translate-y-1/2 -translate-x-1/2" />
-
       <div className="container mx-auto px-4 relative z-10">
         <ScrollReveal>
           <div className="text-center mb-14">
             <span className="text-primary text-sm font-medium tracking-wider uppercase">আমাদের পরিচয়</span>
-            <h2 className="text-3xl md:text-4xl font-bold font-heading text-foreground mt-2 mb-4">
-              আমাদের সম্পর্কে
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading text-foreground mt-2 mb-4">আমাদের সম্পর্কে</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
             <p className="text-muted-foreground max-w-2xl mx-auto mt-4">
-              শিশুফুল একটি অলাভজনক মানবিক সংগঠন যা শিশুদের সামগ্রিক কল্যাণে নিবেদিত।
+              {org?.description || "শিশুফুল একটি অলাভজনক মানবিক সংগঠন যা শিশুদের সামগ্রিক কল্যাণে নিবেদিত।"}
             </p>
           </div>
         </ScrollReveal>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {items.map((item, i) => (
             <ScrollReveal key={item.title} delay={i * 150}>
