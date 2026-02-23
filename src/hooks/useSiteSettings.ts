@@ -10,20 +10,25 @@ export function useSiteSettings() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from("settings").select("key, value");
+    const fetchSettings = async () => {
+      const { data } = await supabase.from("site_settings").select("*");
       if (data) {
         const map: SiteSettings = {};
-        data.forEach((s) => {
-          map[s.key] = typeof s.value === "string"
-            ? s.value.replace(/^"|"$/g, "")
-            : JSON.stringify(s.value).replace(/^"|"$/g, "");
+        data.forEach((s: any) => {
+          // Handle different possible column names
+          const k = s.key || s.setting_key || s.name || "";
+          const v = s.value || s.setting_value || "";
+          if (k) {
+            map[k] = typeof v === "string"
+              ? v.replace(/^"|"$/g, "")
+              : JSON.stringify(v).replace(/^"|"$/g, "");
+          }
         });
         setSettings(map);
       }
       setLoading(false);
     };
-    fetch();
+    fetchSettings();
   }, []);
 
   return { settings, loading };
@@ -34,7 +39,8 @@ export interface HomepageSection {
   section_key: string;
   title: string;
   is_visible: boolean;
-  display_order: number;
+  sort_order?: number;
+  display_order?: number;
   config: any;
 }
 
@@ -43,15 +49,22 @@ export function useHomepageSections() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchSections = async () => {
       const { data } = await supabase
         .from("homepage_sections")
-        .select("*")
-        .order("display_order", { ascending: true });
-      if (data) setSections(data);
+        .select("*");
+      if (data) {
+        // Sort by whatever order column exists, or by id
+        const sorted = [...data].sort((a: any, b: any) => {
+          const aOrder = a.sort_order ?? a.display_order ?? a.order_index ?? 0;
+          const bOrder = b.sort_order ?? b.display_order ?? b.order_index ?? 0;
+          return aOrder - bOrder;
+        });
+        setSections(sorted);
+      }
       setLoading(false);
     };
-    fetch();
+    fetchSections();
   }, []);
 
   return { sections, loading };

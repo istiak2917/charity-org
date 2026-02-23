@@ -14,7 +14,7 @@ interface TeamMember {
 }
 
 const TeamManager = () => {
-  const { items, loading, create, update, remove } = useAdminCrud<TeamMember>({ table: "team_members", orderBy: "display_order", ascending: true });
+  const { items, loading, create, update, remove } = useAdminCrud<TeamMember>({ table: "team_members", orderBy: "created_at", ascending: true });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<TeamMember | null>(null);
   const [form, setForm] = useState({ name: "", role: "", image_url: "", bio: "", facebook: "", twitter: "", linkedin: "", display_order: 0 });

@@ -25,19 +25,20 @@ const HeroSection = () => {
   const [ctaText, setCtaText] = useState("অনুদান করুন");
 
   useEffect(() => {
-    supabase.from("settings").select("key, value").in("key", ["hero_headline", "hero_subtext", "cta_button_text"]).then(({ data }) => {
+    supabase.from("site_settings").select("*").then(({ data }) => {
       if (data) {
-        data.forEach((s) => {
-          const val = typeof s.value === "string" ? s.value.replace(/^"|"$/g, "") : JSON.stringify(s.value).replace(/^"|"$/g, "");
-          if (s.key === "hero_headline") setHeadline(val);
-          if (s.key === "hero_subtext") setSubtext(val);
-          if (s.key === "cta_button_text") setCtaText(val);
+        data.forEach((s: any) => {
+          const k = s.key || s.setting_key || s.name || "";
+          const raw = s.value || s.setting_value || "";
+          const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
+          if (k === "hero_headline") setHeadline(val);
+          if (k === "hero_subtext") setSubtext(val);
+          if (k === "cta_button_text") setCtaText(val);
         });
       }
     });
   }, []);
 
-  // Split headline at space near middle for two-line display
   const headlineParts = headline.split(" ");
   const mid = Math.ceil(headlineParts.length / 2);
   const line1 = headlineParts.slice(0, mid).join(" ");

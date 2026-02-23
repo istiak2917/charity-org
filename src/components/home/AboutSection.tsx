@@ -9,7 +9,7 @@ const AboutSection = () => {
   const [org, setOrg] = useState<any>(null);
 
   useEffect(() => {
-    supabase.from("organizations").select("description, mission, vision").limit(1).single().then(({ data }) => {
+    supabase.from("organizations").select("*").limit(1).maybeSingle().then(({ data }) => {
       if (data) setOrg(data);
     });
   }, []);

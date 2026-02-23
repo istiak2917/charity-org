@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ScrollReveal from "@/components/ScrollReveal";
 
-interface TeamMember { id: string; name: string; role: string; image_url: string; bio: string; display_order: number; }
+interface TeamMember { id: string; name: string; role: string; image_url: string; bio: string; }
 
 const TeamSection = () => {
   const [members, setMembers] = useState<TeamMember[]>([]);
 
   useEffect(() => {
-    supabase.from("team_members").select("*").order("display_order", { ascending: true }).then(({ data }) => {
+    supabase.from("team_members").select("*").order("created_at", { ascending: true }).then(({ data }) => {
       if (data) setMembers(data);
     });
   }, []);

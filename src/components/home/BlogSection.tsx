@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ScrollReveal from "@/components/ScrollReveal";
 
-interface BlogPost { id: string; title: string; excerpt: string; image_url: string; created_at: string; }
+interface BlogPost { id: string; title: string; excerpt: string; image_url?: string; created_at: string; }
 
 const BlogSection = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    supabase.from("blog_posts").select("id, title, excerpt, image_url, created_at").eq("is_published", true).order("created_at", { ascending: false }).limit(3).then(({ data }) => {
+    supabase.from("blog_posts").select("*").eq("is_published", true).order("created_at", { ascending: false }).limit(3).then(({ data }) => {
       if (data) setPosts(data);
     });
   }, []);
