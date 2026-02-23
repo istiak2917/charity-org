@@ -10,6 +10,7 @@ import {
   ScrollText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import NotificationCenter from "@/components/NotificationCenter";
 
 const ICON_MAP: Record<string, any> = {
   LayoutDashboard, FolderOpen, Heart, Megaphone, DollarSign, Users, ClipboardList,
@@ -141,6 +142,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <Link to="/" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">
             <ChevronLeft className="h-4 w-4" /> সাইটে ফিরুন
           </Link>
+          <div className="ml-auto">
+            <NotificationCenter />
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
       </div>
