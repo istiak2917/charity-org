@@ -2,65 +2,109 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import HeroSection from "@/components/home/HeroSection";
-import AboutSection from "@/components/home/AboutSection";
-import ProjectsSection from "@/components/home/ProjectsSection";
-import ImpactSection from "@/components/home/ImpactSection";
-import DonationSection from "@/components/home/DonationSection";
-import EventsSection from "@/components/home/EventsSection";
-import TeamSection from "@/components/home/TeamSection";
-import BlogSection from "@/components/home/BlogSection";
-import GallerySection from "@/components/home/GallerySection";
-import TransparencySection from "@/components/home/TransparencySection";
-import ContactSection from "@/components/home/ContactSection";
-import type { HomepageSection } from "@/hooks/useSiteSettings";
-
-const sectionComponents: Record<string, React.ComponentType> = {
-  hero: HeroSection,
-  about: AboutSection,
-  projects: ProjectsSection,
-  impact: ImpactSection,
-  donation: DonationSection,
-  events: EventsSection,
-  team: TeamSection,
-  blog: BlogSection,
-  gallery: GallerySection,
-  transparency: TransparencySection,
-  contact: ContactSection,
-};
+import { BlockRenderer } from "@/components/builder/BlockRenderer";
+import type { HomepageSection, SectionBlock, SectionConfig } from "@/types/homepage-builder";
 
 const Index = () => {
   const [sections, setSections] = useState<HomepageSection[]>([]);
+  const [blocks, setBlocks] = useState<Record<string, SectionBlock[]>>({});
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("homepage_sections")
-      .select("*")
-      .order("position", { ascending: true })
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setSections(data);
-        }
-        setLoaded(true);
-      });
+    const load = async () => {
+      // Fetch sections
+      const { data: sData } = await supabase
+        .from("homepage_sections")
+        .select("*")
+        .order("position", { ascending: true });
+
+      if (sData) {
+        setSections(sData.filter((s: any) => s.is_visible === true));
+      }
+
+      // Fetch blocks
+      const { data: bData } = await supabase
+        .from("section_blocks")
+        .select("*")
+        .order("position", { ascending: true });
+
+      if (bData) {
+        const grouped: Record<string, SectionBlock[]> = {};
+        bData.forEach((b: any) => {
+          const sid = b.section_id;
+          if (!grouped[sid]) grouped[sid] = [];
+          grouped[sid].push(b as SectionBlock);
+        });
+        setBlocks(grouped);
+      }
+
+      setLoaded(true);
+    };
+    load();
   }, []);
 
-  const visibleSections = loaded && sections.length > 0
-    ? sections.filter((s: any) => s.is_visible === true)
-    : Object.keys(sectionComponents).map((key) => ({
-        id: key, section_key: key, title: key, is_visible: true,
-      }));
+  if (!loaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        {visibleSections.map((s) => {
-          const Component = sectionComponents[s.section_key];
-          if (!Component) return null;
-          return <Component key={s.section_key} />;
+        {sections.map((section) => {
+          const sectionBlocks = blocks[section.id] || [];
+          const config: SectionConfig = section.content || {};
+
+          // Build section styles
+          const style: React.CSSProperties = {};
+          if (config.background?.color) style.backgroundColor = config.background.color;
+          if (config.background?.gradient) style.background = config.background.gradient;
+          if (config.background?.imageUrl) {
+            style.backgroundImage = `url(${config.background.imageUrl})`;
+            style.backgroundSize = "cover";
+            style.backgroundPosition = "center";
+          }
+          if (config.spacing?.paddingTop) style.paddingTop = config.spacing.paddingTop;
+          if (config.spacing?.paddingBottom) style.paddingBottom = config.spacing.paddingBottom;
+          if (config.spacing?.paddingLeft) style.paddingLeft = config.spacing.paddingLeft;
+          if (config.spacing?.paddingRight) style.paddingRight = config.spacing.paddingRight;
+          if (config.spacing?.marginTop) style.marginTop = config.spacing.marginTop;
+          if (config.spacing?.marginBottom) style.marginBottom = config.spacing.marginBottom;
+
+          const className = [
+            config.advanced?.customClass || "",
+          ].filter(Boolean).join(" ");
+
+          return (
+            <section
+              key={section.id}
+              id={config.advanced?.customId || section.section_key}
+              className={className}
+              style={style}
+            >
+              {sectionBlocks.length > 0 ? (
+                sectionBlocks
+                  .filter((b: any) => b.is_visible !== false)
+                  .map((block) => (
+                    <BlockRenderer key={block.id} block={block} />
+                  ))
+              ) : (
+                // Fallback: section has no blocks, show nothing
+                null
+              )}
+            </section>
+          );
         })}
+
+        {sections.length === 0 && (
+          <div className="py-20 text-center text-muted-foreground">
+            <p>হোমপেজ সেকশন কনফিগার করা হয়নি।</p>
+          </div>
+        )}
       </main>
       <Footer />
     </div>
