@@ -40,6 +40,7 @@ import DonorCRM from "./pages/admin/DonorCRM";
 import BeneficiaryManager from "./pages/admin/BeneficiaryManager";
 import InventoryManager from "./pages/admin/InventoryManager";
 import BranchManager from "./pages/admin/BranchManager";
+import AnalyticsEngine from "./pages/admin/AnalyticsEngine";
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
 import VolunteerPanel from "./pages/member/VolunteerPanel";
@@ -100,6 +101,7 @@ const App = () => (
             <Route path="/admin/beneficiaries" element={<AdminRoute><BeneficiaryManager /></AdminRoute>} />
             <Route path="/admin/inventory" element={<AdminRoute><InventoryManager /></AdminRoute>} />
             <Route path="/admin/branches" element={<AdminRoute><BranchManager /></AdminRoute>} />
+            <Route path="/admin/analytics" element={<AdminRoute><AnalyticsEngine /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />
