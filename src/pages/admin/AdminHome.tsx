@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import {
   FolderOpen, Heart, Users, Calendar, Newspaper,
-  TrendingUp
+  TrendingUp, DollarSign, TrendingDown
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -13,6 +13,8 @@ interface StatCard { icon: any; label: string; count: number; color: string; lin
 const AdminHome = () => {
   const [stats, setStats] = useState<StatCard[]>([]);
   const [totalDonations, setTotalDonations] = useState(0);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpenses, setTotalExpenses] = useState(0);
   const [monthlyDonations, setMonthlyDonations] = useState<{ month: string; amount: number }[]>([]);
   const [projectStats, setProjectStats] = useState({ total: 0, active: 0, completed: 0 });
   const [loading, setLoading] = useState(true);
@@ -27,34 +29,35 @@ const AdminHome = () => {
         { table: "blog_posts", icon: Newspaper, label: "ব্লগ পোস্ট", color: "text-orange-500", link: "/admin/blog" },
       ];
 
-      const results = await Promise.all(
-        tables.map(async (t) => {
+      const [results, donRes, incRes, expRes, projRes] = await Promise.all([
+        Promise.all(tables.map(async (t) => {
           const { count } = await supabase.from(t.table).select("*", { count: "exact", head: true });
           return { icon: t.icon, label: t.label, count: count || 0, color: t.color, link: t.link };
-        })
-      );
+        })),
+        supabase.from("donations").select("amount, created_at"),
+        supabase.from("income_records").select("amount"),
+        supabase.from("expenses").select("amount"),
+        supabase.from("projects").select("status"),
+      ]);
 
-      // Donations data
-      const { data: donData } = await supabase.from("donations").select("amount, created_at");
-      const total = (donData || []).reduce((s, d) => s + (d.amount || 0), 0);
+      // Donations
+      const donData = donRes.data || [];
+      const total = donData.reduce((s, d) => s + (d.amount || 0), 0);
       setTotalDonations(total);
+
+      // Income & Expenses
+      setTotalIncome((incRes.data || []).reduce((s, i) => s + (i.amount || 0), 0));
+      setTotalExpenses((expRes.data || []).reduce((s, e) => s + (e.amount || 0), 0));
 
       // Monthly donations
       const months = ["জানু", "ফেব্রু", "মার্চ", "এপ্রি", "মে", "জুন", "জুলা", "আগ", "সেপ্টে", "অক্টো", "নভে", "ডিসে"];
       const monthMap: Record<number, number> = {};
-      (donData || []).forEach((d: any) => {
-        const m = new Date(d.created_at).getMonth();
-        monthMap[m] = (monthMap[m] || 0) + (d.amount || 0);
-      });
-      setMonthlyDonations(
-        Object.entries(monthMap).map(([m, amount]) => ({ month: months[Number(m)], amount }))
-      );
+      donData.forEach((d: any) => { const m = new Date(d.created_at).getMonth(); monthMap[m] = (monthMap[m] || 0) + (d.amount || 0); });
+      setMonthlyDonations(Object.entries(monthMap).map(([m, amount]) => ({ month: months[Number(m)], amount })));
 
-      // Project stats
-      const { data: projData } = await supabase.from("projects").select("status");
-      const active = (projData || []).filter(p => p.status === "active").length;
-      const completed = (projData || []).filter(p => p.status === "completed").length;
-      setProjectStats({ total: (projData || []).length, active, completed });
+      // Projects
+      const projData = projRes.data || [];
+      setProjectStats({ total: projData.length, active: projData.filter(p => p.status === "active").length, completed: projData.filter(p => p.status === "completed").length });
 
       setStats(results);
       setLoading(false);
@@ -68,13 +71,23 @@ const AdminHome = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold font-heading">ড্যাশবোর্ড</h1>
 
-      {/* Total Donations */}
-      <Card className="p-4 flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-muted text-primary"><TrendingUp className="h-6 w-6" /></div>
-        <div><div className="text-2xl font-bold">৳{totalDonations.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট অনুদান</div></div>
-      </Card>
+      {/* Finance Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="p-4 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-muted text-primary"><TrendingUp className="h-6 w-6" /></div>
+          <div><div className="text-2xl font-bold">৳{totalDonations.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট অনুদান</div></div>
+        </Card>
+        <Card className="p-4 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-muted text-green-600"><DollarSign className="h-6 w-6" /></div>
+          <div><div className="text-2xl font-bold">৳{totalIncome.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট আয়</div></div>
+        </Card>
+        <Card className="p-4 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-muted text-red-500"><TrendingDown className="h-6 w-6" /></div>
+          <div><div className="text-2xl font-bold">৳{totalExpenses.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট ব্যয়</div></div>
+        </Card>
+      </div>
 
-      {/* Monthly Donations Chart */}
+      {/* Monthly Chart */}
       <Card className="p-4">
         <h3 className="font-semibold mb-4">মাসভিত্তিক অনুদান</h3>
         {monthlyDonations.length > 0 ? (
@@ -93,18 +106,9 @@ const AdminHome = () => {
 
       {/* Project Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold">{projectStats.total}</div>
-          <div className="text-sm text-muted-foreground">মোট প্রকল্প</div>
-        </Card>
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">{projectStats.active}</div>
-          <div className="text-sm text-muted-foreground">সক্রিয় প্রকল্প</div>
-        </Card>
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">{projectStats.completed}</div>
-          <div className="text-sm text-muted-foreground">সম্পন্ন প্রকল্প</div>
-        </Card>
+        <Card className="p-4 text-center"><div className="text-2xl font-bold">{projectStats.total}</div><div className="text-sm text-muted-foreground">মোট প্রকল্প</div></Card>
+        <Card className="p-4 text-center"><div className="text-2xl font-bold text-green-600">{projectStats.active}</div><div className="text-sm text-muted-foreground">সক্রিয় প্রকল্প</div></Card>
+        <Card className="p-4 text-center"><div className="text-2xl font-bold text-blue-600">{projectStats.completed}</div><div className="text-sm text-muted-foreground">সম্পন্ন প্রকল্প</div></Card>
       </div>
 
       {/* Module Stats */}
@@ -112,13 +116,8 @@ const AdminHome = () => {
         {stats.map((s) => (
           <Link to={s.link} key={s.label}>
             <Card className="p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
-              <div className={`p-3 rounded-xl bg-muted ${s.color}`}>
-                <s.icon className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{s.count}</div>
-                <div className="text-sm text-muted-foreground">{s.label}</div>
-              </div>
+              <div className={`p-3 rounded-xl bg-muted ${s.color}`}><s.icon className="h-6 w-6" /></div>
+              <div><div className="text-2xl font-bold">{s.count}</div><div className="text-sm text-muted-foreground">{s.label}</div></div>
             </Card>
           </Link>
         ))}

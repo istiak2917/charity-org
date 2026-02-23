@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard, Heart, Users, Calendar, Menu, X, LogOut, ChevronLeft,
   Newspaper, FolderOpen, Shield, Settings, DollarSign, Image, Droplets,
-  ClipboardList, MessageSquare, UserCircle, FileText, Megaphone
+  ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +24,7 @@ const menuItems = [
   { icon: FileText, label: "রিপোর্ট", path: "/admin/reports" },
   { icon: MessageSquare, label: "মেসেজ", path: "/admin/messages" },
   { icon: Shield, label: "রোল", path: "/admin/roles" },
+  { icon: Home, label: "হোমপেজ", path: "/admin/homepage" },
   { icon: Settings, label: "সেটিংস", path: "/admin/settings" },
 ];
 
