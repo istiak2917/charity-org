@@ -24,7 +24,15 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       requiredRole === "super_admin" ? isSuperAdmin :
       requiredRole === "admin" ? isAdmin :
       hasRole(requiredRole);
-    if (!allowed) return <Navigate to="/" replace />;
+    if (!allowed) return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-destructive">অ্যাক্সেস অস্বীকৃত</h1>
+          <p className="text-muted-foreground">এই পৃষ্ঠায় প্রবেশের অনুমতি নেই।</p>
+          <a href="/" className="text-primary hover:underline">হোমপেজে ফিরুন</a>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
