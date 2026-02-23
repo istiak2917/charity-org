@@ -4,19 +4,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 const ContactSection = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const subject = formData.get("subject") as string;
+    const message = formData.get("message") as string;
+
+    const { error } = await supabase.from("contact_messages").insert({
+      name,
+      email,
+      subject,
+      message,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      toast({ title: "বার্তা পাঠানো যায়নি", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "বার্তা পাঠানো হয়েছে!", description: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।" });
-      setLoading(false);
       (e.target as HTMLFormElement).reset();
-    }, 500);
+    }
   };
 
   return (
@@ -28,10 +46,10 @@ const ContactSection = () => {
             <p className="text-muted-foreground">আমাদের সাথে যোগাযোগ করতে নিচের ফর্মটি পূরণ করুন</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4 bg-card p-8 rounded-xl border border-border">
-            <Input placeholder="আপনার নাম" required />
-            <Input type="email" placeholder="ইমেইল" required />
-            <Input placeholder="বিষয়" required />
-            <Textarea placeholder="আপনার বার্তা লিখুন..." rows={4} required />
+            <Input name="name" placeholder="আপনার নাম" required />
+            <Input name="email" type="email" placeholder="ইমেইল" required />
+            <Input name="subject" placeholder="বিষয়" required />
+            <Textarea name="message" placeholder="আপনার বার্তা লিখুন..." rows={4} required />
             <Button type="submit" className="btn-press w-full gap-2" disabled={loading}>
               <Send className="h-4 w-4" /> {loading ? "পাঠানো হচ্ছে..." : "বার্তা পাঠান"}
             </Button>
