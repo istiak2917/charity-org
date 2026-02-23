@@ -8,13 +8,21 @@ import heroBooks from "@/assets/hero-books.jpg";
 import heroChildrenPlaying from "@/assets/hero-children-playing.jpg";
 import heroDonation from "@/assets/hero-donation.jpg";
 
-const collageImages = [
-  { src: heroChild1, alt: "হাসিখুশি শিশু", rotate: "-5deg", top: "5%", left: "2%", w: "140px", h: "180px", delay: "0.3s", float: "hero-float-1" },
-  { src: heroEducation, alt: "শিক্ষা কার্যক্রম", rotate: "4deg", top: "0%", right: "3%", w: "170px", h: "130px", delay: "0.4s", float: "hero-float-2" },
-  { src: heroVolunteer, alt: "স্বেচ্ছাসেবক", rotate: "-3deg", bottom: "8%", left: "0%", w: "150px", h: "170px", delay: "0.5s", float: "hero-float-3" },
-  { src: heroBooks, alt: "বই ও শিক্ষা", rotate: "5deg", bottom: "5%", right: "2%", w: "160px", h: "130px", delay: "0.6s", float: "hero-float-1" },
-  { src: heroChildrenPlaying, alt: "শিশুদের খেলা", rotate: "-4deg", top: "40%", left: "-5%", w: "130px", h: "160px", delay: "0.7s", float: "hero-float-2" },
-  { src: heroDonation, alt: "সাহায্য বিতরণ", rotate: "3deg", top: "35%", right: "-3%", w: "145px", h: "140px", delay: "0.8s", float: "hero-float-3" },
+// Positions as percentages from center of container
+// Using transform translate to position from center point
+interface CollageImage {
+  src: string; alt: string; rotate: number; top: string;
+  left?: string; right?: string; w: number; h: number;
+  delay: number; float: string;
+}
+
+const collageImages: CollageImage[] = [
+  { src: heroChild1, alt: "হাসিখুশি শিশু", rotate: -5, top: "2%", left: "6%", w: 130, h: 160, delay: 0.3, float: "hero-float-1" },
+  { src: heroEducation, alt: "শিক্ষা কার্যক্রম", rotate: 4, top: "0%", right: "6%", w: 150, h: 120, delay: 0.4, float: "hero-float-2" },
+  { src: heroVolunteer, alt: "স্বেচ্ছাসেবক", rotate: -3, top: "34%", left: "0%", w: 125, h: 150, delay: 0.5, float: "hero-float-3" },
+  { src: heroBooks, alt: "বই ও শিক্ষা", rotate: 5, top: "32%", right: "0%", w: 140, h: 115, delay: 0.6, float: "hero-float-1" },
+  { src: heroChildrenPlaying, alt: "শিশুদের খেলা", rotate: -4, top: "70%", left: "6%", w: 120, h: 140, delay: 0.7, float: "hero-float-2" },
+  { src: heroDonation, alt: "সাহায্য বিতরণ", rotate: 3, top: "72%", right: "3%", w: 135, h: 125, delay: 0.8, float: "hero-float-3" },
 ];
 
 const HeroSection = () => {
@@ -51,10 +59,10 @@ const HeroSection = () => {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Text block */}
-          <div className="space-y-6 hero-text-entrance">
+      <div className="container mx-auto px-4 py-16 md:py-20 relative z-10">
+        <div className="flex flex-col items-center text-center gap-6 md:gap-8">
+          {/* Text block — always on top */}
+          <div className="space-y-5 hero-text-entrance max-w-2xl">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.4rem] font-bold leading-tight text-foreground font-heading hero-headline">
               <span className="hero-shimmer-text inline-block">
                 প্রতিটি শিশুর মুখে হাসি
@@ -62,10 +70,10 @@ const HeroSection = () => {
               <br />
               <span className="text-primary">আমাদের অঙ্গীকার</span>
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-lg hero-subtext">
+            <p className="text-lg text-muted-foreground leading-relaxed hero-subtext">
               আমরা একসাথে গড়ি মানবতার সুন্দর ভবিষ্যৎ।
             </p>
-            <div className="flex flex-wrap gap-3 hero-cta-entrance">
+            <div className="flex flex-wrap justify-center gap-3 hero-cta-entrance">
               <Button className="btn-press gap-2 text-base px-7 py-5 bg-gradient-to-r from-primary to-accent shadow-lg hero-btn-glow" size="lg">
                 <Heart className="h-5 w-5" /> অনুদান করুন
               </Button>
@@ -78,10 +86,10 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Collage */}
-          <div className="relative flex items-center justify-center min-h-[420px] md:min-h-[500px]">
+          {/* Collage — below text */}
+          <div className="relative hero-collage-container mx-auto">
             {/* Center circle with logo */}
-            <div className="hero-center-circle">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 hero-center-circle z-10">
               <div className="hero-center-glow" />
               <img
                 src={logo}
@@ -97,14 +105,13 @@ const HeroSection = () => {
                 key={i}
                 className={`absolute hero-collage-card ${img.float}`}
                 style={{
-                  transform: `rotate(${img.rotate})`,
+                  transform: `rotate(${img.rotate}deg)`,
                   top: img.top,
                   left: img.left,
                   right: img.right,
-                  bottom: img.bottom,
-                  width: img.w,
-                  height: img.h,
-                  animationDelay: img.delay,
+                  width: `${img.w}px`,
+                  height: `${img.h}px`,
+                  animationDelay: `${img.delay}s`,
                 } as React.CSSProperties}
               >
                 <img

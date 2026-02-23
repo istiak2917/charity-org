@@ -244,6 +244,24 @@
   opacity: 1;
 }
 
+/* Collage container — compact on all screens */
+.hero-collage-container {
+  width: 320px;
+  height: 420px;
+}
+@media (min-width: 768px) {
+  .hero-collage-container {
+    width: 500px;
+    height: 520px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-collage-container {
+    width: 560px;
+    height: 540px;
+  }
+}
+
 /* Center circle */
 .hero-center-circle {
   position: relative;
