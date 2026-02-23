@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, DollarSign, Download, FileText, ExternalLink } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Download, FileText, ExternalLink, Code } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import CountUp from "@/components/CountUp";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -110,6 +110,45 @@ const TransparencyPage = () => {
             <h1 className="text-3xl md:text-4xl font-bold font-heading mt-2 mb-4">স্বচ্ছতা প্রতিবেদন</h1>
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
             <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">আমাদের সকল আর্থিক কার্যক্রম সম্পূর্ণ স্বচ্ছ। এখানে আমাদের আয়, ব্যয় এবং তহবিল ব্যবহারের বিস্তারিত দেখুন।</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4 gap-2"
+              onClick={() => {
+                const publicData = {
+                  generated_at: new Date().toISOString(),
+                  summary: {
+                    total_donations: totalDonations,
+                    total_income: totalIncome,
+                    total_expenses: totalExpenses,
+                    net_balance: netBalance,
+                  },
+                  expense_categories: categoryData,
+                  monthly_overview: monthlyData,
+                  active_campaigns: campaigns.map(c => ({
+                    title: c.title,
+                    target: c.target_amount,
+                    raised: c.raised,
+                    progress_pct: c.target_amount > 0 ? Math.round((c.raised / c.target_amount) * 100) : 0,
+                  })),
+                  projects: projects.filter((p: any) => p.budget > 0).map((p: any) => ({
+                    title: p.title,
+                    budget: p.budget,
+                    spent: p.spent || 0,
+                    status: p.status,
+                  })),
+                };
+                const blob = new Blob([JSON.stringify(publicData, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `transparency-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              <Code className="h-3 w-3" /> JSON ডাউনলোড
+            </Button>
           </div>
         </ScrollReveal>
 
