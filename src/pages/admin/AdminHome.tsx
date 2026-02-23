@@ -3,19 +3,16 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import {
-  FolderOpen, Heart, Users, Calendar, Newspaper, Image, MessageSquare,
-  UserCircle, Droplets, DollarSign, ClipboardList, TrendingUp, TrendingDown
+  FolderOpen, Heart, Users, Calendar, Newspaper,
+  TrendingUp
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface StatCard { icon: any; label: string; count: number; color: string; link: string; }
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--accent))", "#6366f1", "#06b6d4", "#f59e0b"];
-
 const AdminHome = () => {
   const [stats, setStats] = useState<StatCard[]>([]);
-  const [financials, setFinancials] = useState({ totalDonations: 0, totalExpenses: 0, totalIncome: 0 });
-  const [expenseByCategory, setExpenseByCategory] = useState<{ name: string; value: number }[]>([]);
+  const [totalDonations, setTotalDonations] = useState(0);
   const [monthlyDonations, setMonthlyDonations] = useState<{ month: string; amount: number }[]>([]);
   const [projectStats, setProjectStats] = useState({ total: 0, active: 0, completed: 0 });
   const [loading, setLoading] = useState(true);
@@ -28,10 +25,6 @@ const AdminHome = () => {
         { table: "volunteers", icon: Users, label: "স্বেচ্ছাসেবক", color: "text-green-500", link: "/admin/volunteers" },
         { table: "events", icon: Calendar, label: "ইভেন্ট", color: "text-purple-500", link: "/admin/events" },
         { table: "blog_posts", icon: Newspaper, label: "ব্লগ পোস্ট", color: "text-orange-500", link: "/admin/blog" },
-        { table: "gallery_items", icon: Image, label: "গ্যালারি", color: "text-cyan-500", link: "/admin/gallery" },
-        { table: "contact_messages", icon: MessageSquare, label: "মেসেজ", color: "text-yellow-500", link: "/admin/messages" },
-        { table: "team_members", icon: UserCircle, label: "টিম মেম্বার", color: "text-red-500", link: "/admin/team" },
-        { table: "blood_donors", icon: Droplets, label: "রক্তদাতা", color: "text-red-600", link: "/admin/blood" },
       ];
 
       const results = await Promise.all(
@@ -41,28 +34,15 @@ const AdminHome = () => {
         })
       );
 
-      // Financial summary
-      const [donRes, expRes, incRes] = await Promise.all([
-        supabase.from("donations").select("amount, created_at"),
-        supabase.from("expenses").select("amount, category"),
-        supabase.from("income_records").select("amount"),
-      ]);
-      const totalDonations = (donRes.data || []).reduce((s, d) => s + (d.amount || 0), 0);
-      const totalExpenses = (expRes.data || []).reduce((s, e) => s + (e.amount || 0), 0);
-      const totalIncome = (incRes.data || []).reduce((s, i) => s + (i.amount || 0), 0);
+      // Donations data
+      const { data: donData } = await supabase.from("donations").select("amount, created_at");
+      const total = (donData || []).reduce((s, d) => s + (d.amount || 0), 0);
+      setTotalDonations(total);
 
-      // Expense by category
-      const catMap: Record<string, number> = {};
-      (expRes.data || []).forEach((e: any) => {
-        const cat = e.category || "অন্যান্য";
-        catMap[cat] = (catMap[cat] || 0) + (e.amount || 0);
-      });
-      setExpenseByCategory(Object.entries(catMap).map(([name, value]) => ({ name, value })));
-
-      // Monthly donations (last 6 months approximation)
+      // Monthly donations
       const months = ["জানু", "ফেব্রু", "মার্চ", "এপ্রি", "মে", "জুন", "জুলা", "আগ", "সেপ্টে", "অক্টো", "নভে", "ডিসে"];
       const monthMap: Record<number, number> = {};
-      (donRes.data || []).forEach((d: any) => {
+      (donData || []).forEach((d: any) => {
         const m = new Date(d.created_at).getMonth();
         monthMap[m] = (monthMap[m] || 0) + (d.amount || 0);
       });
@@ -76,7 +56,6 @@ const AdminHome = () => {
       const completed = (projData || []).filter(p => p.status === "completed").length;
       setProjectStats({ total: (projData || []).length, active, completed });
 
-      setFinancials({ totalDonations, totalExpenses, totalIncome });
       setStats(results);
       setLoading(false);
     };
@@ -89,60 +68,28 @@ const AdminHome = () => {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold font-heading">ড্যাশবোর্ড</h1>
 
-      {/* Financial Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-muted text-primary"><TrendingUp className="h-6 w-6" /></div>
-          <div><div className="text-2xl font-bold">৳{financials.totalDonations.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট অনুদান</div></div>
-        </Card>
-        <Card className="p-4 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-muted text-destructive"><TrendingDown className="h-6 w-6" /></div>
-          <div><div className="text-2xl font-bold">৳{financials.totalExpenses.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট ব্যয়</div></div>
-        </Card>
-        <Card className="p-4 flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-muted text-primary"><DollarSign className="h-6 w-6" /></div>
-          <div><div className="text-2xl font-bold">৳{financials.totalIncome.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট আয়</div></div>
-        </Card>
-      </div>
+      {/* Total Donations */}
+      <Card className="p-4 flex items-center gap-4">
+        <div className="p-3 rounded-xl bg-muted text-primary"><TrendingUp className="h-6 w-6" /></div>
+        <div><div className="text-2xl font-bold">৳{totalDonations.toLocaleString("bn-BD")}</div><div className="text-sm text-muted-foreground">মোট অনুদান</div></div>
+      </Card>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Monthly Donations Bar Chart */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-4">মাসভিত্তিক অনুদান</h3>
-          {monthlyDonations.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={monthlyDonations}>
-                <XAxis dataKey="month" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip formatter={(v: number) => [`৳${v.toLocaleString("bn-BD")}`, "অনুদান"]} />
-                <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">ডেটা নেই</div>
-          )}
-        </Card>
-
-        {/* Expense Pie Chart */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-4">ব্যয় বিভাগভিত্তিক</h3>
-          {expenseByCategory.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie data={expenseByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                  {expenseByCategory.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v: number) => `৳${v.toLocaleString("bn-BD")}`} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">ডেটা নেই</div>
-          )}
-        </Card>
-      </div>
+      {/* Monthly Donations Chart */}
+      <Card className="p-4">
+        <h3 className="font-semibold mb-4">মাসভিত্তিক অনুদান</h3>
+        {monthlyDonations.length > 0 ? (
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={monthlyDonations}>
+              <XAxis dataKey="month" fontSize={12} />
+              <YAxis fontSize={12} />
+              <Tooltip formatter={(v: number) => [`৳${v.toLocaleString("bn-BD")}`, "অনুদান"]} />
+              <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[250px] flex items-center justify-center text-muted-foreground text-sm">ডেটা নেই</div>
+        )}
+      </Card>
 
       {/* Project Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -161,7 +108,7 @@ const AdminHome = () => {
       </div>
 
       {/* Module Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {stats.map((s) => (
           <Link to={s.link} key={s.label}>
             <Card className="p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">

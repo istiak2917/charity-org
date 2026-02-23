@@ -10,22 +10,11 @@ import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "ড্যাশবোর্ড", path: "/admin" },
-  { icon: Home, label: "হোমপেজ বিল্ডার", path: "/admin/homepage" },
-  { icon: Palette, label: "থিম কাস্টমাইজার", path: "/admin/theme" },
   { icon: FolderOpen, label: "প্রকল্প", path: "/admin/projects" },
   { icon: Heart, label: "অনুদান", path: "/admin/donations" },
-  { icon: DollarSign, label: "আয়-ব্যয়", path: "/admin/expenses" },
   { icon: Users, label: "স্বেচ্ছাসেবক", path: "/admin/volunteers" },
-  { icon: ClipboardList, label: "টাস্ক", path: "/admin/tasks" },
   { icon: Calendar, label: "ইভেন্ট", path: "/admin/events" },
-  { icon: Droplets, label: "রক্তদান", path: "/admin/blood" },
-  { icon: UserCircle, label: "টিম", path: "/admin/team" },
   { icon: Newspaper, label: "ব্লগ", path: "/admin/blog" },
-  { icon: Image, label: "গ্যালারি", path: "/admin/gallery" },
-  { icon: FileText, label: "রিপোর্ট", path: "/admin/reports" },
-  { icon: MessageSquare, label: "মেসেজ", path: "/admin/messages" },
-  { icon: Shield, label: "রোল ম্যানেজার", path: "/admin/roles" },
-  { icon: ToggleLeft, label: "ফিচার টগল", path: "/admin/features" },
   { icon: Settings, label: "সেটিংস", path: "/admin/settings" },
 ];
 
