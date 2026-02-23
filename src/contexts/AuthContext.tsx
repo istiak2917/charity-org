@@ -27,13 +27,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchRoles = async (userId: string) => {
+  const fetchRoles = async (userId: string, email?: string) => {
     const { data } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
-    if (data) {
+    if (data && data.length > 0) {
       setRoles(data.map((r) => r.role as UserRole));
+    } else if (email === "istiakahmed.2163@gmail.com") {
+      // Fallback: if no roles found for super admin email, assign super_admin client-side
+      // and attempt to insert the role
+      setRoles(["super_admin"]);
+      supabase.from("user_roles").insert({ user_id: userId, role: "super_admin" }).then(() => {});
+      supabase.from("profiles").upsert({ id: userId, full_name: "Istiak Ahmed" }).then(() => {});
     }
   };
 
@@ -43,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchRoles(session.user.id), 0);
+          setTimeout(() => fetchRoles(session.user.id, session.user.email), 0);
         } else {
           setRoles([]);
         }
@@ -55,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchRoles(session.user.id);
+        fetchRoles(session.user.id, session.user.email);
       }
       setLoading(false);
     });
