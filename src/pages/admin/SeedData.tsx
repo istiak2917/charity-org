@@ -25,7 +25,7 @@ async function safeInsert(table: string, item: Record<string, any>, maxRetries =
 async function safeUpsert(table: string, item: Record<string, any>, onConflict: string, maxRetries = 10): Promise<{ error: any }> {
   let payload = { ...item };
   for (let i = 0; i < maxRetries; i++) {
-    const { error } = await supabase.from(table).upsert(payload, { onConflict });
+    const { error } = await supabase.from(table).upsert(payload, { onConflict, ignoreDuplicates: true });
     if (!error) return { error: null };
     if (error.message) {
       const colMatch = error.message.match(/Could not find the '(\w+)' column/);
