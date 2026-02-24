@@ -301,7 +301,7 @@ const SeedData = () => {
         { k: "map_embed_url", v: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.0!2d90.3654!3d23.8103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDQ4JzM3LjEiTiA5MMKwMjEnNTUuNCJF!5e0!3m2!1sen!2sbd!4v1234567890" },
         { k: "map_url", v: "https://maps.google.com/?q=23.8103,90.3654" },
       ];
-      // Try multiple table + column combinations
+      // Try multiple table + column combinations (use insert-based approach to avoid onConflict issues)
       const tableCandidates = [
         { table: "site_settings", keyCol: "key", valCol: "value" },
         { table: "site_settings", keyCol: "setting_key", valCol: "setting_value" },
@@ -311,19 +311,20 @@ const SeedData = () => {
       ];
       let settingsOk = false;
       for (const { table, keyCol, valCol } of tableCandidates) {
-        const { error: testErr } = await supabase.from(table).upsert(
-          { [keyCol]: settingsData[0].k, [valCol]: settingsData[0].v }, { onConflict: keyCol }
-        );
-        if (!testErr) {
-          for (let i = 1; i < settingsData.length; i++) {
-            await supabase.from(table).upsert(
-              { [keyCol]: settingsData[i].k, [valCol]: settingsData[i].v }, { onConflict: keyCol }
-            );
-          }
-          settingsOk = true;
-          addResult("site_settings", true, `সেটিংস তৈরি হয়েছে (${table} টেবিলে ${settingsData.length}টি)`);
-          break;
+        // First test: try selecting to confirm table+columns exist
+        const { error: selectErr } = await supabase.from(table).select(`${keyCol},${valCol}`).limit(1);
+        if (selectErr) continue;
+        // Table exists with these columns — now upsert each setting
+        let allOk = true;
+        for (const s of settingsData) {
+          const { error } = await supabase.from(table).upsert(
+            { [keyCol]: s.k, [valCol]: s.v }, { onConflict: keyCol }
+          );
+          if (error) { allOk = false; }
         }
+        settingsOk = true;
+        addResult("site_settings", allOk, allOk ? `সেটিংস তৈরি হয়েছে (${table}.${keyCol} এ ${settingsData.length}টি)` : `কিছু সেটিংস সেভ হয়নি`);
+        break;
       }
       if (!settingsOk) addResult("site_settings", false, "সেটিংস টেবিল বা কলাম মিলেনি (site_settings/settings উভয়ই চেষ্টা হয়েছে)");
     } catch (e: any) { addResult("site_settings", false, e.message); }
@@ -374,21 +375,25 @@ const SeedData = () => {
       } catch (e: any) { addResult("pages", false, e.message); }
     }
 
-    // 21. Branches (try with created_by, fallback without it for RLS)
+    // 21. Branches (check existence first, then insert)
     try {
-      const branchData: Record<string, any> = {
-        name: "মিরপুর শাখা", address: "বাড়ি #১২, রোড #৫, মিরপুর-১০, ঢাকা",
-        phone: "01712-345678", email: "mirpur@shishuful.org", manager_name: "রাকিব হাসান",
-        is_active: true, established_date: "2020-01-01", created_by: user?.id,
-      };
-      let { error } = await safeUpsert("branches", branchData, "name");
-      if (error && error.message?.includes("row-level security")) {
-        // Try without created_by
-        delete branchData.created_by;
-        const res = await safeUpsert("branches", branchData, "name");
-        error = res.error;
+      const { data: existingBranch } = await supabase.from("branches").select("id").eq("name", "মিরপুর শাখা").limit(1);
+      if (existingBranch && existingBranch.length > 0) {
+        addResult("branches", true, "আগে থেকেই আছে");
+      } else {
+        const branchData: Record<string, any> = {
+          name: "মিরপুর শাখা", address: "বাড়ি #১২, রোড #৫, মিরপুর-১০, ঢাকা",
+          phone: "01712-345678", email: "mirpur@shishuful.org", manager_name: "রাকিব হাসান",
+          is_active: true, established_date: "2020-01-01", created_by: user?.id,
+        };
+        let { error } = await safeInsert("branches", branchData);
+        if (error && error.message?.includes("row-level security")) {
+          delete branchData.created_by;
+          const res = await safeInsert("branches", branchData);
+          error = res.error;
+        }
+        addResult("branches", !error, error?.message || "শাখা তৈরি হয়েছে");
       }
-      addResult("branches", !error, error?.message || "শাখা তৈরি হয়েছে");
     } catch (e: any) { addResult("branches", false, e.message); }
 
     setRunning(false);
