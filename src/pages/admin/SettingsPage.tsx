@@ -141,6 +141,25 @@ const SettingsPage = () => {
               </div>
             </div>
           </Card>
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold text-lg">সোশ্যাল মিডিয়া লিংক</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1"><label className="text-sm font-medium">Facebook</label><Input placeholder="https://facebook.com/..." value={settings.social_facebook || ""} onChange={(e) => updateSetting("social_facebook", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">YouTube</label><Input placeholder="https://youtube.com/..." value={settings.social_youtube || ""} onChange={(e) => updateSetting("social_youtube", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">Instagram</label><Input placeholder="https://instagram.com/..." value={settings.social_instagram || ""} onChange={(e) => updateSetting("social_instagram", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">Twitter/X</label><Input placeholder="https://twitter.com/..." value={settings.social_twitter || ""} onChange={(e) => updateSetting("social_twitter", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">LinkedIn</label><Input placeholder="https://linkedin.com/..." value={settings.social_linkedin || ""} onChange={(e) => updateSetting("social_linkedin", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">WhatsApp</label><Input placeholder="https://wa.me/880..." value={settings.social_whatsapp || ""} onChange={(e) => updateSetting("social_whatsapp", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">Telegram</label><Input placeholder="https://t.me/..." value={settings.social_telegram || ""} onChange={(e) => updateSetting("social_telegram", e.target.value)} /></div>
+            </div>
+          </Card>
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold text-lg">গুগল ম্যাপ</h2>
+            <div className="space-y-3">
+              <div className="space-y-1"><label className="text-sm font-medium">ম্যাপ এম্বেড URL</label><Input placeholder="https://www.google.com/maps/embed?..." value={settings.map_embed_url || ""} onChange={(e) => updateSetting("map_embed_url", e.target.value)} /></div>
+              <div className="space-y-1"><label className="text-sm font-medium">ম্যাপ লিংক (বাহ্যিক)</label><Input placeholder="https://maps.google.com/?q=..." value={settings.map_url || ""} onChange={(e) => updateSetting("map_url", e.target.value)} /></div>
+            </div>
+          </Card>
           <Button onClick={saveSiteSettings} className="gap-2"><Save className="h-4 w-4" /> সেটিংস সেভ করুন</Button>
         </TabsContent>
 

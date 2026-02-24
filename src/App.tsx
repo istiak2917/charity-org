@@ -29,6 +29,7 @@ import VolunteersPage from "./pages/public/VolunteersPage";
 import DonationsPage from "./pages/public/DonationsPage";
 import InventoryPage from "./pages/public/InventoryPage";
 import PolicyPage from "./pages/public/PolicyPage";
+import MapPage from "./pages/public/MapPage";
 
 // Admin pages
 import AdminHome from "./pages/admin/AdminHome";
@@ -57,6 +58,7 @@ import BranchManager from "./pages/admin/BranchManager";
 import AnalyticsEngine from "./pages/admin/AnalyticsEngine";
 import BackupManager from "./pages/admin/BackupManager";
 import PageManager from "./pages/admin/PageManager";
+import NewsletterManager from "./pages/admin/NewsletterManager";
 
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
@@ -105,6 +107,7 @@ const App = () => (
             <Route path="/donations" element={<DonationsPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/page/:slug" element={<PolicyPage />} />
+            <Route path="/map" element={<MapPage />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
@@ -133,6 +136,7 @@ const App = () => (
             <Route path="/admin/analytics" element={<AdminRoute><AnalyticsEngine /></AdminRoute>} />
             <Route path="/admin/backup" element={<AdminRoute><BackupManager /></AdminRoute>} />
             <Route path="/admin/pages" element={<AdminRoute><PageManager /></AdminRoute>} />
+            <Route path="/admin/newsletter" element={<AdminRoute><NewsletterManager /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />

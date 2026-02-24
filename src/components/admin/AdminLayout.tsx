@@ -52,6 +52,7 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { module: "dashboard", label: "অ্যানালিটিক্স", path: "/admin/analytics", icon: "BarChart3" },
   { module: "dashboard", label: "ব্যাকআপ", path: "/admin/backup", icon: "HardDrive" },
   { module: "dashboard", label: "পেজ ম্যানেজার", path: "/admin/pages", icon: "BookOpen" },
+  { module: "dashboard", label: "নিউজলেটার", path: "/admin/newsletter", icon: "MessageSquare" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
