@@ -282,7 +282,7 @@ const SeedData = () => {
       addResult("contact_messages", !error, error?.message || "মেসেজ তৈরি হয়েছে");
     } catch (e: any) { addResult("contact_messages", false, e.message); }
 
-    // 18. Site Settings
+    // 18. Site Settings (try both 'site_settings' and 'settings' tables)
     try {
       const settingsData = [
         { k: "hero_headline", v: "প্রতিটি শিশুর হাসি আমাদের অনুপ্রেরণা" },
@@ -301,28 +301,31 @@ const SeedData = () => {
         { k: "map_embed_url", v: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.0!2d90.3654!3d23.8103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDQ4JzM3LjEiTiA5MMKwMjEnNTUuNCJF!5e0!3m2!1sen!2sbd!4v1234567890" },
         { k: "map_url", v: "https://maps.google.com/?q=23.8103,90.3654" },
       ];
-      const colCandidates = [
-        { keyCol: "key", valCol: "value" },
-        { keyCol: "setting_key", valCol: "setting_value" },
-        { keyCol: "name", valCol: "value" },
+      // Try multiple table + column combinations
+      const tableCandidates = [
+        { table: "site_settings", keyCol: "key", valCol: "value" },
+        { table: "site_settings", keyCol: "setting_key", valCol: "setting_value" },
+        { table: "site_settings", keyCol: "name", valCol: "value" },
+        { table: "settings", keyCol: "key", valCol: "value" },
+        { table: "settings", keyCol: "setting_key", valCol: "setting_value" },
       ];
       let settingsOk = false;
-      for (const { keyCol, valCol } of colCandidates) {
-        const { error: testErr } = await supabase.from("site_settings").upsert(
+      for (const { table, keyCol, valCol } of tableCandidates) {
+        const { error: testErr } = await supabase.from(table).upsert(
           { [keyCol]: settingsData[0].k, [valCol]: settingsData[0].v }, { onConflict: keyCol }
         );
         if (!testErr) {
           for (let i = 1; i < settingsData.length; i++) {
-            await supabase.from("site_settings").upsert(
+            await supabase.from(table).upsert(
               { [keyCol]: settingsData[i].k, [valCol]: settingsData[i].v }, { onConflict: keyCol }
             );
           }
           settingsOk = true;
-          addResult("site_settings", true, `সাইট সেটিংস তৈরি হয়েছে (${settingsData.length}টি)`);
+          addResult("site_settings", true, `সেটিংস তৈরি হয়েছে (${table} টেবিলে ${settingsData.length}টি)`);
           break;
         }
       }
-      if (!settingsOk) addResult("site_settings", false, "সেটিংস টেবিলের কলাম মিলেনি");
+      if (!settingsOk) addResult("site_settings", false, "সেটিংস টেবিল বা কলাম মিলেনি (site_settings/settings উভয়ই চেষ্টা হয়েছে)");
     } catch (e: any) { addResult("site_settings", false, e.message); }
 
     // 19. Homepage Sections
@@ -366,18 +369,25 @@ const SeedData = () => {
     ];
     for (const p of policyPages) {
       try {
-        const { error } = await safeInsert("pages", p);
+        const { error } = await safeUpsert("pages", p, "slug");
         addResult("pages", !error, error?.message || `পেজ: ${p.title}`);
       } catch (e: any) { addResult("pages", false, e.message); }
     }
 
-    // 21. Branches
+    // 21. Branches (try with created_by, fallback without it for RLS)
     try {
-      const { error } = await safeInsert("branches", {
+      const branchData: Record<string, any> = {
         name: "মিরপুর শাখা", address: "বাড়ি #১২, রোড #৫, মিরপুর-১০, ঢাকা",
         phone: "01712-345678", email: "mirpur@shishuful.org", manager_name: "রাকিব হাসান",
         is_active: true, established_date: "2020-01-01", created_by: user?.id,
-      });
+      };
+      let { error } = await safeUpsert("branches", branchData, "name");
+      if (error && error.message?.includes("row-level security")) {
+        // Try without created_by
+        delete branchData.created_by;
+        const res = await safeUpsert("branches", branchData, "name");
+        error = res.error;
+      }
       addResult("branches", !error, error?.message || "শাখা তৈরি হয়েছে");
     } catch (e: any) { addResult("branches", false, e.message); }
 
