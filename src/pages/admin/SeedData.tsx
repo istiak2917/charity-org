@@ -144,9 +144,9 @@ const SeedData = () => {
 
     // 7. Volunteers (3 items)
     const volunteersData = [
-      { full_name: "ফাতেমা আক্তার", email: "fatema@example.com", phone: "01812-345678", skills: "শিক্ষকতা, ইভেন্ট পরিচালনা, গ্রাফিক ডিজাইন", status: "approved", hours_logged: 120, address: "মিরপুর, ঢাকা", blood_group: "A+", occupation: "শিক্ষিকা", emergency_contact: "01912-111111" },
-      { full_name: "রাকিব হাসান", email: "rakib@example.com", phone: "01912-456789", skills: "ওয়েব ডেভেলপমেন্ট, ফটোগ্রাফি", status: "approved", hours_logged: 85, address: "ধানমন্ডি, ঢাকা", blood_group: "O+", occupation: "সফটওয়্যার ইঞ্জিনিয়ার", emergency_contact: "01812-222222" },
-      { full_name: "সাদিয়া ইসলাম", email: "sadia@example.com", phone: "01712-567890", skills: "কাউন্সেলিং, সোশ্যাল মিডিয়া, কন্টেন্ট রাইটিং", status: "approved", hours_logged: 200, address: "গুলশান, ঢাকা", blood_group: "B+", occupation: "মনোবিদ", emergency_contact: "01712-333333" },
+      { full_name: "ফাতেমা আক্তার", email: "fatema@example.com", phone: "01812-345678", skills: ["শিক্ষকতা", "ইভেন্ট পরিচালনা", "গ্রাফিক ডিজাইন"], status: "approved", hours_logged: 120, address: "মিরপুর, ঢাকা", blood_group: "A+", occupation: "শিক্ষিকা", emergency_contact: "01912-111111", user_id: user?.id },
+      { full_name: "রাকিব হাসান", email: "rakib@example.com", phone: "01912-456789", skills: ["ওয়েব ডেভেলপমেন্ট", "ফটোগ্রাফি"], status: "approved", hours_logged: 85, address: "ধানমন্ডি, ঢাকা", blood_group: "O+", occupation: "সফটওয়্যার ইঞ্জিনিয়ার", emergency_contact: "01812-222222", user_id: user?.id },
+      { full_name: "সাদিয়া ইসলাম", email: "sadia@example.com", phone: "01712-567890", skills: ["কাউন্সেলিং", "সোশ্যাল মিডিয়া", "কন্টেন্ট রাইটিং"], status: "approved", hours_logged: 200, address: "গুলশান, ঢাকা", blood_group: "B+", occupation: "মনোবিদ", emergency_contact: "01712-333333", user_id: user?.id },
     ];
     for (const v of volunteersData) {
       try {
@@ -209,9 +209,9 @@ const SeedData = () => {
 
     // 12. Beneficiaries
     const beneficiariesData = [
-      { name: "আরিফ হোসেন", age: 10, gender: "male", guardian_name: "করিম হোসেন", guardian_phone: "01712-111222", address: "মিরপুর-১০, ঢাকা", education_level: "৩য় শ্রেণি", status: "active", notes: "মেধাবী ছাত্র, নিয়মিত উপস্থিত" },
-      { name: "সুমাইয়া আক্তার", age: 8, gender: "female", guardian_name: "জাহানারা বেগম", guardian_phone: "01812-333444", address: "কল্যাণপুর, ঢাকা", education_level: "১ম শ্রেণি", status: "active", notes: "অঙ্কে ভালো" },
-      { name: "তামিম ইকবাল", age: 12, gender: "male", guardian_name: "ইকবাল হোসেন", guardian_phone: "01912-555666", address: "মোহাম্মদপুর, ঢাকা", education_level: "৫ম শ্রেণি", status: "active", notes: "বিজ্ঞান অলিম্পিয়াডে অংশগ্রহণকারী" },
+      { name: "আরিফ হোসেন", age: 10, gender: "male", guardian_name: "করিম হোসেন", guardian_phone: "01712-111222", address: "মিরপুর-১০, ঢাকা", education_level: "৩য় শ্রেণি", status: "active", notes: "মেধাবী ছাত্র, নিয়মিত উপস্থিত", created_by: user?.id },
+      { name: "সুমাইয়া আক্তার", age: 8, gender: "female", guardian_name: "জাহানারা বেগম", guardian_phone: "01812-333444", address: "কল্যাণপুর, ঢাকা", education_level: "১ম শ্রেণি", status: "active", notes: "অঙ্কে ভালো", created_by: user?.id },
+      { name: "তামিম ইকবাল", age: 12, gender: "male", guardian_name: "ইকবাল হোসেন", guardian_phone: "01912-555666", address: "মোহাম্মদপুর, ঢাকা", education_level: "৫ম শ্রেণি", status: "active", notes: "বিজ্ঞান অলিম্পিয়াডে অংশগ্রহণকারী", created_by: user?.id },
     ];
     for (const ben of beneficiariesData) {
       try {
@@ -222,9 +222,9 @@ const SeedData = () => {
 
     // 13. Inventory Items
     const inventoryData = [
-      { name: "নোটবুক (২০০ পৃষ্ঠা)", category: "শিক্ষা উপকরণ", quantity: 500, unit: "পিস", min_stock: 100, location: "মূল গুদাম", unit_price: 45, description: "শিক্ষার্থীদের জন্য নোটবুক" },
-      { name: "বলপেন (নীল)", category: "শিক্ষা উপকরণ", quantity: 1000, unit: "পিস", min_stock: 200, location: "মূল গুদাম", unit_price: 15, description: "শিক্ষার্থীদের জন্য বলপেন" },
-      { name: "শীতের কম্বল", category: "ত্রাণ সামগ্রী", quantity: 200, unit: "পিস", min_stock: 50, location: "শাখা গুদাম", unit_price: 350, description: "শীতবস্ত্র বিতরণের জন্য" },
+      { name: "নোটবুক (২০০ পৃষ্ঠা)", category: "শিক্ষা উপকরণ", quantity: 500, unit: "পিস", min_stock: 100, location: "মূল গুদাম", unit_price: 45, description: "শিক্ষার্থীদের জন্য নোটবুক", created_by: user?.id },
+      { name: "বলপেন (নীল)", category: "শিক্ষা উপকরণ", quantity: 1000, unit: "পিস", min_stock: 200, location: "মূল গুদাম", unit_price: 15, description: "শিক্ষার্থীদের জন্য বলপেন", created_by: user?.id },
+      { name: "শীতের কম্বল", category: "ত্রাণ সামগ্রী", quantity: 200, unit: "পিস", min_stock: 50, location: "শাখা গুদাম", unit_price: 350, description: "শীতবস্ত্র বিতরণের জন্য", created_by: user?.id },
     ];
     for (const inv of inventoryData) {
       try {
@@ -277,7 +277,7 @@ const SeedData = () => {
       const { error } = await safeInsert("contact_messages", {
         name: "করিম সাহেব", email: "karim@example.com", subject: "অনুদান সম্পর্কে জানতে চাই",
         message: "আসসালামু আলাইকুম। আমি আপনাদের সংগঠনে মাসিক অনুদান দিতে চাই। বিকাশ ও নগদ দুটোই কি গ্রহণ করেন? বিস্তারিত জানালে উপকৃত হবো।",
-        is_read: false, phone: "01712-999888",
+        is_read: false, phone: "01712-999888", user_id: user?.id,
       });
       addResult("contact_messages", !error, error?.message || "মেসেজ তৈরি হয়েছে");
     } catch (e: any) { addResult("contact_messages", false, e.message); }
@@ -376,7 +376,7 @@ const SeedData = () => {
       const { error } = await safeInsert("branches", {
         name: "মিরপুর শাখা", address: "বাড়ি #১২, রোড #৫, মিরপুর-১০, ঢাকা",
         phone: "01712-345678", email: "mirpur@shishuful.org", manager_name: "রাকিব হাসান",
-        is_active: true, established_date: "2020-01-01",
+        is_active: true, established_date: "2020-01-01", created_by: user?.id,
       });
       addResult("branches", !error, error?.message || "শাখা তৈরি হয়েছে");
     } catch (e: any) { addResult("branches", false, e.message); }
