@@ -282,43 +282,27 @@ const SeedData = () => {
       addResult("contact_messages", !error, error?.message || "মেসেজ তৈরি হয়েছে");
     } catch (e: any) { addResult("contact_messages", false, e.message); }
 
-    // 18. Site Settings — UPSERT into public.site_settings only
+    // 18. Site Settings — UPSERT into public.site_settings (setting_key / setting_value)
     try {
-      const settingsData = [
-        { k: "hero_headline", v: "প্রতিটি শিশুর হাসি আমাদের অনুপ্রেরণা" },
-        { k: "hero_subtext", v: "সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও সামাজিক উন্নয়নে আমরা কাজ করি" },
-        { k: "cta_button_text", v: "আমাদের সাথে যুক্ত হোন" },
-        { k: "footer_text", v: "© ২০২৬ শিশুফুল ফাউন্ডেশন। সর্বস্বত্ব সংরক্ষিত।" },
-        { k: "payment_bkash", v: "01712-345678 (পার্সোনাল)" },
-        { k: "payment_nagad", v: "01812-345678" },
-        { k: "social_facebook", v: "https://facebook.com/shishuful" },
-        { k: "social_youtube", v: "https://youtube.com/@shishuful" },
-        { k: "social_instagram", v: "https://instagram.com/shishuful" },
-        { k: "social_twitter", v: "https://twitter.com/shishuful" },
-        { k: "social_linkedin", v: "https://linkedin.com/company/shishuful" },
-        { k: "social_whatsapp", v: "https://wa.me/8801712345678" },
-        { k: "social_telegram", v: "https://t.me/shishuful" },
-        { k: "map_embed_url", v: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.0!2d90.3654!3d23.8103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDQ4JzM3LjEiTiA5MMKwMjEnNTUuNCJF!5e0!3m2!1sen!2sbd!4v1234567890" },
-        { k: "map_url", v: "https://maps.google.com/?q=23.8103,90.3654" },
+      const settingsRows = [
+        { setting_key: "hero_headline", setting_value: JSON.stringify("প্রতিটি শিশুর হাসি আমাদের অনুপ্রেরণা") },
+        { setting_key: "hero_subtext", setting_value: JSON.stringify("সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও সামাজিক উন্নয়নে আমরা কাজ করি") },
+        { setting_key: "cta_button_text", setting_value: JSON.stringify("আমাদের সাথে যুক্ত হোন") },
+        { setting_key: "footer_text", setting_value: JSON.stringify("© ২০২৬ শিশুফুল ফাউন্ডেশন। সর্বস্বত্ব সংরক্ষিত।") },
+        { setting_key: "payment_bkash", setting_value: JSON.stringify("01712-345678 (পার্সোনাল)") },
+        { setting_key: "payment_nagad", setting_value: JSON.stringify("01812-345678") },
+        { setting_key: "social_facebook", setting_value: JSON.stringify("https://facebook.com/shishuful") },
+        { setting_key: "social_youtube", setting_value: JSON.stringify("https://youtube.com/@shishuful") },
+        { setting_key: "social_instagram", setting_value: JSON.stringify("https://instagram.com/shishuful") },
+        { setting_key: "social_twitter", setting_value: JSON.stringify("https://twitter.com/shishuful") },
+        { setting_key: "social_linkedin", setting_value: JSON.stringify("https://linkedin.com/company/shishuful") },
+        { setting_key: "social_whatsapp", setting_value: JSON.stringify("https://wa.me/8801712345678") },
+        { setting_key: "social_telegram", setting_value: JSON.stringify("https://t.me/shishuful") },
+        { setting_key: "map_embed_url", setting_value: JSON.stringify("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.0!2d90.3654!3d23.8103") },
+        { setting_key: "map_url", setting_value: JSON.stringify("https://maps.google.com/?q=23.8103,90.3654") },
       ];
-      // Auto-detect column names by trying SELECT
-      const colCandidates = [
-        { keyCol: "key", valCol: "value" },
-        { keyCol: "setting_key", valCol: "setting_value" },
-        { keyCol: "name", valCol: "value" },
-      ];
-      let settingsOk = false;
-      for (const { keyCol, valCol } of colCandidates) {
-        const { error: selectErr } = await supabase.from("site_settings").select(`${keyCol},${valCol}`).limit(1);
-        if (selectErr) continue;
-        // Columns confirmed — upsert all settings
-        const rows = settingsData.map(s => ({ [keyCol]: s.k, [valCol]: s.v }));
-        const { error } = await supabase.from("site_settings").upsert(rows, { onConflict: keyCol });
-        settingsOk = true;
-        addResult("site_settings", !error, error?.message || `সেটিংস তৈরি হয়েছে (${settingsData.length}টি)`);
-        break;
-      }
-      if (!settingsOk) addResult("site_settings", false, "site_settings টেবিলের কলাম মিলেনি (key/value, setting_key/setting_value চেষ্টা হয়েছে)");
+      const { error } = await supabase.from("site_settings").upsert(settingsRows, { onConflict: "setting_key" });
+      addResult("site_settings", !error, error?.message || `সেটিংস তৈরি হয়েছে (${settingsRows.length}টি)`);
     } catch (e: any) { addResult("site_settings", false, e.message); }
 
     // 19. Homepage Sections
