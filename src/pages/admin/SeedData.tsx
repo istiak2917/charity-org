@@ -282,7 +282,7 @@ const SeedData = () => {
       addResult("contact_messages", !error, error?.message || "মেসেজ তৈরি হয়েছে");
     } catch (e: any) { addResult("contact_messages", false, e.message); }
 
-    // 18. Site Settings (try both 'site_settings' and 'settings' tables)
+    // 18. Site Settings — UPSERT into public.site_settings only
     try {
       const settingsData = [
         { k: "hero_headline", v: "প্রতিটি শিশুর হাসি আমাদের অনুপ্রেরণা" },
@@ -301,32 +301,24 @@ const SeedData = () => {
         { k: "map_embed_url", v: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.0!2d90.3654!3d23.8103!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDQ4JzM3LjEiTiA5MMKwMjEnNTUuNCJF!5e0!3m2!1sen!2sbd!4v1234567890" },
         { k: "map_url", v: "https://maps.google.com/?q=23.8103,90.3654" },
       ];
-      // Try multiple table + column combinations (use insert-based approach to avoid onConflict issues)
-      const tableCandidates = [
-        { table: "site_settings", keyCol: "key", valCol: "value" },
-        { table: "site_settings", keyCol: "setting_key", valCol: "setting_value" },
-        { table: "site_settings", keyCol: "name", valCol: "value" },
-        { table: "settings", keyCol: "key", valCol: "value" },
-        { table: "settings", keyCol: "setting_key", valCol: "setting_value" },
+      // Auto-detect column names by trying SELECT
+      const colCandidates = [
+        { keyCol: "key", valCol: "value" },
+        { keyCol: "setting_key", valCol: "setting_value" },
+        { keyCol: "name", valCol: "value" },
       ];
       let settingsOk = false;
-      for (const { table, keyCol, valCol } of tableCandidates) {
-        // First test: try selecting to confirm table+columns exist
-        const { error: selectErr } = await supabase.from(table).select(`${keyCol},${valCol}`).limit(1);
+      for (const { keyCol, valCol } of colCandidates) {
+        const { error: selectErr } = await supabase.from("site_settings").select(`${keyCol},${valCol}`).limit(1);
         if (selectErr) continue;
-        // Table exists with these columns — now upsert each setting
-        let allOk = true;
-        for (const s of settingsData) {
-          const { error } = await supabase.from(table).upsert(
-            { [keyCol]: s.k, [valCol]: s.v }, { onConflict: keyCol }
-          );
-          if (error) { allOk = false; }
-        }
+        // Columns confirmed — upsert all settings
+        const rows = settingsData.map(s => ({ [keyCol]: s.k, [valCol]: s.v }));
+        const { error } = await supabase.from("site_settings").upsert(rows, { onConflict: keyCol });
         settingsOk = true;
-        addResult("site_settings", allOk, allOk ? `সেটিংস তৈরি হয়েছে (${table}.${keyCol} এ ${settingsData.length}টি)` : `কিছু সেটিংস সেভ হয়নি`);
+        addResult("site_settings", !error, error?.message || `সেটিংস তৈরি হয়েছে (${settingsData.length}টি)`);
         break;
       }
-      if (!settingsOk) addResult("site_settings", false, "সেটিংস টেবিল বা কলাম মিলেনি (site_settings/settings উভয়ই চেষ্টা হয়েছে)");
+      if (!settingsOk) addResult("site_settings", false, "site_settings টেবিলের কলাম মিলেনি (key/value, setting_key/setting_value চেষ্টা হয়েছে)");
     } catch (e: any) { addResult("site_settings", false, e.message); }
 
     // 19. Homepage Sections
