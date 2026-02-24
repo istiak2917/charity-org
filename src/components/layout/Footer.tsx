@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Heart, Mail, Phone, MapPin, Facebook, Youtube } from "lucide-react";
 import logo from "@/assets/shishuful-logo.jpg";
@@ -6,13 +7,16 @@ import logo from "@/assets/shishuful-logo.jpg";
 const Footer = () => {
   const [org, setOrg] = useState<any>(null);
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [policyPages, setPolicyPages] = useState<any[]>([]);
 
   useEffect(() => {
     Promise.all([
       supabase.from("organizations").select("*").limit(1).maybeSingle(),
       supabase.from("site_settings").select("*"),
-    ]).then(([orgRes, settingsRes]) => {
+      supabase.from("pages").select("id,title,slug").eq("status", "published").eq("type", "policy"),
+    ]).then(([orgRes, settingsRes, pagesRes]) => {
       if (orgRes.data) setOrg(orgRes.data);
+      if (pagesRes.data) setPolicyPages(pagesRes.data);
       if (settingsRes.data) {
         const map: Record<string, string> = {};
         settingsRes.data.forEach((s: any) => {
@@ -53,19 +57,32 @@ const Footer = () => {
               <h4 className="font-bold font-heading mb-4 text-lg">দ্রুত লিংক</h4>
               <ul className="space-y-2.5 text-sm">
                 {[
-                  { label: "আমাদের সম্পর্কে", href: "#about" },
-                  { label: "প্রকল্পসমূহ", href: "#projects" },
-                  { label: "অনুদান দিন", href: "#donate" },
-                  { label: "ইভেন্ট", href: "#events" },
-                  { label: "ব্লগ", href: "#blog" },
+                  { label: "প্রকল্পসমূহ", href: "/projects" },
+                  { label: "অনুদান", href: "/donations" },
+                  { label: "ইভেন্ট", href: "/events" },
+                  { label: "ব্লগ", href: "/blog" },
                   { label: "রক্তদান", href: "/blood" },
                   { label: "গ্যালারি", href: "/gallery" },
                   { label: "রিপোর্ট", href: "/reports" },
+                  { label: "স্বচ্ছতা", href: "/transparency" },
                 ].map((link) => (
                   <li key={link.href}>
-                    <a href={link.href} className="opacity-70 hover:opacity-100 hover:text-primary transition-all duration-200 inline-block hover:translate-x-1">{link.label}</a>
+                    <Link to={link.href} className="opacity-70 hover:opacity-100 hover:text-primary transition-all duration-200 inline-block hover:translate-x-1">{link.label}</Link>
                   </li>
                 ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold font-heading mb-4 text-lg">নীতিমালা</h4>
+              <ul className="space-y-2.5 text-sm">
+                {policyPages.map((p) => (
+                  <li key={p.id}>
+                    <Link to={`/page/${p.slug}`} className="opacity-70 hover:opacity-100 hover:text-primary transition-all duration-200 inline-block hover:translate-x-1">{p.title}</Link>
+                  </li>
+                ))}
+                {policyPages.length === 0 && (
+                  <li className="opacity-50 text-xs">কোনো নীতিমালা প্রকাশিত নেই</li>
+                )}
               </ul>
             </div>
             <div>

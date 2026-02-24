@@ -6,14 +6,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/shishuful-logo.jpg";
 
 const navLinks = [
-  { label: "হোম", href: "#home" },
-  { label: "আমাদের সম্পর্কে", href: "#about" },
-  { label: "প্রকল্প", href: "#projects" },
-  { label: "অনুদান", href: "#donate" },
-  { label: "ইভেন্ট", href: "#events" },
+  { label: "হোম", href: "/" },
+  { label: "প্রকল্প", href: "/projects" },
+  { label: "অনুদান", href: "/donations" },
+  { label: "ইভেন্ট", href: "/events" },
+  { label: "ব্লগ", href: "/blog" },
   { label: "রক্তদান", href: "/blood" },
   { label: "গ্যালারি", href: "/gallery" },
-  { label: "রিপোর্ট", href: "/reports" },
+  { label: "স্বচ্ছতা", href: "/transparency" },
   { label: "যোগাযোগ", href: "#contact" },
 ];
 
@@ -32,10 +32,10 @@ const Navbar = () => {
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) =>
-            link.href.startsWith("/") ? (
-              <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200">{link.label}</Link>
-            ) : (
+            link.href.startsWith("#") ? (
               <a key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200">{link.label}</a>
+            ) : (
+              <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200">{link.label}</Link>
             )
           )}
           {user ? (
@@ -71,10 +71,10 @@ const Navbar = () => {
         <div className="lg:hidden border-t border-border bg-background animate-fade-in">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
             {navLinks.map((link) =>
-              link.href.startsWith("/") ? (
-                <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{link.label}</Link>
-              ) : (
+              link.href.startsWith("#") ? (
                 <a key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{link.label}</a>
+              ) : (
+                <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{link.label}</Link>
               )
             )}
             
