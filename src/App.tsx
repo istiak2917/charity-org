@@ -17,6 +17,20 @@ import GalleryPage from "./pages/GalleryPage";
 import ReportsPage from "./pages/ReportsPage";
 import TransparencyPage from "./pages/TransparencyPage";
 import BloodPage from "./pages/BloodPage";
+
+// Public route pages
+import EventsPage from "./pages/public/EventsPage";
+import EventDetailPage from "./pages/public/EventDetailPage";
+import BlogPage from "./pages/public/BlogPage";
+import BlogDetailPage from "./pages/public/BlogDetailPage";
+import ProjectsPage from "./pages/public/ProjectsPage";
+import ProjectDetailPage from "./pages/public/ProjectDetailPage";
+import VolunteersPage from "./pages/public/VolunteersPage";
+import DonationsPage from "./pages/public/DonationsPage";
+import InventoryPage from "./pages/public/InventoryPage";
+import PolicyPage from "./pages/public/PolicyPage";
+
+// Admin pages
 import AdminHome from "./pages/admin/AdminHome";
 import ProjectManager from "./pages/admin/ProjectManager";
 import DonationManager from "./pages/admin/DonationManager";
@@ -41,6 +55,9 @@ import BeneficiaryManager from "./pages/admin/BeneficiaryManager";
 import InventoryManager from "./pages/admin/InventoryManager";
 import BranchManager from "./pages/admin/BranchManager";
 import AnalyticsEngine from "./pages/admin/AnalyticsEngine";
+import BackupManager from "./pages/admin/BackupManager";
+import PageManager from "./pages/admin/PageManager";
+
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
 import VolunteerPanel from "./pages/member/VolunteerPanel";
@@ -77,6 +94,18 @@ const App = () => (
             <Route path="/transparency" element={<TransparencyPage />} />
             <Route path="/blood" element={<BloodPage />} />
 
+            {/* Public Dynamic Routes */}
+            <Route path="/events" element={<EventsPage />} />
+            <Route path="/events/:slug" element={<EventDetailPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogDetailPage />} />
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/projects/:slug" element={<ProjectDetailPage />} />
+            <Route path="/volunteers" element={<VolunteersPage />} />
+            <Route path="/donations" element={<DonationsPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/page/:slug" element={<PolicyPage />} />
+
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
             <Route path="/admin/projects" element={<AdminRoute><ProjectManager /></AdminRoute>} />
@@ -102,6 +131,8 @@ const App = () => (
             <Route path="/admin/inventory" element={<AdminRoute><InventoryManager /></AdminRoute>} />
             <Route path="/admin/branches" element={<AdminRoute><BranchManager /></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AnalyticsEngine /></AdminRoute>} />
+            <Route path="/admin/backup" element={<AdminRoute><BackupManager /></AdminRoute>} />
+            <Route path="/admin/pages" element={<AdminRoute><PageManager /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />
