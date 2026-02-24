@@ -30,6 +30,7 @@ import DonationsPage from "./pages/public/DonationsPage";
 import InventoryPage from "./pages/public/InventoryPage";
 import PolicyPage from "./pages/public/PolicyPage";
 import MapPage from "./pages/public/MapPage";
+import PublicAPI from "./pages/public/PublicAPI";
 
 // Admin pages
 import AdminHome from "./pages/admin/AdminHome";
@@ -59,6 +60,15 @@ import AnalyticsEngine from "./pages/admin/AnalyticsEngine";
 import BackupManager from "./pages/admin/BackupManager";
 import PageManager from "./pages/admin/PageManager";
 import NewsletterManager from "./pages/admin/NewsletterManager";
+import SponsorshipManager from "./pages/admin/SponsorshipManager";
+import GrantManager from "./pages/admin/GrantManager";
+import EmergencyCampaign from "./pages/admin/EmergencyCampaign";
+import CaseTracker from "./pages/admin/CaseTracker";
+import VolunteerCalendar from "./pages/admin/VolunteerCalendar";
+import AttendanceTracker from "./pages/admin/AttendanceTracker";
+import DocumentVault from "./pages/admin/DocumentVault";
+import ImpactDashboard from "./pages/admin/ImpactDashboard";
+import NotificationQueue from "./pages/admin/NotificationQueue";
 
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
@@ -108,6 +118,7 @@ const App = () => (
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/page/:slug" element={<PolicyPage />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/api" element={<PublicAPI />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
@@ -137,6 +148,15 @@ const App = () => (
             <Route path="/admin/backup" element={<AdminRoute><BackupManager /></AdminRoute>} />
             <Route path="/admin/pages" element={<AdminRoute><PageManager /></AdminRoute>} />
             <Route path="/admin/newsletter" element={<AdminRoute><NewsletterManager /></AdminRoute>} />
+            <Route path="/admin/sponsorships" element={<AdminRoute><SponsorshipManager /></AdminRoute>} />
+            <Route path="/admin/grants" element={<AdminRoute><GrantManager /></AdminRoute>} />
+            <Route path="/admin/emergency" element={<AdminRoute><EmergencyCampaign /></AdminRoute>} />
+            <Route path="/admin/cases" element={<AdminRoute><CaseTracker /></AdminRoute>} />
+            <Route path="/admin/volunteer-calendar" element={<AdminRoute><VolunteerCalendar /></AdminRoute>} />
+            <Route path="/admin/attendance" element={<AdminRoute><AttendanceTracker /></AdminRoute>} />
+            <Route path="/admin/documents" element={<AdminRoute><DocumentVault /></AdminRoute>} />
+            <Route path="/admin/impact" element={<AdminRoute><ImpactDashboard /></AdminRoute>} />
+            <Route path="/admin/notifications" element={<AdminRoute><NotificationQueue /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />

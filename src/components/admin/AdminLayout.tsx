@@ -7,7 +7,9 @@ import {
   LayoutDashboard, Heart, Users, Calendar, Menu, X, LogOut, ChevronLeft,
   Newspaper, FolderOpen, Shield, Settings, DollarSign, Image, Droplets,
   ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database,
-  ScrollText, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen
+  ScrollText, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
+  Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
+  FolderLock, TrendingUp, Bell, Code
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -16,6 +18,8 @@ const ICON_MAP: Record<string, any> = {
   LayoutDashboard, FolderOpen, Heart, Megaphone, DollarSign, Users, ClipboardList,
   Calendar, Droplets, Newspaper, Image, UserCircle, FileText, MessageSquare,
   Shield, Home, ScrollText, Settings, Database, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
+  Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
+  FolderLock, TrendingUp, Bell, Code,
 };
 
 interface MenuItem {
@@ -53,6 +57,15 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { module: "dashboard", label: "ব্যাকআপ", path: "/admin/backup", icon: "HardDrive" },
   { module: "dashboard", label: "পেজ ম্যানেজার", path: "/admin/pages", icon: "BookOpen" },
   { module: "dashboard", label: "নিউজলেটার", path: "/admin/newsletter", icon: "MessageSquare" },
+  { module: "donations", label: "স্পনসরশিপ", path: "/admin/sponsorships", icon: "Sparkles" },
+  { module: "finance", label: "গ্রান্ট", path: "/admin/grants", icon: "Landmark" },
+  { module: "dashboard", label: "জরুরি ক্যাম্পেইন", path: "/admin/emergency", icon: "AlertTriangle" },
+  { module: "projects", label: "কেস ট্র্যাকিং", path: "/admin/cases", icon: "BriefcaseMedical" },
+  { module: "volunteers", label: "ভলান্টিয়ার ক্যালেন্ডার", path: "/admin/volunteer-calendar", icon: "CalendarDays" },
+  { module: "events", label: "উপস্থিতি", path: "/admin/attendance", icon: "ClipboardCheck" },
+  { module: "dashboard", label: "ডকুমেন্ট ভল্ট", path: "/admin/documents", icon: "FolderLock" },
+  { module: "dashboard", label: "ইমপ্যাক্ট", path: "/admin/impact", icon: "TrendingUp" },
+  { module: "dashboard", label: "নোটিফিকেশন", path: "/admin/notifications", icon: "Bell" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
