@@ -86,7 +86,7 @@ const SeedData = () => {
     ];
     for (const p of projectsData) {
       try {
-        const { error } = await safeInsert("projects", p);
+        const { error } = await safeUpsert("projects", p, "slug");
         addResult("projects", !error, error?.message || `প্রকল্প: ${p.title}`);
       } catch (e: any) { addResult("projects", false, e.message); }
     }
@@ -124,7 +124,7 @@ const SeedData = () => {
     ];
     for (const ev of eventsData) {
       try {
-        const { error } = await safeInsert("events", ev);
+        const { error } = await safeUpsert("events", ev, "slug");
         addResult("events", !error, error?.message || `ইভেন্ট: ${ev.title}`);
       } catch (e: any) { addResult("events", false, e.message); }
     }
@@ -137,7 +137,7 @@ const SeedData = () => {
     ];
     for (const b of blogData) {
       try {
-        const { error } = await safeInsert("blog_posts", b);
+        const { error } = await safeUpsert("blog_posts", b, "slug");
         addResult("blog_posts", !error, error?.message || `ব্লগ: ${b.title}`);
       } catch (e: any) { addResult("blog_posts", false, e.message); }
     }
