@@ -1,5 +1,5 @@
 // ==========================================
-// RBAC Permission System
+// RBAC Permission System — Extended
 // ==========================================
 
 export type AppRole =
@@ -33,96 +33,74 @@ export type Module =
   | "homepage"
   | "settings"
   | "seed"
-  | "audit";
+  | "audit"
+  | "sponsorships"
+  | "grants"
+  | "emergency"
+  | "cases"
+  | "documents"
+  | "notifications"
+  | "impact"
+  | "inventory"
+  | "branches"
+  | "analytics"
+  | "newsletter"
+  | "pages";
 
 export type Permission = "view" | "create" | "edit" | "delete";
+
+// Full CRUD shorthand
+const FULL: Permission[] = ["view", "create", "edit", "delete"];
+const VCE: Permission[] = ["view", "create", "edit"];
+const V: Permission[] = ["view"];
 
 // Permission matrix: which roles can do what on which modules
 const PERMISSION_MATRIX: Record<AppRole, Partial<Record<Module, Permission[]>>> = {
   super_admin: {
-    dashboard: ["view", "create", "edit", "delete"],
-    projects: ["view", "create", "edit", "delete"],
-    donations: ["view", "create", "edit", "delete"],
-    campaigns: ["view", "create", "edit", "delete"],
-    finance: ["view", "create", "edit", "delete"],
-    volunteers: ["view", "create", "edit", "delete"],
-    tasks: ["view", "create", "edit", "delete"],
-    events: ["view", "create", "edit", "delete"],
-    blood: ["view", "create", "edit", "delete"],
-    blog: ["view", "create", "edit", "delete"],
-    gallery: ["view", "create", "edit", "delete"],
-    team: ["view", "create", "edit", "delete"],
-    reports: ["view", "create", "edit", "delete"],
-    messages: ["view", "create", "edit", "delete"],
-    roles: ["view", "create", "edit", "delete"],
-    homepage: ["view", "create", "edit", "delete"],
-    settings: ["view", "create", "edit", "delete"],
-    seed: ["view", "create", "edit", "delete"],
-    audit: ["view"],
+    dashboard: FULL, projects: FULL, donations: FULL, campaigns: FULL,
+    finance: FULL, volunteers: FULL, tasks: FULL, events: FULL,
+    blood: FULL, blog: FULL, gallery: FULL, team: FULL,
+    reports: FULL, messages: FULL, roles: FULL, homepage: FULL,
+    settings: FULL, seed: FULL, audit: V,
+    sponsorships: FULL, grants: FULL, emergency: FULL, cases: FULL,
+    documents: FULL, notifications: FULL, impact: V,
+    inventory: FULL, branches: FULL, analytics: V, newsletter: FULL, pages: FULL,
   },
   admin: {
-    dashboard: ["view"],
-    projects: ["view", "create", "edit"],
-    donations: ["view", "create", "edit"],
-    campaigns: ["view", "create", "edit"],
-    finance: ["view"],
-    volunteers: ["view", "create", "edit"],
-    tasks: ["view", "create", "edit"],
-    events: ["view", "create", "edit"],
-    blood: ["view", "create", "edit"],
-    blog: ["view", "create", "edit"],
-    gallery: ["view", "create", "edit"],
-    team: ["view", "create", "edit"],
-    reports: ["view"],
-    messages: ["view", "edit"],
-    roles: ["view"],
-    homepage: ["view", "edit"],
-    settings: ["view", "edit"],
-    audit: ["view"],
+    dashboard: V, projects: VCE, donations: VCE, campaigns: VCE,
+    finance: V, volunteers: VCE, tasks: VCE, events: VCE,
+    blood: VCE, blog: VCE, gallery: VCE, team: VCE,
+    reports: V, messages: ["view", "edit"], roles: V,
+    homepage: ["view", "edit"], settings: ["view", "edit"], audit: V,
+    sponsorships: VCE, grants: VCE, emergency: VCE, cases: VCE,
+    documents: VCE, notifications: VCE, impact: V,
+    inventory: VCE, branches: VCE, analytics: V, newsletter: VCE, pages: VCE,
   },
   finance_manager: {
-    dashboard: ["view"],
-    donations: ["view", "create", "edit"],
-    campaigns: ["view", "create", "edit"],
-    finance: ["view", "create", "edit", "delete"],
-    reports: ["view"],
+    dashboard: V, donations: VCE, campaigns: VCE,
+    finance: FULL, reports: V, grants: FULL, sponsorships: V,
   },
   content_manager: {
-    dashboard: ["view"],
-    blog: ["view", "create", "edit", "delete"],
-    gallery: ["view", "create", "edit", "delete"],
-    events: ["view", "create", "edit"],
-    homepage: ["view", "edit"],
-    team: ["view", "create", "edit"],
+    dashboard: V, blog: FULL, gallery: FULL, events: VCE,
+    homepage: ["view", "edit"], team: VCE, pages: FULL, newsletter: VCE,
   },
   volunteer_manager: {
-    dashboard: ["view"],
-    volunteers: ["view", "create", "edit", "delete"],
-    tasks: ["view", "create", "edit", "delete"],
-    events: ["view"],
+    dashboard: V, volunteers: FULL, tasks: FULL, events: V,
   },
   blood_manager: {
-    dashboard: ["view"],
-    blood: ["view", "create", "edit", "delete"],
+    dashboard: V, blood: FULL,
   },
   editor: {
-    dashboard: ["view"],
-    blog: ["view", "create", "edit"],
-    gallery: ["view", "create", "edit"],
-    events: ["view", "create", "edit"],
+    dashboard: V, blog: VCE, gallery: VCE, events: VCE, pages: VCE,
   },
   viewer: {
-    dashboard: ["view"],
-    projects: ["view"],
-    donations: ["view"],
-    events: ["view"],
-    reports: ["view"],
+    dashboard: V, projects: V, donations: V, events: V, reports: V, impact: V,
   },
   volunteer: {
-    dashboard: ["view"],
+    dashboard: V, tasks: V, events: V,
   },
   member: {
-    dashboard: ["view"],
+    dashboard: V, blood: ["view", "create"], donations: ["view", "create"],
   },
 };
 
@@ -227,6 +205,18 @@ export const MODULE_LABELS: Record<Module, string> = {
   settings: "সেটিংস",
   seed: "ডেমো ডেটা",
   audit: "অডিট লগ",
+  sponsorships: "স্পনসরশিপ",
+  grants: "গ্রান্ট",
+  emergency: "জরুরি ক্যাম্পেইন",
+  cases: "কেস ট্র্যাকিং",
+  documents: "ডকুমেন্ট",
+  notifications: "নোটিফিকেশন",
+  impact: "ইমপ্যাক্ট",
+  inventory: "ইনভেন্টরি",
+  branches: "শাখা",
+  analytics: "অ্যানালিটিক্স",
+  newsletter: "নিউজলেটার",
+  pages: "পেজ",
 };
 
 // Menu items with module mapping
