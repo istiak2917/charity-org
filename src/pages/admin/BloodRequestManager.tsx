@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useAdminCrud } from "@/hooks/useAdminCrud";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -9,16 +9,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Filter, AlertTriangle, MapPin, Phone, Droplets, Users, Heart } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Trash2, Filter, AlertTriangle, MapPin, Phone, Droplets, Users, Heart, CheckCircle, XCircle, Bell } from "lucide-react";
 
 interface BloodRequest {
   id: string; patient_name: string; blood_group: string; required_date: string;
   location: string; contact: string; status: string; urgency?: string;
-  hospital?: string; bags_needed?: number; notes?: string; [key: string]: any;
+  hospital?: string; bags_needed?: number; notes?: string; verified?: boolean;
+  verified_at?: string; requested_by?: string; [key: string]: any;
 }
 interface BloodDonor {
   id: string; full_name: string; blood_group: string; phone: string;
-  location?: string; is_available?: boolean; last_donated?: string; [key: string]: any;
+  location?: string; is_available?: boolean; last_donated?: string; show_phone?: boolean; [key: string]: any;
 }
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -30,10 +32,18 @@ const URGENCY_OPTIONS = [
 const STATUS_OPTIONS = [
   { value: "pending", label: "মুলতুবি" },
   { value: "approved", label: "অনুমোদিত" },
+  { value: "rejected", label: "প্রত্যাখ্যাত" },
   { value: "matched", label: "ম্যাচড" },
   { value: "fulfilled", label: "পূরণ" },
   { value: "cancelled", label: "বাতিল" },
 ];
+
+const COMPATIBLE_GROUPS: Record<string, string[]> = {
+  "A+": ["A+", "A-", "O+", "O-"], "A-": ["A-", "O-"],
+  "B+": ["B+", "B-", "O+", "O-"], "B-": ["B-", "O-"],
+  "AB+": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], "AB-": ["A-", "B-", "AB-", "O-"],
+  "O+": ["O+", "O-"], "O-": ["O-"],
+};
 
 const BloodRequestManager = () => {
   const requests = useAdminCrud<BloodRequest>({ table: "blood_requests" });
@@ -47,10 +57,11 @@ const BloodRequestManager = () => {
   const [filterGroup, setFilterGroup] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
   const [matchDialog, setMatchDialog] = useState<BloodRequest | null>(null);
+  const { toast } = useToast();
 
   const handleReqSubmit = async () => {
     if (!reqForm.patient_name || !reqForm.blood_group) return;
-    const payload: any = { ...reqForm };
+    const payload: any = { ...reqForm, verified: false };
     if (!payload.urgency) delete payload.urgency;
     if (!payload.hospital) delete payload.hospital;
     if (!payload.bags_needed) delete payload.bags_needed;
@@ -58,6 +69,43 @@ const BloodRequestManager = () => {
     await requests.create(payload);
     setReqOpen(false);
     setReqForm({ patient_name: "", blood_group: "", required_date: "", location: "", contact: "", status: "pending", urgency: "normal", hospital: "", bags_needed: 1, notes: "" });
+  };
+
+  // APPROVE: set status=approved, verified=true, verified_at, then notify matching donors
+  const approveRequest = async (req: BloodRequest) => {
+    const updatePayload: any = { status: "approved", verified: true, verified_at: new Date().toISOString() };
+    await requests.update(req.id, updatePayload);
+
+    // Find matching donors and send notifications
+    const validGroups = COMPATIBLE_GROUPS[req.blood_group] || [req.blood_group];
+    const matchingDonors = donors.items.filter(d => validGroups.includes(d.blood_group) && d.is_available !== false);
+
+    if (matchingDonors.length > 0) {
+      const notifications = matchingDonors.map(d => ({
+        channel: d.phone ? "sms" : "email",
+        recipient_phone: d.phone || null,
+        subject: `জরুরি রক্তের অনুরোধ: ${req.blood_group}`,
+        message: `প্রিয় ${d.full_name}, ${req.patient_name}-এর জন্য ${req.blood_group} রক্ত প্রয়োজন। হাসপাতাল: ${req.hospital || "—"}, স্থান: ${req.location || "—"}। যোগাযোগ: ${req.contact || "—"}`,
+        status: "pending",
+      }));
+
+      // Batch insert notifications (best-effort)
+      try {
+        await supabase.from("notification_queue").insert(notifications);
+      } catch { /* best-effort */ }
+
+      toast({
+        title: "অনুমোদিত ✓",
+        description: `${matchingDonors.length} জন সামঞ্জস্যপূর্ণ ডোনারকে নোটিফিকেশন পাঠানো হয়েছে।`,
+      });
+    } else {
+      toast({ title: "অনুমোদিত ✓", description: "কোনো সামঞ্জস্যপূর্ণ ডোনার পাওয়া যায়নি।" });
+    }
+  };
+
+  const rejectRequest = async (req: BloodRequest) => {
+    await requests.update(req.id, { status: "rejected", verified: false } as any);
+    toast({ title: "প্রত্যাখ্যাত", description: "অনুরোধটি প্রত্যাখ্যান করা হয়েছে।" });
   };
 
   const toggleDonorAvailability = async (d: BloodDonor) => {
@@ -72,21 +120,15 @@ const BloodRequestManager = () => {
     });
   }, [requests.items, filterGroup, filterUrgency]);
 
-  // Matching donors for a request
   const matchedDonors = useMemo(() => {
     if (!matchDialog) return [];
-    const compatible: Record<string, string[]> = {
-      "A+": ["A+", "A-", "O+", "O-"], "A-": ["A-", "O-"],
-      "B+": ["B+", "B-", "O+", "O-"], "B-": ["B-", "O-"],
-      "AB+": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], "AB-": ["A-", "B-", "AB-", "O-"],
-      "O+": ["O+", "O-"], "O-": ["O-"],
-    };
-    const validGroups = compatible[matchDialog.blood_group] || [matchDialog.blood_group];
+    const validGroups = COMPATIBLE_GROUPS[matchDialog.blood_group] || [matchDialog.blood_group];
     return donors.items.filter(d => validGroups.includes(d.blood_group) && d.is_available !== false);
   }, [matchDialog, donors.items]);
 
-  // Stats
   const urgentCount = requests.items.filter(r => (r.urgency === "critical" || r.urgency === "urgent") && r.status === "pending").length;
+  const pendingCount = requests.items.filter(r => r.status === "pending").length;
+
   const groupStats = useMemo(() => {
     const map: Record<string, number> = {};
     donors.items.filter(d => d.is_available !== false).forEach(d => { map[d.blood_group] = (map[d.blood_group] || 0) + 1; });
@@ -97,13 +139,22 @@ const BloodRequestManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Emergency Banner */}
+      {/* Pending Approval Banner */}
+      {pendingCount > 0 && (
+        <Card className="p-4 bg-amber-50/50 border-amber-300/50 dark:bg-amber-900/10 flex items-center gap-3">
+          <Bell className="h-6 w-6 text-amber-600 animate-pulse" />
+          <div>
+            <div className="font-bold text-amber-700 dark:text-amber-400">{pendingCount}টি অনুরোধ অনুমোদনের অপেক্ষায়!</div>
+            <div className="text-sm text-muted-foreground">অনুগ্রহ করে পর্যালোচনা করুন এবং অনুমোদন/প্রত্যাখ্যান করুন</div>
+          </div>
+        </Card>
+      )}
+
       {urgentCount > 0 && (
         <Card className="p-4 bg-destructive/10 border-destructive/30 flex items-center gap-3">
           <AlertTriangle className="h-6 w-6 text-destructive animate-pulse" />
           <div>
             <div className="font-bold text-destructive">{urgentCount}টি জরুরি রক্তের অনুরোধ অপেক্ষমান!</div>
-            <div className="text-sm text-muted-foreground">অনুগ্রহ করে দ্রুত পদক্ষেপ নিন</div>
           </div>
         </Card>
       )}
@@ -111,14 +162,14 @@ const BloodRequestManager = () => {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold font-heading">রক্তদান ম্যানেজার</h1>
         <Dialog open={reqOpen} onOpenChange={setReqOpen}>
-          <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" /> নতুন অনুরোধ</Button></DialogTrigger>
+          <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" /> নতুন অনুরোধ (অ্যাডমিন)</Button></DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>নতুন রক্তের অনুরোধ</DialogTitle></DialogHeader>
             <div className="space-y-3">
-              <Input placeholder="রোগীর নাম" value={reqForm.patient_name} onChange={(e) => setReqForm({ ...reqForm, patient_name: e.target.value })} />
+              <Input placeholder="রোগীর নাম *" value={reqForm.patient_name} onChange={(e) => setReqForm({ ...reqForm, patient_name: e.target.value })} />
               <div className="grid grid-cols-2 gap-3">
                 <Select value={reqForm.blood_group} onValueChange={(v) => setReqForm({ ...reqForm, blood_group: v })}>
-                  <SelectTrigger><SelectValue placeholder="রক্তের গ্রুপ" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="রক্তের গ্রুপ *" /></SelectTrigger>
                   <SelectContent>{BLOOD_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={reqForm.urgency} onValueChange={(v) => setReqForm({ ...reqForm, urgency: v })}>
@@ -140,11 +191,12 @@ const BloodRequestManager = () => {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="p-4 text-center"><Droplets className="h-5 w-5 text-destructive mx-auto mb-1" /><div className="text-2xl font-bold">{requests.items.length}</div><div className="text-sm text-muted-foreground">মোট অনুরোধ</div></Card>
-        <Card className="p-4 text-center"><AlertTriangle className="h-5 w-5 text-amber-500 mx-auto mb-1" /><div className="text-2xl font-bold text-destructive">{urgentCount}</div><div className="text-sm text-muted-foreground">জরুরি</div></Card>
+        <Card className="p-4 text-center"><Bell className="h-5 w-5 text-amber-500 mx-auto mb-1" /><div className="text-2xl font-bold text-amber-600">{pendingCount}</div><div className="text-sm text-muted-foreground">অপেক্ষমান</div></Card>
+        <Card className="p-4 text-center"><AlertTriangle className="h-5 w-5 text-destructive mx-auto mb-1" /><div className="text-2xl font-bold text-destructive">{urgentCount}</div><div className="text-sm text-muted-foreground">জরুরি</div></Card>
         <Card className="p-4 text-center"><Users className="h-5 w-5 text-primary mx-auto mb-1" /><div className="text-2xl font-bold">{donors.items.length}</div><div className="text-sm text-muted-foreground">মোট ডোনার</div></Card>
-        <Card className="p-4 text-center"><Heart className="h-5 w-5 text-green-600 mx-auto mb-1" /><div className="text-2xl font-bold text-green-600">{requests.items.filter(r => r.status === "fulfilled").length}</div><div className="text-sm text-muted-foreground">পূরণ হয়েছে</div></Card>
+        <Card className="p-4 text-center"><Heart className="h-5 w-5 text-green-600 mx-auto mb-1" /><div className="text-2xl font-bold text-green-600">{requests.items.filter(r => r.status === "fulfilled").length}</div><div className="text-sm text-muted-foreground">পূরণ</div></Card>
       </div>
 
       {/* Blood Group Availability */}
@@ -163,7 +215,6 @@ const BloodRequestManager = () => {
       <Tabs defaultValue="requests">
         <TabsList><TabsTrigger value="requests">অনুরোধ</TabsTrigger><TabsTrigger value="donors">ডোনার তালিকা</TabsTrigger></TabsList>
 
-        {/* REQUESTS TAB */}
         <TabsContent value="requests" className="space-y-4">
           <div className="flex gap-2 flex-wrap items-center">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -187,7 +238,7 @@ const BloodRequestManager = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>রোগী</TableHead><TableHead>গ্রুপ</TableHead><TableHead>জরুরিতা</TableHead>
-                  <TableHead>হাসপাতাল</TableHead><TableHead>তারিখ</TableHead><TableHead>স্ট্যাটাস</TableHead>
+                  <TableHead>হাসপাতাল</TableHead><TableHead>স্ট্যাটাস</TableHead><TableHead>যাচাই</TableHead>
                   <TableHead className="text-right">অ্যাকশন</TableHead>
                 </TableRow>
               </TableHeader>
@@ -195,7 +246,7 @@ const BloodRequestManager = () => {
                 {filteredRequests.map((r) => {
                   const urgencyOpt = URGENCY_OPTIONS.find(u => u.value === r.urgency);
                   return (
-                    <TableRow key={r.id} className={r.urgency === "critical" ? "bg-destructive/5" : ""}>
+                    <TableRow key={r.id} className={r.urgency === "critical" ? "bg-destructive/5" : r.status === "pending" ? "bg-amber-50/30 dark:bg-amber-900/5" : ""}>
                       <TableCell>
                         <div className="font-medium">{r.patient_name}</div>
                         <div className="text-xs text-muted-foreground flex items-center gap-1">
@@ -210,19 +261,36 @@ const BloodRequestManager = () => {
                         </Badge>
                         {r.bags_needed && <div className="text-xs text-muted-foreground mt-1">{r.bags_needed} ব্যাগ</div>}
                       </TableCell>
-                      <TableCell className="text-sm">{r.hospital || "-"}</TableCell>
-                      <TableCell className="text-sm">{r.required_date ? new Date(r.required_date).toLocaleDateString("bn-BD") : "-"}</TableCell>
+                      <TableCell className="text-sm">{r.hospital || "—"}</TableCell>
                       <TableCell>
-                        <Select value={r.status} onValueChange={(v) => requests.update(r.id, { status: v } as any)}>
-                          <SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger>
-                          <SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                        </Select>
+                        <Badge variant={r.status === "approved" ? "default" : r.status === "rejected" ? "destructive" : r.status === "fulfilled" ? "default" : "secondary"}>
+                          {STATUS_OPTIONS.find(s => s.value === r.status)?.label || r.status}
+                        </Badge>
                       </TableCell>
-                      <TableCell className="text-right space-x-1">
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setMatchDialog(r)}>
-                          <Users className="h-3 w-3" /> ম্যাচ
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => requests.remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <TableCell>
+                        {r.verified ? (
+                          <Badge variant="outline" className="text-green-600 border-green-300 gap-1"><CheckCircle className="h-3 w-3" />যাচাইকৃত</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">অযাচাই</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          {r.status === "pending" && (
+                            <>
+                              <Button size="sm" variant="default" className="h-7 text-xs gap-1" onClick={() => approveRequest(r)}>
+                                <CheckCircle className="h-3 w-3" /> অনুমোদন
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-destructive" onClick={() => rejectRequest(r)}>
+                                <XCircle className="h-3 w-3" /> প্রত্যাখ্যান
+                              </Button>
+                            </>
+                          )}
+                          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setMatchDialog(r)}>
+                            <Users className="h-3 w-3" /> ম্যাচ
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => requests.remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -233,21 +301,25 @@ const BloodRequestManager = () => {
           </Card>
         </TabsContent>
 
-        {/* DONORS TAB */}
         <TabsContent value="donors" className="space-y-4">
           <Card>
             <Table>
               <TableHeader>
-                <TableRow><TableHead>নাম</TableHead><TableHead>গ্রুপ</TableHead><TableHead>ফোন</TableHead><TableHead>এলাকা</TableHead><TableHead>সর্বশেষ দান</TableHead><TableHead>প্রাপ্যতা</TableHead></TableRow>
+                <TableRow><TableHead>নাম</TableHead><TableHead>গ্রুপ</TableHead><TableHead>ফোন</TableHead><TableHead>এলাকা</TableHead><TableHead>সর্বশেষ দান</TableHead><TableHead>ফোন প্রকাশ</TableHead><TableHead>প্রাপ্যতা</TableHead></TableRow>
               </TableHeader>
               <TableBody>
                 {donors.items.map(d => (
                   <TableRow key={d.id}>
                     <TableCell className="font-medium">{d.full_name}</TableCell>
                     <TableCell><Badge variant="destructive">{d.blood_group}</Badge></TableCell>
-                    <TableCell>{d.phone || "-"}</TableCell>
-                    <TableCell>{d.location || "-"}</TableCell>
-                    <TableCell className="text-sm">{d.last_donated ? new Date(d.last_donated).toLocaleDateString("bn-BD") : "-"}</TableCell>
+                    <TableCell>{d.phone || "—"}</TableCell>
+                    <TableCell>{d.location || "—"}</TableCell>
+                    <TableCell className="text-sm">{d.last_donated ? new Date(d.last_donated).toLocaleDateString("bn-BD") : "—"}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => donors.update(d.id, { show_phone: !d.show_phone } as any)}>
+                        {d.show_phone ? <Badge>প্রকাশিত</Badge> : <Badge variant="secondary">গোপন</Badge>}
+                      </Button>
+                    </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => toggleDonorAvailability(d)}>
                         {d.is_available !== false ? <Badge variant="default">সক্রিয়</Badge> : <Badge variant="secondary">নিষ্ক্রিয়</Badge>}
@@ -255,7 +327,7 @@ const BloodRequestManager = () => {
                     </TableCell>
                   </TableRow>
                 ))}
-                {donors.items.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">কোনো ডোনার নেই</TableCell></TableRow>}
+                {donors.items.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">কোনো ডোনার নেই</TableCell></TableRow>}
               </TableBody>
             </Table>
           </Card>
@@ -270,7 +342,7 @@ const BloodRequestManager = () => {
           </DialogHeader>
           <div className="text-sm text-muted-foreground mb-3">
             রোগী: <span className="font-medium text-foreground">{matchDialog?.patient_name}</span> | 
-            স্থান: {matchDialog?.location || "-"} | 
+            স্থান: {matchDialog?.location || "—"} | 
             {matchDialog?.bags_needed && ` ${matchDialog.bags_needed} ব্যাগ প্রয়োজন`}
           </div>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -279,7 +351,7 @@ const BloodRequestManager = () => {
                 <Badge variant="destructive">{d.blood_group}</Badge>
                 <div className="flex-1">
                   <div className="font-medium text-sm">{d.full_name}</div>
-                  <div className="text-xs text-muted-foreground">{d.location || "-"}</div>
+                  <div className="text-xs text-muted-foreground">{d.location || "—"}</div>
                 </div>
                 {d.phone && (
                   <a href={`tel:${d.phone}`} className="text-xs text-primary hover:underline flex items-center gap-1">
