@@ -61,16 +61,16 @@ const CampaignManager = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <Card>
+      <Card className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow><TableHead>ক্যাম্পেইন</TableHead><TableHead>অগ্রগতি</TableHead><TableHead>স্ট্যাটাস</TableHead><TableHead className="text-right">অ্যাকশন</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead className="min-w-[120px]">ক্যাম্পেইন</TableHead><TableHead className="min-w-[180px]">অগ্রগতি</TableHead><TableHead>স্ট্যাটাস</TableHead><TableHead className="text-right">অ্যাকশন</TableHead></TableRow></TableHeader>
           <TableBody>
             {items.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">{c.title}</TableCell>
                 <TableCell>
-                  <div className="space-y-1 min-w-[120px]">
-                    <div className="text-xs">৳{(c.current_amount || 0).toLocaleString("bn-BD")} / ৳{(c.target_amount || 0).toLocaleString("bn-BD")}</div>
+                  <div className="space-y-1 min-w-[150px]">
+                    <div className="text-xs whitespace-nowrap">৳{(c.current_amount || 0).toLocaleString("bn-BD")} / ৳{(c.target_amount || 0).toLocaleString("bn-BD")}</div>
                     <Progress value={c.target_amount > 0 ? ((c.current_amount || 0) / c.target_amount) * 100 : 0} className="h-2" />
                   </div>
                 </TableCell>

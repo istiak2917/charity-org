@@ -211,7 +211,7 @@ const VolunteerManager = () => {
             </Select>
             <span className="text-sm text-muted-foreground ml-auto">{filteredItems.length} জন</span>
           </div>
-          <Card>
+          <Card className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
