@@ -21,6 +21,13 @@ interface Volunteer {
 
 const SKILL_TAGS = ["শিক্ষা", "স্বাস্থ্য", "আইটি", "ইভেন্ট", "ডিজাইন", "কন্টেন্ট", "ফটোগ্রাফি", "মিডিয়া", "প্রশাসন", "অনুবাদ"];
 
+const toSkillString = (skills: any): string => {
+  if (!skills) return "";
+  if (Array.isArray(skills)) return skills.join(", ");
+  if (typeof skills === "string") return skills;
+  return String(skills);
+};
+
 const getBadge = (hours: number): { label: string; color: string; icon: string } => {
   if (hours >= 500) return { label: "প্লাটিনাম", color: "bg-purple-100 text-purple-700 border-purple-300", icon: "💎" };
   if (hours >= 200) return { label: "গোল্ড", color: "bg-amber-100 text-amber-700 border-amber-300", icon: "🥇" };
@@ -103,7 +110,7 @@ const VolunteerManager = () => {
   const filteredItems = useMemo(() => {
     return items.filter(v => {
       if (filterStatus !== "all" && v.status !== filterStatus) return false;
-      if (filterSkill !== "all" && !(v.skills || "").includes(filterSkill)) return false;
+      if (filterSkill !== "all" && !toSkillString(v.skills).includes(filterSkill)) return false;
       return true;
     });
   }, [items, filterStatus, filterSkill]);
@@ -117,7 +124,7 @@ const VolunteerManager = () => {
   const skillsData = useMemo(() => {
     const map: Record<string, number> = {};
     items.forEach(v => {
-      (v.skills || "").split(",").map(s => s.trim()).filter(Boolean).forEach(s => {
+      toSkillString(v.skills).split(",").map(s => s.trim()).filter(Boolean).forEach(s => {
         map[s] = (map[s] || 0) + 1;
       });
     });
@@ -128,7 +135,7 @@ const VolunteerManager = () => {
     const headers = "নাম,ইমেইল,ফোন,দক্ষতা,ঘণ্টা,উপস্থিতি,ব্যাজ,স্ট্যাটাস\n";
     const rows = items.map(v => {
       const badge = getBadge(v.hours_logged || 0);
-      return `${v.full_name},${v.email},${v.phone || ""},${v.skills || ""},${v.hours_logged || 0},${v.attendance_count || 0},${badge.label},${v.status}`;
+      return `${v.full_name},${v.email},${v.phone || ""},${toSkillString(v.skills)},${v.hours_logged || 0},${v.attendance_count || 0},${badge.label},${v.status}`;
     }).join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -231,10 +238,10 @@ const VolunteerManager = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {(v.skills || "").split(",").map(s => s.trim()).filter(Boolean).map(s => (
+                          {toSkillString(v.skills).split(",").map(s => s.trim()).filter(Boolean).map(s => (
                             <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
                           ))}
-                          {!(v.skills || "").trim() && "-"}
+                          {!toSkillString(v.skills).trim() && "-"}
                         </div>
                       </TableCell>
                       <TableCell>
