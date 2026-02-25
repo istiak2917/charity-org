@@ -9,27 +9,35 @@ import { Users } from "lucide-react";
 const VolunteersPage = () => {
   const [volunteers, setVolunteers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVolunteers = async () => {
       try {
-        // Try "approved" status first (used by admin), fallback to "active"
-        let { data, error } = await supabase.from("volunteers").select("*").eq("status", "approved").order("created_at", { ascending: false });
-        if (error) {
-          console.error("Volunteers fetch error:", error);
+        // Try fetching all volunteers first, then filter client-side
+        const { data, error: fetchError } = await supabase
+          .from("volunteers")
+          .select("*")
+          .order("created_at", { ascending: false });
+        
+        if (fetchError) {
+          console.error("Volunteers fetch error:", fetchError);
+          setError("ডেটা লোড করতে সমস্যা হয়েছে");
           setVolunteers([]);
-        } else if (!data || data.length === 0) {
-          // Fallback: try "active" status
-          const res = await supabase.from("volunteers").select("*").eq("status", "active").order("created_at", { ascending: false });
-          setVolunteers(res.data || []);
         } else {
-          setVolunteers(data);
+          // Filter for approved or active status client-side
+          const filtered = (data || []).filter(
+            (v: any) => v.status === "approved" || v.status === "active"
+          );
+          setVolunteers(filtered.length > 0 ? filtered : data || []);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Volunteers fetch failed:", err);
+        setError(err?.message || "অজানা ত্রুটি");
         setVolunteers([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchVolunteers();
   }, []);
@@ -43,7 +51,9 @@ const VolunteersPage = () => {
           <h1 className="text-3xl md:text-4xl font-bold font-heading mb-3">স্বেচ্ছাসেবক</h1>
           <p className="text-muted-foreground">আমাদের নিবেদিত স্বেচ্ছাসেবক দল</p>
         </div>
-        {loading ? (
+        {error ? (
+          <div className="text-center py-12 text-destructive">{error}</div>
+        ) : loading ? (
           <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">

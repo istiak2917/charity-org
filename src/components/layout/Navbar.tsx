@@ -13,6 +13,7 @@ const navLinks = [
   { label: "ব্লগ", href: "/blog" },
   { label: "রক্তদান", href: "/blood" },
   { label: "গ্যালারি", href: "/gallery" },
+  { label: "স্বেচ্ছাসেবক", href: "/volunteers" },
   { label: "স্বচ্ছতা", href: "/transparency" },
   { label: "যোগাযোগ", href: "#contact" },
 ];
