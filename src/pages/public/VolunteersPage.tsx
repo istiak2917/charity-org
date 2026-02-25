@@ -11,8 +11,27 @@ const VolunteersPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from("volunteers").select("*").eq("status", "active").order("created_at", { ascending: false })
-      .then(({ data }) => { setVolunteers(data || []); setLoading(false); });
+    const fetchVolunteers = async () => {
+      try {
+        // Try "approved" status first (used by admin), fallback to "active"
+        let { data, error } = await supabase.from("volunteers").select("*").eq("status", "approved").order("created_at", { ascending: false });
+        if (error) {
+          console.error("Volunteers fetch error:", error);
+          setVolunteers([]);
+        } else if (!data || data.length === 0) {
+          // Fallback: try "active" status
+          const res = await supabase.from("volunteers").select("*").eq("status", "active").order("created_at", { ascending: false });
+          setVolunteers(res.data || []);
+        } else {
+          setVolunteers(data);
+        }
+      } catch (err) {
+        console.error("Volunteers fetch failed:", err);
+        setVolunteers([]);
+      }
+      setLoading(false);
+    };
+    fetchVolunteers();
   }, []);
 
   return (
@@ -31,11 +50,10 @@ const VolunteersPage = () => {
             {volunteers.map((v) => (
               <Card key={v.id} className="p-4 text-center hover:shadow-md transition-shadow">
                 <div className="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center text-primary font-bold text-xl">
-                  {(v.name || "?")[0]}
+                  {((v.full_name || v.name || "?") as string)[0]}
                 </div>
-                <h3 className="font-bold text-sm">{v.name}</h3>
-                {v.role && <Badge variant="outline" className="mt-1 text-xs">{v.role}</Badge>}
-                {v.skills && <p className="text-xs text-muted-foreground mt-2">{v.skills}</p>}
+                <h3 className="font-bold text-sm">{v.full_name || v.name || "—"}</h3>
+                {(v.role || v.skills) && <Badge variant="outline" className="mt-1 text-xs">{v.role || v.skills}</Badge>}
               </Card>
             ))}
             {volunteers.length === 0 && <div className="col-span-full text-center text-muted-foreground py-12">কোনো স্বেচ্ছাসেবক তথ্য নেই</div>}
