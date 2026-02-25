@@ -296,7 +296,7 @@ const VolunteerManager = () => {
                     </div>
                     <div className="flex-1">
                       <div className="font-medium">{v.full_name}</div>
-                      <div className="text-xs text-muted-foreground">{v.skills || "—"}</div>
+                      <div className="text-xs text-muted-foreground">{toSkillString(v.skills) || "—"}</div>
                     </div>
                     <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border ${badge.color}`}>{badge.icon} {badge.label}</span>
                     <div className="text-right">
