@@ -72,6 +72,33 @@ export const translations = {
   settings_save: { bn: "সেভ করুন", en: "Save" },
   settings_saved: { bn: "সেভ হয়েছে!", en: "Saved!" },
 
+  // Permissions
+  perm_view: { bn: "দেখা", en: "View" },
+  perm_create: { bn: "তৈরি", en: "Create" },
+  perm_edit: { bn: "সম্পাদনা", en: "Edit" },
+  perm_delete: { bn: "মুছা", en: "Delete" },
+  perm_matrix_title: { bn: "রোল-মডিউল পারমিশন ম্যাট্রিক্স", en: "Role-Module Permission Matrix" },
+  perm_matrix_desc: { bn: "চেকবক্সে ক্লিক করে পারমিশন চালু/বন্ধ করুন। পরিবর্তন তৎক্ষণাৎ সেভ হবে।", en: "Click checkboxes to toggle permissions on/off. Changes are saved instantly." },
+  perm_save_success: { bn: "পারমিশন সেভ হয়েছে!", en: "Permissions saved!" },
+  perm_save_fail: { bn: "পারমিশন সেভ ব্যর্থ", en: "Failed to save permissions" },
+  perm_reset: { bn: "ডিফল্টে রিসেট", en: "Reset to Default" },
+  perm_reset_confirm: { bn: "সব পারমিশন ডিফল্টে ফিরবে?", en: "Reset all permissions to default?" },
+
+  // Theme
+  theme_dark_mode: { bn: "ডার্ক মোড", en: "Dark Mode" },
+  theme_light_mode: { bn: "লাইট মোড", en: "Light Mode" },
+  theme_colors: { bn: "রঙ কাস্টমাইজেশন", en: "Color Customization" },
+  theme_colors_desc: { bn: "কালার কোড বসিয়ে সাইটের রঙ পরিবর্তন করুন। HSL ফরম্যাট ব্যবহার করুন।", en: "Change site colors by entering color codes. Use HSL format." },
+  theme_primary: { bn: "প্রাইমারি (বাটন/লিংক)", en: "Primary (Button/Link)" },
+  theme_accent: { bn: "অ্যাক্সেন্ট", en: "Accent" },
+  theme_background: { bn: "ব্যাকগ্রাউন্ড", en: "Background" },
+  theme_foreground: { bn: "টেক্সট কালার", en: "Text Color" },
+  theme_card: { bn: "কার্ড ব্যাকগ্রাউন্ড", en: "Card Background" },
+  theme_muted: { bn: "মিউটেড/সেকেন্ডারি", en: "Muted/Secondary" },
+  theme_preview: { bn: "লাইভ প্রিভিউ", en: "Live Preview" },
+  theme_apply: { bn: "থিম প্রয়োগ করুন", en: "Apply Theme" },
+  theme_applied: { bn: "থিম প্রয়োগ হয়েছে!", en: "Theme applied!" },
+
   // Common
   common_save: { bn: "সেভ করুন", en: "Save" },
   common_cancel: { bn: "বাতিল", en: "Cancel" },

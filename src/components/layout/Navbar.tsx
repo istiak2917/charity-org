@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import CurrencySelector from "@/components/CurrencySelector";
+import ThemeToggle from "@/components/ThemeToggle";
 import logo from "@/assets/shishuful-logo.jpg";
 import type { TranslationKey } from "@/lib/translations";
 
@@ -46,6 +47,7 @@ const Navbar = () => {
           )}
 
           <div className="flex items-center gap-1 border-l border-border pl-3 ml-1">
+            <ThemeToggle size="sm" />
             <LanguageSwitcher size="sm" />
             <CurrencySelector compact />
           </div>
@@ -91,6 +93,7 @@ const Navbar = () => {
             )}
 
             <div className="flex items-center gap-2 py-2 border-t border-border mt-1 pt-3">
+              <ThemeToggle />
               <LanguageSwitcher />
               <CurrencySelector compact />
             </div>

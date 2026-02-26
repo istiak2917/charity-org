@@ -3,11 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
+import SiteSettingsLoader from "@/components/SiteSettingsLoader";
 import MemberLayout from "@/pages/member/MemberLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -92,6 +94,7 @@ const MemberRoute = ({ children }: { children: React.ReactNode }) => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -99,6 +102,7 @@ const App = () => (
         <LanguageProvider>
         <CurrencyProvider>
         <AuthProvider>
+        <SiteSettingsLoader>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -169,12 +173,13 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+        </SiteSettingsLoader>
         </AuthProvider>
         </CurrencyProvider>
         </LanguageProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
-
 export default App;

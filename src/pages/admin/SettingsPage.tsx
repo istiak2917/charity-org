@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { Settings, Save, Upload, Trash2, Type, Globe, Coins } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Settings, Save, Upload, Trash2, Type, Globe, Coins, Moon, Sun, Palette } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,15 @@ const FONT_TARGETS = [
   { key: "button" as const, label_bn: "বাটন", label_en: "Buttons" },
 ];
 
+const COLOR_FIELDS = [
+  { key: "theme_primary", cssVar: "--primary", labelKey: "theme_primary" as const },
+  { key: "theme_accent", cssVar: "--accent", labelKey: "theme_accent" as const },
+  { key: "theme_background", cssVar: "--background", labelKey: "theme_background" as const },
+  { key: "theme_foreground", cssVar: "--foreground", labelKey: "theme_foreground" as const },
+  { key: "theme_card", cssVar: "--card", labelKey: "theme_card" as const },
+  { key: "theme_muted", cssVar: "--muted", labelKey: "theme_muted" as const },
+];
+
 const SettingsPage = () => {
   const [org, setOrg] = useState<any>({});
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -41,6 +51,7 @@ const SettingsPage = () => {
   const { toast } = useToast();
   const { t, lang } = useLanguage();
   const { currency, setCurrencyCode, allCurrencies } = useCurrency();
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -61,7 +72,6 @@ const SettingsPage = () => {
           if (k) map[k] = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
         });
         setSettings(map);
-        // Load custom fonts from settings
         try {
           const fonts = JSON.parse(map.custom_fonts || "[]");
           setCustomFonts(Array.isArray(fonts) ? fonts : []);
@@ -75,13 +85,13 @@ const SettingsPage = () => {
   const saveOrg = async () => {
     if (!org.id) {
       const { error } = await supabase.from("organizations").insert(org);
-      if (error) toast({ title: lang === "bn" ? "সেভ ব্যর্থ" : "Save failed", description: error.message, variant: "destructive" });
-      else toast({ title: lang === "bn" ? "সংগঠনের তথ্য সেভ হয়েছে!" : "Organization saved!" });
+      if (error) toast({ title: lb("সেভ ব্যর্থ", "Save failed"), description: error.message, variant: "destructive" });
+      else toast({ title: lb("সংগঠনের তথ্য সেভ হয়েছে!", "Organization saved!") });
       return;
     }
     const { error } = await supabase.from("organizations").update(org).eq("id", org.id);
-    if (error) toast({ title: lang === "bn" ? "সেভ ব্যর্থ" : "Save failed", description: error.message, variant: "destructive" });
-    else toast({ title: lang === "bn" ? "সংগঠনের তথ্য সেভ হয়েছে!" : "Organization saved!" });
+    if (error) toast({ title: lb("সেভ ব্যর্থ", "Save failed"), description: error.message, variant: "destructive" });
+    else toast({ title: lb("সংগঠনের তথ্য সেভ হয়েছে!", "Organization saved!") });
   };
 
   const saveSiteSettings = async () => {
@@ -100,7 +110,7 @@ const SettingsPage = () => {
   // Font management
   const addFont = () => {
     if (!newFontName || !newFontUrl) {
-      toast({ title: lang === "bn" ? "ফন্টের নাম ও URL দিন" : "Provide font name & URL", variant: "destructive" });
+      toast({ title: lb("ফন্টের নাম ও URL দিন", "Provide font name & URL"), variant: "destructive" });
       return;
     }
     const font: CustomFont = { id: Date.now().toString(), name: newFontName, url: newFontUrl, applyTo: newFontTargets };
@@ -108,7 +118,7 @@ const SettingsPage = () => {
     setCustomFonts(updated);
     setSettings({ ...settings, custom_fonts: JSON.stringify(updated) });
     setNewFontName(""); setNewFontUrl(""); setNewFontTargets([]);
-    toast({ title: lang === "bn" ? "ফন্ট যোগ হয়েছে" : "Font added" });
+    toast({ title: lb("ফন্ট যোগ হয়েছে", "Font added") });
   };
 
   const removeFont = (id: string) => {
@@ -130,10 +140,26 @@ const SettingsPage = () => {
   const handleFontFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Create object URL for local preview; in production this would upload to storage
     const url = URL.createObjectURL(file);
     setNewFontUrl(url);
     if (!newFontName) setNewFontName(file.name.replace(/\.(ttf|otf|woff2?|eot)$/i, ""));
+  };
+
+  // Apply theme colors live
+  const applyThemeColors = () => {
+    const root = document.documentElement;
+    COLOR_FIELDS.forEach(({ key, cssVar }) => {
+      const val = settings[key];
+      if (val && val.trim()) {
+        root.style.setProperty(cssVar, val.trim());
+      }
+    });
+    toast({ title: t("theme_applied") });
+  };
+
+  const saveTheme = async () => {
+    applyThemeColors();
+    await saveSiteSettings();
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
@@ -162,7 +188,7 @@ const SettingsPage = () => {
         <TabsList className="flex-wrap">
           <TabsTrigger value="org">{t("settings_org")}</TabsTrigger>
           <TabsTrigger value="site">{t("settings_site")}</TabsTrigger>
-          <TabsTrigger value="theme">{t("settings_theme")}</TabsTrigger>
+          <TabsTrigger value="theme" className="gap-1"><Palette className="h-3.5 w-3.5" /> {t("settings_theme")}</TabsTrigger>
           <TabsTrigger value="language" className="gap-1"><Globe className="h-3.5 w-3.5" /> {t("settings_language")}</TabsTrigger>
           <TabsTrigger value="currency" className="gap-1"><Coins className="h-3.5 w-3.5" /> {t("settings_currency")}</TabsTrigger>
           <TabsTrigger value="fonts" className="gap-1"><Type className="h-3.5 w-3.5" /> {t("settings_fonts")}</TabsTrigger>
@@ -238,27 +264,97 @@ const SettingsPage = () => {
 
         {/* ===== Theme Tab ===== */}
         <TabsContent value="theme" className="space-y-4">
+          {/* Dark/Light Mode */}
           <Card className="p-6 space-y-4">
-            <h2 className="font-semibold text-lg">{lb("রঙ কাস্টমাইজেশন", "Color Customization")}</h2>
-            <p className="text-xs text-muted-foreground">{lb("HSL ফরম্যাটে দিন। যেমন: 142 71% 45%", "Enter in HSL format. Example: 142 71% 45%")}</p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{lb("প্রাইমারি কালার (HSL)", "Primary Color (HSL)")}</label>
-                <div className="flex gap-2">
-                  <Input value={settings.primary_color || ""} onChange={(e) => updateSetting("primary_color", e.target.value)} />
-                  <div className="w-10 h-10 rounded-lg border" style={{ background: `hsl(${settings.primary_color || "142 71% 45%"})` }} />
+            <h2 className="font-semibold text-lg flex items-center gap-2">
+              {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              {lb("ডার্ক/লাইট মোড", "Dark/Light Mode")}
+            </h2>
+            <div className="flex items-center gap-4">
+              <Button
+                variant={theme === "light" ? "default" : "outline"}
+                className="gap-2"
+                onClick={() => setTheme("light")}
+              >
+                <Sun className="h-4 w-4" /> {t("theme_light_mode")}
+              </Button>
+              <Button
+                variant={theme === "dark" ? "default" : "outline"}
+                className="gap-2"
+                onClick={() => setTheme("dark")}
+              >
+                <Moon className="h-4 w-4" /> {t("theme_dark_mode")}
+              </Button>
+            </div>
+          </Card>
+
+          {/* Color Customization */}
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold text-lg flex items-center gap-2">
+              <Palette className="h-5 w-5" /> {t("theme_colors")}
+            </h2>
+            <p className="text-sm text-muted-foreground">{t("theme_colors_desc")}</p>
+            <p className="text-xs text-muted-foreground">
+              {lb("HSL ফরম্যাট: H S% L% (যেমন: 330 80% 55%)", "HSL format: H S% L% (e.g. 330 80% 55%)")}
+            </p>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {COLOR_FIELDS.map(({ key, labelKey }) => (
+                <div key={key} className="space-y-1.5">
+                  <label className="text-sm font-medium">{t(labelKey)}</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={settings[key] || ""}
+                      onChange={(e) => updateSetting(key, e.target.value)}
+                      placeholder="330 80% 55%"
+                      className="flex-1"
+                    />
+                    <div
+                      className="w-10 h-10 rounded-lg border border-border shrink-0"
+                      style={{ background: settings[key] ? `hsl(${settings[key]})` : "transparent" }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{lb("অ্যাক্সেন্ট কালার (HSL)", "Accent Color (HSL)")}</label>
-                <div className="flex gap-2">
-                  <Input value={settings.accent_color || ""} onChange={(e) => updateSetting("accent_color", e.target.value)} />
-                  <div className="w-10 h-10 rounded-lg border" style={{ background: `hsl(${settings.accent_color || "24 95% 53%"})` }} />
+              ))}
+            </div>
+
+            {/* Live Preview */}
+            <div className="border border-border rounded-lg p-4 space-y-3">
+              <h3 className="text-sm font-semibold">{t("theme_preview")}</h3>
+              <div className="flex flex-wrap gap-3 items-center">
+                <div className="px-4 py-2 rounded-lg text-sm font-medium"
+                  style={{
+                    background: settings.theme_primary ? `hsl(${settings.theme_primary})` : "hsl(var(--primary))",
+                    color: "white"
+                  }}>
+                  {lb("প্রাইমারি বাটন", "Primary Button")}
+                </div>
+                <div className="px-4 py-2 rounded-lg text-sm font-medium"
+                  style={{
+                    background: settings.theme_accent ? `hsl(${settings.theme_accent})` : "hsl(var(--accent))",
+                    color: "white"
+                  }}>
+                  {lb("অ্যাক্সেন্ট", "Accent")}
+                </div>
+                <div className="px-4 py-2 rounded-lg text-sm border"
+                  style={{
+                    background: settings.theme_background ? `hsl(${settings.theme_background})` : "hsl(var(--background))",
+                    color: settings.theme_foreground ? `hsl(${settings.theme_foreground})` : "hsl(var(--foreground))"
+                  }}>
+                  {lb("ব্যাকগ্রাউন্ড + টেক্সট", "Background + Text")}
+                </div>
+                <div className="px-4 py-2 rounded-lg text-sm"
+                  style={{
+                    background: settings.theme_card ? `hsl(${settings.theme_card})` : "hsl(var(--card))",
+                    color: settings.theme_foreground ? `hsl(${settings.theme_foreground})` : "hsl(var(--foreground))",
+                    border: "1px solid hsl(var(--border))"
+                  }}>
+                  {lb("কার্ড", "Card")}
                 </div>
               </div>
             </div>
           </Card>
-          <Button onClick={saveSiteSettings} className="gap-2"><Save className="h-4 w-4" /> {lb("থিম সেভ করুন", "Save Theme")}</Button>
+          <Button onClick={saveTheme} className="gap-2"><Save className="h-4 w-4" /> {t("theme_apply")}</Button>
         </TabsContent>
 
         {/* ===== Language Tab ===== */}
@@ -322,7 +418,6 @@ const SettingsPage = () => {
             <h2 className="font-semibold text-lg flex items-center gap-2"><Type className="h-5 w-5" /> {lb("কাস্টম ফন্ট ম্যানেজমেন্ট", "Custom Font Management")}</h2>
             <p className="text-sm text-muted-foreground">{lb("Google Fonts URL বা ফন্ট ফাইল আপলোড করুন এবং কোথায় ব্যবহার হবে তা নির্ধারণ করুন।", "Add Google Fonts URL or upload font files and specify where they should be used.")}</p>
 
-            {/* Add new font */}
             <div className="border border-border rounded-lg p-4 space-y-3 bg-muted/30">
               <h3 className="text-sm font-semibold">{lb("নতুন ফন্ট যোগ করুন", "Add New Font")}</h3>
               <div className="grid md:grid-cols-2 gap-3">
@@ -358,7 +453,6 @@ const SettingsPage = () => {
               <Button size="sm" className="gap-1" onClick={addFont}><Type className="h-3.5 w-3.5" /> {lb("ফন্ট যোগ করুন", "Add Font")}</Button>
             </div>
 
-            {/* Existing fonts */}
             {customFonts.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold">{lb("যোগ করা ফন্ট", "Added Fonts")}</h3>

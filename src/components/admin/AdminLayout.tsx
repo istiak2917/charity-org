@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import CurrencySelector from "@/components/CurrencySelector";
+import ThemeToggle from "@/components/ThemeToggle";
 import type { TranslationKey } from "@/lib/translations";
 
 const ICON_MAP: Record<string, any> = {
@@ -140,6 +141,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             <ChevronLeft className="h-4 w-4" /> {t("admin_return_site")}
           </Link>
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle size="sm" />
             <LanguageSwitcher size="sm" />
             <CurrencySelector compact />
             <NotificationCenter />
