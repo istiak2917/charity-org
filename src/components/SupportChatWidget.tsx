@@ -101,16 +101,16 @@ const SupportChatWidget = () => {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 right-6 z-50 bg-primary hover:bg-primary/90 text-primary-foreground p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className="fixed bottom-36 right-4 z-40 bg-primary hover:bg-primary/90 text-primary-foreground p-3.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
           aria-label="Support Chat"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5" />
         </button>
       )}
 
       {/* Chat Panel */}
       {open && (
-        <div className="fixed bottom-20 right-6 z-50 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl flex flex-col" style={{ maxHeight: "70vh" }}>
+        <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:bottom-20 sm:right-4 z-50 w-full sm:w-96 bg-card border border-border sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col" style={{ maxHeight: "85vh" }}>
           {/* Header */}
           <div className="bg-primary text-primary-foreground rounded-t-2xl p-4 flex items-center justify-between">
             <div>
