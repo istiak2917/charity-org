@@ -179,19 +179,21 @@ const SettingsPage = () => {
       </div>
 
       <Tabs defaultValue="org">
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="org">{t("settings_org")}</TabsTrigger>
-          <TabsTrigger value="site">{t("settings_site")}</TabsTrigger>
-          <TabsTrigger value="theme" className="gap-1"><Palette className="h-3.5 w-3.5" /> {t("settings_theme")}</TabsTrigger>
-          <TabsTrigger value="payment" className="gap-1"><CreditCard className="h-3.5 w-3.5" /> {lb("পেমেন্ট", "Payment")}</TabsTrigger>
-          <TabsTrigger value="messaging" className="gap-1"><MessageCircle className="h-3.5 w-3.5" /> {lb("মেসেজিং", "Messaging")}</TabsTrigger>
-          <TabsTrigger value="language" className="gap-1"><Globe className="h-3.5 w-3.5" /> {t("settings_language")}</TabsTrigger>
-          <TabsTrigger value="currency" className="gap-1"><Coins className="h-3.5 w-3.5" /> {t("settings_currency")}</TabsTrigger>
-          <TabsTrigger value="fonts" className="gap-1"><Type className="h-3.5 w-3.5" /> {t("settings_fonts")}</TabsTrigger>
-          <TabsTrigger value="integrations" className="gap-1"><Plug className="h-3.5 w-3.5" /> {lb("ইন্টিগ্রেশন", "Integrations")}</TabsTrigger>
-          <TabsTrigger value="chat" className="gap-1"><MessageCircle className="h-3.5 w-3.5" /> {lb("চ্যাট", "Chat")}</TabsTrigger>
-          <TabsTrigger value="profile_fields" className="gap-1"><Plus className="h-3.5 w-3.5" /> {lb("প্রোফাইল ফিল্ড", "Profile Fields")}</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 px-3 pb-2">
+          <TabsList className="inline-flex w-max min-w-full h-auto gap-1 p-1">
+            <TabsTrigger value="org" className="text-xs whitespace-nowrap">{t("settings_org")}</TabsTrigger>
+            <TabsTrigger value="site" className="text-xs whitespace-nowrap">{t("settings_site")}</TabsTrigger>
+            <TabsTrigger value="theme" className="text-xs whitespace-nowrap gap-1"><Palette className="h-3 w-3" /> {t("settings_theme")}</TabsTrigger>
+            <TabsTrigger value="payment" className="text-xs whitespace-nowrap gap-1"><CreditCard className="h-3 w-3" /> {lb("পেমেন্ট", "Payment")}</TabsTrigger>
+            <TabsTrigger value="messaging" className="text-xs whitespace-nowrap gap-1"><MessageCircle className="h-3 w-3" /> {lb("মেসেজিং", "Messaging")}</TabsTrigger>
+            <TabsTrigger value="language" className="text-xs whitespace-nowrap gap-1"><Globe className="h-3 w-3" /> {t("settings_language")}</TabsTrigger>
+            <TabsTrigger value="currency" className="text-xs whitespace-nowrap gap-1"><Coins className="h-3 w-3" /> {t("settings_currency")}</TabsTrigger>
+            <TabsTrigger value="fonts" className="text-xs whitespace-nowrap gap-1"><Type className="h-3 w-3" /> {t("settings_fonts")}</TabsTrigger>
+            <TabsTrigger value="integrations" className="text-xs whitespace-nowrap gap-1"><Plug className="h-3 w-3" /> {lb("ইন্টিগ্রেশন", "Integrations")}</TabsTrigger>
+            <TabsTrigger value="chat" className="text-xs whitespace-nowrap gap-1"><MessageCircle className="h-3 w-3" /> {lb("চ্যাট", "Chat")}</TabsTrigger>
+            <TabsTrigger value="profile_fields" className="text-xs whitespace-nowrap gap-1"><Plus className="h-3 w-3" /> {lb("প্রোফাইল ফিল্ড", "Profile Fields")}</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ===== Organization Tab ===== */}
         <TabsContent value="org" className="space-y-4">
