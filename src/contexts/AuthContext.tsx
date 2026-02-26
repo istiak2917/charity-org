@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { recordLastLogin } from "@/lib/security";
+import { recordSession, deactivateAllSessions } from "@/lib/sessions";
 
 type UserRole = string; // Now supports all roles from permissions.ts
 
@@ -51,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => fetchRoles(session.user.id, session.user.email), 0);
           if (_event === "SIGNED_IN") {
             recordLastLogin(session.user.id);
+            recordSession(session.user.id, session.user.email);
           }
         } else {
           setRoles([]);
@@ -89,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    if (user) await deactivateAllSessions(user.id);
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);

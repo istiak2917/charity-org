@@ -15,12 +15,20 @@ const ContactSection = () => {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const { error } = await supabase.from("contact_messages").insert({
+    const payload: any = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
-      subject: formData.get("subject") as string,
       message: formData.get("message") as string,
-    });
+    };
+    const subjectVal = formData.get("subject") as string;
+    if (subjectVal) payload.subject = subjectVal;
+    
+    let { error } = await supabase.from("contact_messages").insert(payload);
+    if (error?.message?.includes("subject")) {
+      delete payload.subject;
+      const retry = await supabase.from("contact_messages").insert(payload);
+      error = retry.error;
+    }
 
     setLoading(false);
     if (error) {
