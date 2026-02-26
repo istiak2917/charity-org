@@ -2,14 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HelpCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-  is_active: boolean;
-  sort_order: number;
-}
+interface FAQItem { id: string; question: string; answer: string; is_active: boolean; sort_order: number; }
 
 const DEMO_FAQS: FAQItem[] = [
   { id: "1", question: "আপনারা কীভাবে কাজ করেন?", answer: "আমরা সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও খাদ্য সহায়তা দিই। আমাদের স্বেচ্ছাসেবকরা মাঠ পর্যায়ে কাজ করেন।", is_active: true, sort_order: 0 },
@@ -20,6 +15,7 @@ const DEMO_FAQS: FAQItem[] = [
 
 const FAQSection = () => {
   const [faqs, setFaqs] = useState<FAQItem[]>(DEMO_FAQS);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const load = async () => {
@@ -42,9 +38,9 @@ const FAQSection = () => {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-3">
             <HelpCircle className="h-6 w-6 text-primary" />
-            <span className="text-sm font-medium text-primary uppercase tracking-wider">সচরাচর জিজ্ঞাসা</span>
+            <span className="text-sm font-medium text-primary uppercase tracking-wider">{t("faq_label")}</span>
           </div>
-          <h2 className="text-3xl font-bold font-heading">আপনার প্রশ্নের উত্তর</h2>
+          <h2 className="text-3xl font-bold font-heading">{t("faq_title")}</h2>
         </div>
         <Accordion type="single" collapsible className="space-y-3">
           {faqs.map((faq) => (

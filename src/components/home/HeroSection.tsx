@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Heart, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import logo from "@/assets/shishuful-logo.jpg";
 import heroChild1 from "@/assets/hero-child-1.jpg";
 import heroEducation from "@/assets/hero-education.jpg";
@@ -11,18 +12,19 @@ import heroChildrenPlaying from "@/assets/hero-children-playing.jpg";
 import heroDonation from "@/assets/hero-donation.jpg";
 
 const collageImages = [
-  { src: heroChild1, alt: "হাসিখুশি শিশু", delay: 0.2 },
-  { src: heroEducation, alt: "শিক্ষা কার্যক্রম", delay: 0.3 },
-  { src: heroVolunteer, alt: "স্বেচ্ছাসেবক", delay: 0.4 },
-  { src: heroBooks, alt: "বই ও শিক্ষা", delay: 0.5 },
-  { src: heroChildrenPlaying, alt: "শিশুদের খেলা", delay: 0.6 },
-  { src: heroDonation, alt: "সাহায্য বিতরণ", delay: 0.7 },
+  { src: heroChild1, alt: "Child", delay: 0.2 },
+  { src: heroEducation, alt: "Education", delay: 0.3 },
+  { src: heroVolunteer, alt: "Volunteer", delay: 0.4 },
+  { src: heroBooks, alt: "Books", delay: 0.5 },
+  { src: heroChildrenPlaying, alt: "Children Playing", delay: 0.6 },
+  { src: heroDonation, alt: "Donation", delay: 0.7 },
 ];
 
 const HeroSection = () => {
-  const [headline, setHeadline] = useState("প্রতিটি শিশুর মুখে হাসি ফোটানো আমাদের অঙ্গীকার");
-  const [subtext, setSubtext] = useState("আমরা একসাথে গড়ি মানবতার সুন্দর ভবিষ্যৎ।");
-  const [ctaText, setCtaText] = useState("অনুদান করুন");
+  const { t } = useLanguage();
+  const [headline, setHeadline] = useState("");
+  const [subtext, setSubtext] = useState("");
+  const [ctaText, setCtaText] = useState("");
 
   useEffect(() => {
     supabase.from("site_settings").select("*").then(({ data }) => {
@@ -39,7 +41,11 @@ const HeroSection = () => {
     });
   }, []);
 
-  const headlineParts = headline.split(" ");
+  const displayHeadline = headline || t("hero_default_headline");
+  const displaySubtext = subtext || t("hero_default_subtext");
+  const displayCta = ctaText || t("hero_cta_donate");
+
+  const headlineParts = displayHeadline.split(" ");
   const mid = Math.ceil(headlineParts.length / 2);
   const line1 = headlineParts.slice(0, mid).join(" ");
   const line2 = headlineParts.slice(mid).join(" ");
@@ -80,16 +86,16 @@ const HeroSection = () => {
             <span className="hero-shimmer-text inline-block">{line1}</span>
             {line2 && <><br /><span className="text-primary">{line2}</span></>}
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed hero-subtext max-w-xl">{subtext}</p>
+          <p className="text-lg text-muted-foreground leading-relaxed hero-subtext max-w-xl">{displaySubtext}</p>
           <div className="flex flex-wrap justify-center gap-3 hero-cta-entrance">
             <Button className="btn-press gap-2 text-base px-7 py-5 bg-gradient-to-r from-primary to-accent shadow-lg hero-btn-glow" size="lg">
-              <Heart className="h-5 w-5" /> {ctaText}
+              <Heart className="h-5 w-5" /> {displayCta}
             </Button>
             <Button variant="outline" className="btn-press gap-2 text-base px-7 py-5 border-primary text-primary hover:bg-primary hover:text-primary-foreground" size="lg">
-              <Users className="h-5 w-5" /> স্বেচ্ছাসেবক হোন
+              <Users className="h-5 w-5" /> {t("hero_cta_volunteer")}
             </Button>
             <Button variant="ghost" className="btn-press gap-2 text-base px-7 py-5 text-muted-foreground" size="lg">
-              <BookOpen className="h-5 w-5" /> আরও জানুন
+              <BookOpen className="h-5 w-5" /> {t("hero_cta_learn_more")}
             </Button>
           </div>
         </div>

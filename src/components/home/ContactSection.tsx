@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const ContactSection = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,9 +34,9 @@ const ContactSection = () => {
 
     setLoading(false);
     if (error) {
-      toast({ title: "বার্তা পাঠানো যায়নি", description: error.message, variant: "destructive" });
+      toast({ title: t("contact_fail"), description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "বার্তা পাঠানো হয়েছে!", description: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।" });
+      toast({ title: t("contact_success"), description: t("contact_success_desc") });
       (e.target as HTMLFormElement).reset();
     }
   };
@@ -44,16 +46,16 @@ const ContactSection = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold font-heading mb-3">যোগাযোগ করুন</h2>
-            <p className="text-muted-foreground">আমাদের সাথে যোগাযোগ করতে নিচের ফর্মটি পূরণ করুন</p>
+            <h2 className="text-3xl font-bold font-heading mb-3">{t("contact_title")}</h2>
+            <p className="text-muted-foreground">{t("contact_subtitle")}</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4 bg-card p-8 rounded-xl border border-border">
-            <Input name="name" placeholder="আপনার নাম" required />
-            <Input name="email" type="email" placeholder="ইমেইল" required />
-            <Input name="subject" placeholder="বিষয়" required />
-            <Textarea name="message" placeholder="আপনার বার্তা লিখুন..." rows={4} required />
+            <Input name="name" placeholder={t("contact_name")} required />
+            <Input name="email" type="email" placeholder={t("contact_email")} required />
+            <Input name="subject" placeholder={t("contact_subject")} required />
+            <Textarea name="message" placeholder={t("contact_message")} rows={4} required />
             <Button type="submit" className="btn-press w-full gap-2" disabled={loading}>
-              <Send className="h-4 w-4" /> {loading ? "পাঠানো হচ্ছে..." : "বার্তা পাঠান"}
+              <Send className="h-4 w-4" /> {loading ? t("contact_sending") : t("contact_send")}
             </Button>
           </form>
         </div>

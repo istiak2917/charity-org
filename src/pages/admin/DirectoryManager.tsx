@@ -341,7 +341,7 @@ const PRESETS: Omit<DirectoryConfig, "id" | "created_at">[] = [
 interface DialogProps {
   open: boolean;
   onClose: () => void;
-  lang: "bn" | "en";
+  lang: string;
   initial?: DirectoryConfig;
   detectedColumns: string[];
   onDetectColumns: (table: string) => void;
