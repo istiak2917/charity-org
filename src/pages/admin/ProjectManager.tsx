@@ -131,7 +131,7 @@ const ProjectManager = () => {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট প্রকল্প</div><div className="text-2xl font-bold">{items.length}</div></Card>
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">সক্রিয়</div><div className="text-2xl font-bold text-green-600">{activeProjects}</div></Card>
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট বাজেট</div><div className="text-xl font-bold">৳{totalBudget.toLocaleString("bn-BD")}</div></Card>
@@ -215,7 +215,7 @@ const ProjectManager = () => {
           <DialogHeader><DialogTitle>{detailProject?.title} — বিস্তারিত</DialogTitle></DialogHeader>
           {detailProject && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Card className="p-3"><div className="text-xs text-muted-foreground">স্ট্যাটাস</div><Badge>{detailProject.status}</Badge></Card>
                 <Card className="p-3"><div className="text-xs text-muted-foreground">বাজেট</div><div className="font-bold">৳{(detailProject.budget || 0).toLocaleString("bn-BD")}</div></Card>
                 <Card className="p-3"><div className="text-xs text-muted-foreground">ব্যয়</div><div className="font-bold text-primary">৳{(projectMetrics.find(p => p.id === detailProject.id)?.actualSpent || 0).toLocaleString("bn-BD")}</div></Card>
