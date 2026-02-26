@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Heart, Mail, Phone, MapPin, Facebook, Youtube, Instagram, Send, MessageCircle, Linkedin } from "lucide-react";
+import { Heart, Mail, Phone, MapPin, Facebook, Youtube, Instagram, Send, MessageCircle, Linkedin, Download, Smartphone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -192,7 +192,32 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="border-t border-background/10 mt-10 pt-6 text-center text-sm opacity-50">
+          {/* App Download CTA */}
+          <div className="border-t border-background/10 mt-10 pt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/20 p-3 rounded-2xl">
+                  <Smartphone className="h-6 w-6 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-sm">আমাদের অ্যাপ ডাউনলোড করুন</p>
+                  <p className="text-xs opacity-60">মোবাইলে অ্যাপের মতো ব্যবহার করুন</p>
+                </div>
+              </div>
+              <Button
+                onClick={() => {
+                  const evt = new Event("show-pwa-install");
+                  window.dispatchEvent(evt);
+                }}
+                className="gap-2"
+                size="sm"
+              >
+                <Download className="h-4 w-4" /> ইনস্টল করুন
+              </Button>
+            </div>
+          </div>
+
+          <div className="border-t border-background/10 mt-6 pt-6 text-center text-sm opacity-50">
             <p className="flex items-center justify-center gap-1">
               {footerText} তৈরি করা হয়েছে <Heart className="h-3 w-3 text-primary" /> দিয়ে
             </p>
