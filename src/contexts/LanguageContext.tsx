@@ -1,16 +1,18 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { translations, type Lang, type TranslationKey } from "@/lib/translations";
+import { createContext, useContext, useState, ReactNode } from "react";
+import { translations, supportedLanguages, type Lang } from "@/lib/translations";
 
 interface LanguageContextType {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  t: (key: TranslationKey) => string;
+  t: (key: string) => string;
+  supportedLanguages: typeof supportedLanguages;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   lang: "bn",
   setLang: () => {},
   t: (key) => translations[key]?.bn || key,
+  supportedLanguages,
 });
 
 export const useLanguage = () => useContext(LanguageContext);
@@ -18,7 +20,8 @@ export const useLanguage = () => useContext(LanguageContext);
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [lang, setLangState] = useState<Lang>(() => {
     const saved = localStorage.getItem("site_lang");
-    return (saved === "en" || saved === "bn") ? saved : "bn";
+    if (saved && supportedLanguages.some(l => l.code === saved)) return saved;
+    return "bn";
   });
 
   const setLang = (l: Lang) => {
@@ -26,12 +29,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("site_lang", l);
   };
 
-  const t = (key: TranslationKey): string => {
-    return translations[key]?.[lang] || key;
+  const t = (key: string): string => {
+    return translations[key]?.[lang] || translations[key]?.bn || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <LanguageContext.Provider value={{ lang, setLang, t, supportedLanguages }}>
       {children}
     </LanguageContext.Provider>
   );

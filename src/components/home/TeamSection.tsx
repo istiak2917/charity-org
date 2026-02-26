@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ScrollReveal from "@/components/ScrollReveal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TeamMember { id: string; name: string; role: string; image_url: string; bio: string; }
 
 const TeamSection = () => {
   const [members, setMembers] = useState<TeamMember[]>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     supabase.from("team_members").select("*").order("created_at", { ascending: true }).then(({ data }) => {
@@ -19,10 +21,10 @@ const TeamSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <ScrollReveal>
           <div className="text-center mb-14">
-            <span className="text-primary text-sm font-medium tracking-wider uppercase">আমাদের মানুষ</span>
-            <h2 className="text-3xl md:text-4xl font-bold font-heading mt-2 mb-4">আমাদের দল</h2>
+            <span className="text-primary text-sm font-medium tracking-wider uppercase">{t("team_our_people")}</span>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mt-2 mb-4">{t("team_title")}</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
-            <p className="text-muted-foreground mt-4">নিবেদিতপ্রাণ যারা শিশুদের জন্য কাজ করেন</p>
+            <p className="text-muted-foreground mt-4">{t("team_subtitle")}</p>
           </div>
         </ScrollReveal>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -46,7 +48,7 @@ const TeamSection = () => {
             </ScrollReveal>
           ))}
         </div>
-        {members.length === 0 && <div className="text-center text-muted-foreground py-8">টিম মেম্বার যোগ করা হয়নি</div>}
+        {members.length === 0 && <div className="text-center text-muted-foreground py-8">{t("team_no_data")}</div>}
       </div>
     </section>
   );

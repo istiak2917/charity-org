@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import ScrollReveal from "@/components/ScrollReveal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GalleryItem { id: string; title: string; image_url: string; category: string; caption: string; }
 
 const GallerySection = () => {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     supabase.from("gallery_items").select("*").order("created_at", { ascending: false }).limit(8).then(({ data }) => {
@@ -21,10 +23,10 @@ const GallerySection = () => {
       <div className="container mx-auto px-4">
         <ScrollReveal>
           <div className="text-center mb-14">
-            <span className="text-primary text-sm font-medium tracking-wider uppercase">আমাদের মুহূর্ত</span>
-            <h2 className="text-3xl md:text-4xl font-bold font-heading mt-2 mb-4">গ্যালারি</h2>
+            <span className="text-primary text-sm font-medium tracking-wider uppercase">{t("gallery_moments")}</span>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mt-2 mb-4">{t("gallery_title")}</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
-            <p className="text-muted-foreground mt-4">আমাদের কার্যক্রমের কিছু মুহূর্ত</p>
+            <p className="text-muted-foreground mt-4">{t("gallery_subtitle")}</p>
           </div>
         </ScrollReveal>
         <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
@@ -46,7 +48,7 @@ const GallerySection = () => {
             </ScrollReveal>
           ))}
         </div>
-        {items.length === 0 && <div className="text-center text-muted-foreground py-8">গ্যালারিতে কোনো ছবি নেই</div>}
+        {items.length === 0 && <div className="text-center text-muted-foreground py-8">{t("gallery_no_data")}</div>}
       </div>
     </section>
   );

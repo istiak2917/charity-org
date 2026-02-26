@@ -1,25 +1,27 @@
 import { Users, Heart, BookOpen, Award } from "lucide-react";
 import CountUp from "@/components/CountUp";
 import ScrollReveal from "@/components/ScrollReveal";
-
-const counters = [
-  { icon: Users, target: 1250, label: "সুবিধাভোগী শিশু", suffix: "+" },
-  { icon: Heart, target: 85, label: "সম্পন্ন প্রকল্প", suffix: "+" },
-  { icon: BookOpen, target: 320, label: "স্বেচ্ছাসেবক", suffix: "+" },
-  { icon: Award, target: 15, label: "বছরের অভিজ্ঞতা", suffix: "+" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const ImpactSection = () => {
+  const { t } = useLanguage();
+
+  const counters = [
+    { icon: Users, target: 1250, label: t("impact_beneficiaries"), suffix: "+" },
+    { icon: Heart, target: 85, label: t("impact_projects"), suffix: "+" },
+    { icon: BookOpen, target: 320, label: t("impact_volunteers"), suffix: "+" },
+    { icon: Award, target: 15, label: t("impact_experience"), suffix: "+" },
+  ];
+
   return (
     <section className="py-20 relative overflow-hidden bg-gradient-to-br from-primary via-primary to-accent text-primary-foreground">
-      {/* Decorative circles */}
       <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-primary-foreground/5 -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-72 h-72 rounded-full bg-primary-foreground/5 translate-x-1/3 translate-y-1/3" />
 
       <div className="container mx-auto px-4 relative z-10">
         <ScrollReveal>
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">আমাদের প্রভাব</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">{t("impact_title")}</h2>
             <div className="w-16 h-1 bg-primary-foreground/30 mx-auto rounded-full" />
           </div>
         </ScrollReveal>

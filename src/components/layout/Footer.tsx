@@ -5,6 +5,7 @@ import { Heart, Mail, Phone, MapPin, Facebook, Youtube, Instagram, Send, Message
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import logo from "@/assets/shishuful-logo.jpg";
 
 const SOCIAL_ICONS: Record<string, any> = {
@@ -24,6 +25,7 @@ const Footer = () => {
   const [nlEmail, setNlEmail] = useState("");
   const [nlLoading, setNlLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     Promise.all([
@@ -50,33 +52,36 @@ const Footer = () => {
     if (!nlEmail) return;
     setNlLoading(true);
     try {
-      // Try edge function first, fallback to direct insert
       try {
-        await supabase.functions.invoke("newsletter-subscribe", {
-          body: { email: nlEmail, action: "subscribe" },
-        });
+        await supabase.functions.invoke("newsletter-subscribe", { body: { email: nlEmail, action: "subscribe" } });
       } catch {
-        await supabase.from("newsletter_subscribers").upsert(
-          { email: nlEmail, status: "active" },
-          { onConflict: "email" }
-        );
+        await supabase.from("newsletter_subscribers").upsert({ email: nlEmail, status: "active" }, { onConflict: "email" });
       }
-      toast({ title: "নিউজলেটারে সাবস্ক্রাইব হয়েছে! ✅" });
+      toast({ title: t("footer_newsletter_success") });
       setNlEmail("");
     } catch (err: any) {
-      toast({ title: "সাবস্ক্রাইব ব্যর্থ", description: err.message, variant: "destructive" });
+      toast({ title: t("footer_newsletter_fail"), description: err.message, variant: "destructive" });
     }
     setNlLoading(false);
   };
 
   const orgName = org?.name || "শিশুফুল";
-  const footerText = settings.footer_text || `© ${new Date().getFullYear()} ${orgName}। সর্বস্বত্ব সংরক্ষিত।`;
+  const footerText = settings.footer_text || `© ${new Date().getFullYear()} ${orgName}`;
 
-  // Collect social links
   const socialKeys = ["social_facebook", "social_youtube", "social_instagram", "social_twitter", "social_linkedin", "social_whatsapp", "social_telegram"];
   const socialLinks = socialKeys
     .map(key => ({ key, url: settings[key] || (key === "social_facebook" ? org?.facebook : key === "social_youtube" ? org?.youtube : "") }))
     .filter(s => s.url && s.url !== "#" && s.url.length > 3);
+
+  const quickLinks = [
+    { label: t("footer_projects"), href: "/projects" },
+    { label: t("footer_donations"), href: "/donations" },
+    { label: t("footer_events"), href: "/events" },
+    { label: t("footer_blog"), href: "/blog" },
+    { label: t("footer_blood"), href: "/blood" },
+    { label: t("footer_gallery"), href: "/gallery" },
+    { label: t("footer_transparency"), href: "/transparency" },
+  ];
 
   return (
     <footer id="contact" className="relative overflow-hidden">
@@ -96,22 +101,14 @@ const Footer = () => {
                 <img src={org?.logo_url || logo} alt={orgName} className="h-12 rounded-xl shadow-lg" />
                 <span className="text-xl font-bold font-heading">{orgName}</span>
               </div>
-              <p className="text-sm opacity-70 leading-relaxed">{org?.description?.slice(0, 120) || "প্রতিটি শিশুর মুখে হাসি ফোটানো আমাদের অঙ্গীকার।"}</p>
+              <p className="text-sm opacity-70 leading-relaxed">{org?.description?.slice(0, 120) || t("footer_default_desc")}</p>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-bold font-heading mb-4 text-lg">দ্রুত লিংক</h4>
+              <h4 className="font-bold font-heading mb-4 text-lg">{t("footer_quick_links")}</h4>
               <ul className="space-y-2.5 text-sm">
-                {[
-                  { label: "প্রকল্পসমূহ", href: "/projects" },
-                  { label: "অনুদান", href: "/donations" },
-                  { label: "ইভেন্ট", href: "/events" },
-                  { label: "ব্লগ", href: "/blog" },
-                  { label: "রক্তদান", href: "/blood" },
-                  { label: "গ্যালারি", href: "/gallery" },
-                  { label: "স্বচ্ছতা", href: "/transparency" },
-                ].map((link) => (
+                {quickLinks.map((link) => (
                   <li key={link.href}>
                     <Link to={link.href} className="opacity-70 hover:opacity-100 hover:text-primary transition-all duration-200 inline-block hover:translate-x-1">{link.label}</Link>
                   </li>
@@ -121,7 +118,7 @@ const Footer = () => {
 
             {/* Policy Pages */}
             <div>
-              <h4 className="font-bold font-heading mb-4 text-lg">নীতিমালা</h4>
+              <h4 className="font-bold font-heading mb-4 text-lg">{t("footer_policies")}</h4>
               <ul className="space-y-2.5 text-sm">
                 {policyPages.map((p) => (
                   <li key={p.id}>
@@ -129,36 +126,34 @@ const Footer = () => {
                   </li>
                 ))}
                 {policyPages.length === 0 && (
-                  <li className="opacity-50 text-xs">কোনো নীতিমালা প্রকাশিত নেই</li>
+                  <li className="opacity-50 text-xs">{t("footer_no_policies")}</li>
                 )}
               </ul>
             </div>
 
             {/* Contact */}
             <div>
-              <h4 className="font-bold font-heading mb-4 text-lg">যোগাযোগ</h4>
+              <h4 className="font-bold font-heading mb-4 text-lg">{t("footer_contact")}</h4>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center gap-2 opacity-70"><Mail className="h-4 w-4 text-primary" /> {org?.email || org?.contact_email || "info@shishuful.org"}</li>
                 <li className="flex items-center gap-2 opacity-70"><Phone className="h-4 w-4 text-primary" /> {org?.phone || org?.contact_phone || "+880 1XXX-XXXXXX"}</li>
                 <li className="flex items-center gap-2 opacity-70"><MapPin className="h-4 w-4 text-primary" /> {org?.address || "বাংলাদেশ"}</li>
               </ul>
-
-              {/* Map Link */}
               {settings.map_url && (
                 <a href={settings.map_url} target="_blank" rel="noopener noreferrer"
                    className="mt-3 inline-flex items-center gap-2 text-xs opacity-70 hover:opacity-100 hover:text-primary transition-all">
-                  <MapPin className="h-3 w-3" /> গুগল ম্যাপে দেখুন →
+                  <MapPin className="h-3 w-3" /> {t("footer_view_map")}
                 </a>
               )}
             </div>
 
             {/* Newsletter + Social */}
             <div>
-              <h4 className="font-bold font-heading mb-4 text-lg">নিউজলেটার</h4>
+              <h4 className="font-bold font-heading mb-4 text-lg">{t("footer_newsletter")}</h4>
               <form onSubmit={handleNewsletterSubscribe} className="flex gap-2 mb-5">
                 <Input
                   type="email"
-                  placeholder="আপনার ইমেইল"
+                  placeholder={t("footer_email_placeholder")}
                   value={nlEmail}
                   onChange={(e) => setNlEmail(e.target.value)}
                   required
@@ -169,7 +164,7 @@ const Footer = () => {
                 </Button>
               </form>
 
-              <h4 className="font-bold font-heading mb-3 text-lg">সোশ্যাল মিডিয়া</h4>
+              <h4 className="font-bold font-heading mb-3 text-lg">{t("footer_social_media")}</h4>
               <div className="flex flex-wrap gap-2">
                 {socialLinks.map(({ key, url }) => {
                   const IconComp = SOCIAL_ICONS[key];
@@ -200,26 +195,23 @@ const Footer = () => {
                   <Smartphone className="h-6 w-6 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-sm">আমাদের অ্যাপ ডাউনলোড করুন</p>
-                  <p className="text-xs opacity-60">মোবাইলে অ্যাপের মতো ব্যবহার করুন</p>
+                  <p className="font-bold text-sm">{t("footer_app_download")}</p>
+                  <p className="text-xs opacity-60">{t("footer_app_desc")}</p>
                 </div>
               </div>
               <Button
-                onClick={() => {
-                  const evt = new Event("show-pwa-install");
-                  window.dispatchEvent(evt);
-                }}
+                onClick={() => { window.dispatchEvent(new Event("show-pwa-install")); }}
                 className="gap-2"
                 size="sm"
               >
-                <Download className="h-4 w-4" /> ইনস্টল করুন
+                <Download className="h-4 w-4" /> {t("footer_install")}
               </Button>
             </div>
           </div>
 
           <div className="border-t border-background/10 mt-6 pt-6 text-center text-sm opacity-50">
             <p className="flex items-center justify-center gap-1">
-              {footerText} তৈরি করা হয়েছে <Heart className="h-3 w-3 text-primary" /> দিয়ে
+              {footerText} {t("footer_made_with")} <Heart className="h-3 w-3 text-primary" /> {t("footer_with")}
             </p>
           </div>
         </div>

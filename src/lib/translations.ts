@@ -1,7 +1,17 @@
-export type Lang = "bn" | "en";
+export type Lang = "bn" | "en" | string;
 
-export const translations = {
-  // Navbar
+// Add new languages here. Each key maps to { bn, en, ... }
+// You can add "hi", "ar", "fr", etc. by extending each entry.
+export const supportedLanguages: { code: string; label: string; nativeLabel: string }[] = [
+  { code: "bn", label: "Bengali", nativeLabel: "বাংলা" },
+  { code: "en", label: "English", nativeLabel: "English" },
+  // Add more languages below:
+  // { code: "hi", label: "Hindi", nativeLabel: "हिन्दी" },
+  // { code: "ar", label: "Arabic", nativeLabel: "العربية" },
+];
+
+export const translations: Record<string, Record<string, string>> = {
+  // ─── Navbar ───
   nav_home: { bn: "হোম", en: "Home" },
   nav_projects: { bn: "প্রকল্প", en: "Projects" },
   nav_donations: { bn: "অনুদান", en: "Donations" },
@@ -20,8 +30,9 @@ export const translations = {
   nav_admin_panel: { bn: "অ্যাডমিন প্যানেল", en: "Admin Panel" },
   nav_my_profile: { bn: "আমার প্রোফাইল", en: "My Profile" },
   nav_register: { bn: "রেজিস্ট্রেশন", en: "Register" },
+  nav_chat: { bn: "চ্যাট", en: "Chat" },
 
-  // Admin sidebar
+  // ─── Admin sidebar ───
   admin_dashboard: { bn: "ড্যাশবোর্ড", en: "Dashboard" },
   admin_projects: { bn: "প্রকল্প", en: "Projects" },
   admin_donations: { bn: "অনুদান", en: "Donations" },
@@ -64,8 +75,14 @@ export const translations = {
   admin_faq_reviews: { bn: "FAQ ও রিভিউ", en: "FAQ & Reviews" },
   admin_return_site: { bn: "সাইটে ফিরুন", en: "Back to Site" },
   admin_role_label: { bn: "রোল", en: "Role" },
+  admin_chat: { bn: "চ্যাট ম্যানেজমেন্ট", en: "Chat Management" },
+  admin_email_templates: { bn: "ইমেইল টেমপ্লেট", en: "Email Templates" },
+  admin_webhooks: { bn: "ওয়েবহুক", en: "Webhooks" },
+  admin_ab_testing: { bn: "A/B টেস্টিং", en: "A/B Testing" },
+  admin_advanced_reports: { bn: "অ্যাডভান্সড রিপোর্ট", en: "Advanced Reports" },
+  admin_sessions: { bn: "সেশন", en: "Sessions" },
 
-  // Settings page
+  // ─── Settings page ───
   settings_title: { bn: "সেটিংস", en: "Settings" },
   settings_org: { bn: "সংগঠন", en: "Organization" },
   settings_site: { bn: "সাইট সেটিংস", en: "Site Settings" },
@@ -76,7 +93,7 @@ export const translations = {
   settings_save: { bn: "সেভ করুন", en: "Save" },
   settings_saved: { bn: "সেভ হয়েছে!", en: "Saved!" },
 
-  // Permissions
+  // ─── Permissions ───
   perm_view: { bn: "দেখা", en: "View" },
   perm_create: { bn: "তৈরি", en: "Create" },
   perm_edit: { bn: "সম্পাদনা", en: "Edit" },
@@ -88,7 +105,7 @@ export const translations = {
   perm_reset: { bn: "ডিফল্টে রিসেট", en: "Reset to Default" },
   perm_reset_confirm: { bn: "সব পারমিশন ডিফল্টে ফিরবে?", en: "Reset all permissions to default?" },
 
-  // Theme
+  // ─── Theme ───
   theme_dark_mode: { bn: "ডার্ক মোড", en: "Dark Mode" },
   theme_light_mode: { bn: "লাইট মোড", en: "Light Mode" },
   theme_colors: { bn: "রঙ কাস্টমাইজেশন", en: "Color Customization" },
@@ -103,7 +120,7 @@ export const translations = {
   theme_apply: { bn: "থিম প্রয়োগ করুন", en: "Apply Theme" },
   theme_applied: { bn: "থিম প্রয়োগ হয়েছে!", en: "Theme applied!" },
 
-  // Common
+  // ─── Common ───
   common_save: { bn: "সেভ করুন", en: "Save" },
   common_cancel: { bn: "বাতিল", en: "Cancel" },
   common_delete: { bn: "মুছুন", en: "Delete" },
@@ -113,13 +130,177 @@ export const translations = {
   common_loading: { bn: "লোড হচ্ছে...", en: "Loading..." },
   common_no_data: { bn: "কোনো তথ্য পাওয়া যায়নি", en: "No data found" },
 
-  // Chat
-  nav_chat: { bn: "চ্যাট", en: "Chat" },
-  admin_chat: { bn: "চ্যাট ম্যানেজমেন্ট", en: "Chat Management" },
-  admin_email_templates: { bn: "ইমেইল টেমপ্লেট", en: "Email Templates" },
-  admin_webhooks: { bn: "ওয়েবহুক", en: "Webhooks" },
-  admin_ab_testing: { bn: "A/B টেস্টিং", en: "A/B Testing" },
-  admin_advanced_reports: { bn: "অ্যাডভান্সড রিপোর্ট", en: "Advanced Reports" },
-} as const;
+  // ─── Hero Section ───
+  hero_default_headline: { bn: "প্রতিটি শিশুর মুখে হাসি ফোটানো আমাদের অঙ্গীকার", en: "Our commitment is to bring smiles to every child's face" },
+  hero_default_subtext: { bn: "আমরা একসাথে গড়ি মানবতার সুন্দর ভবিষ্যৎ।", en: "Together we build a beautiful future for humanity." },
+  hero_cta_donate: { bn: "অনুদান করুন", en: "Donate Now" },
+  hero_cta_volunteer: { bn: "স্বেচ্ছাসেবক হোন", en: "Become a Volunteer" },
+  hero_cta_learn_more: { bn: "আরও জানুন", en: "Learn More" },
+
+  // ─── About Section ───
+  about_identity: { bn: "আমাদের পরিচয়", en: "Who We Are" },
+  about_title: { bn: "আমাদের সম্পর্কে", en: "About Us" },
+  about_default_desc: { bn: "শিশুফুল একটি অলাভজনক মানবিক সংগঠন যা শিশুদের সামগ্রিক কল্যাণে নিবেদিত।", en: "Shishuful is a nonprofit humanitarian organization dedicated to the overall welfare of children." },
+  about_goal: { bn: "আমাদের লক্ষ্য", en: "Our Goal" },
+  about_goal_desc: { bn: "প্রতিটি সুবিধাবঞ্চিত শিশুর জীবনে আলো জ্বালানো।", en: "To bring light to the life of every underprivileged child." },
+  about_mission: { bn: "আমাদের মিশন", en: "Our Mission" },
+  about_mission_desc: { bn: "শিক্ষা, স্বাস্থ্যসেবা এবং সামাজিক সহায়তা।", en: "Education, healthcare, and social support." },
+  about_vision: { bn: "আমাদের ভিশন", en: "Our Vision" },
+  about_vision_desc: { bn: "প্রতিটি শিশু নিরাপদ, শিক্ষিত এবং সুখী।", en: "Every child is safe, educated, and happy." },
+
+  // ─── Donation Section ───
+  donation_title: { bn: "অনুদান দিন", en: "Make a Donation" },
+  donation_subtitle: { bn: "আপনার ছোট অনুদানও একটি শিশুর জীবন বদলে দিতে পারে।", en: "Even a small donation can change a child's life." },
+  donation_payment_info: { bn: "পেমেন্ট তথ্য", en: "Payment Information" },
+  donation_bkash: { bn: "বিকাশ", en: "bKash" },
+  donation_nagad: { bn: "নগদ", en: "Nagad" },
+  donation_bank: { bn: "ব্যাংক", en: "Bank" },
+  donation_learn_more: { bn: "অনুদান সম্পর্কে জানুন", en: "Learn About Donations" },
+  donation_bkash_default: { bn: "01XXX-XXXXXX (পার্সোনাল)", en: "01XXX-XXXXXX (Personal)" },
+  donation_nagad_default: { bn: "01XXX-XXXXXX", en: "01XXX-XXXXXX" },
+  donation_bank_default: { bn: "শিশুফুল ফাউন্ডেশন, অ্যাকাউন্ট নং: XXXXXXXXXXXX", en: "Shishuful Foundation, Account No: XXXXXXXXXXXX" },
+
+  // ─── Impact Section ───
+  impact_title: { bn: "আমাদের প্রভাব", en: "Our Impact" },
+  impact_beneficiaries: { bn: "সুবিধাভোগী শিশু", en: "Beneficiary Children" },
+  impact_projects: { bn: "সম্পন্ন প্রকল্প", en: "Completed Projects" },
+  impact_volunteers: { bn: "স্বেচ্ছাসেবক", en: "Volunteers" },
+  impact_experience: { bn: "বছরের অভিজ্ঞতা", en: "Years of Experience" },
+
+  // ─── Projects Section ───
+  projects_our_work: { bn: "আমাদের কাজ", en: "Our Work" },
+  projects_title: { bn: "আমাদের প্রকল্পসমূহ", en: "Our Projects" },
+  projects_subtitle: { bn: "বর্তমানে চলমান এবং সম্পন্ন প্রকল্পসমূহ", en: "Currently ongoing and completed projects" },
+  projects_completed: { bn: "সম্পন্ন", en: "Completed" },
+  projects_ongoing: { bn: "চলমান", en: "Ongoing" },
+  projects_urgent: { bn: "জরুরি", en: "Urgent" },
+  projects_raised: { bn: "উঠেছে", en: "Raised" },
+  projects_goal: { bn: "লক্ষ্য", en: "Goal" },
+  projects_details: { bn: "বিস্তারিত", en: "Details" },
+  projects_donate: { bn: "দান করুন", en: "Donate" },
+  projects_no_data: { bn: "কোনো প্রকল্প নেই", en: "No projects found" },
+  projects_view_all: { bn: "সব প্রকল্প দেখুন", en: "View All Projects" },
+
+  // ─── Events Section ───
+  events_upcoming: { bn: "আসন্ন কার্যক্রম", en: "Upcoming Activities" },
+  events_title: { bn: "আসন্ন ইভেন্ট", en: "Upcoming Events" },
+  events_completed: { bn: "সম্পন্ন", en: "Completed" },
+  events_upcoming_badge: { bn: "আসন্ন", en: "Upcoming" },
+  events_details: { bn: "বিস্তারিত", en: "Details" },
+  events_no_data: { bn: "কোনো ইভেন্ট নেই", en: "No events found" },
+  events_view_all: { bn: "সব ইভেন্ট দেখুন", en: "View All Events" },
+
+  // ─── Blog Section ───
+  blog_latest_news: { bn: "সর্বশেষ সংবাদ", en: "Latest News" },
+  blog_title: { bn: "সর্বশেষ ব্লগ", en: "Latest Blog" },
+  blog_subtitle: { bn: "আমাদের সাম্প্রতিক কার্যক্রম এবং গল্প", en: "Our recent activities and stories" },
+  blog_no_data: { bn: "কোনো ব্লগ পোস্ট নেই", en: "No blog posts found" },
+
+  // ─── Team Section ───
+  team_our_people: { bn: "আমাদের মানুষ", en: "Our People" },
+  team_title: { bn: "আমাদের দল", en: "Our Team" },
+  team_subtitle: { bn: "নিবেদিতপ্রাণ যারা শিশুদের জন্য কাজ করেন", en: "Dedicated people who work for children" },
+  team_no_data: { bn: "টিম মেম্বার যোগ করা হয়নি", en: "No team members added" },
+
+  // ─── Gallery Section ───
+  gallery_moments: { bn: "আমাদের মুহূর্ত", en: "Our Moments" },
+  gallery_title: { bn: "গ্যালারি", en: "Gallery" },
+  gallery_subtitle: { bn: "আমাদের কার্যক্রমের কিছু মুহূর্ত", en: "Some moments from our activities" },
+  gallery_no_data: { bn: "গ্যালারিতে কোনো ছবি নেই", en: "No photos in gallery" },
+
+  // ─── Review Section ───
+  review_label: { bn: "রিভিউ ও মতামত", en: "Reviews & Opinions" },
+  review_title: { bn: "তারা আমাদের সম্পর্কে বলেন", en: "What They Say About Us" },
+
+  // ─── FAQ Section ───
+  faq_label: { bn: "সচরাচর জিজ্ঞাসা", en: "Frequently Asked" },
+  faq_title: { bn: "আপনার প্রশ্নের উত্তর", en: "Answers to Your Questions" },
+
+  // ─── Transparency Section ───
+  transparency_label: { bn: "আর্থিক প্রতিবেদন", en: "Financial Report" },
+  transparency_title: { bn: "স্বচ্ছতা প্রতিবেদন", en: "Transparency Report" },
+  transparency_subtitle: { bn: "আমাদের তহবিলের ব্যবহার সম্পূর্ণ স্বচ্ছ", en: "Our fund utilization is completely transparent" },
+  transparency_collected: { bn: "মোট সংগৃহীত", en: "Total Collected" },
+  transparency_fund_usage: { bn: "তহবিল ব্যবহার", en: "Fund Usage" },
+  transparency_total_expense: { bn: "মোট ব্যয়", en: "Total Expenses" },
+  transparency_efficient_usage: { bn: "সংগৃহীত তহবিলের সুশৃঙ্খল ব্যবহার", en: "Efficient use of collected funds" },
+  transparency_no_data: { bn: "ডেটা নেই", en: "No data" },
+  transparency_other: { bn: "অন্যান্য", en: "Others" },
+
+  // ─── Contact Section ───
+  contact_title: { bn: "যোগাযোগ করুন", en: "Contact Us" },
+  contact_subtitle: { bn: "আমাদের সাথে যোগাযোগ করতে নিচের ফর্মটি পূরণ করুন", en: "Fill out the form below to contact us" },
+  contact_name: { bn: "আপনার নাম", en: "Your Name" },
+  contact_email: { bn: "ইমেইল", en: "Email" },
+  contact_subject: { bn: "বিষয়", en: "Subject" },
+  contact_message: { bn: "আপনার বার্তা লিখুন...", en: "Write your message..." },
+  contact_send: { bn: "বার্তা পাঠান", en: "Send Message" },
+  contact_sending: { bn: "পাঠানো হচ্ছে...", en: "Sending..." },
+  contact_success: { bn: "বার্তা পাঠানো হয়েছে!", en: "Message sent!" },
+  contact_success_desc: { bn: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।", en: "We will contact you soon." },
+  contact_fail: { bn: "বার্তা পাঠানো যায়নি", en: "Failed to send message" },
+
+  // ─── Footer ───
+  footer_quick_links: { bn: "দ্রুত লিংক", en: "Quick Links" },
+  footer_policies: { bn: "নীতিমালা", en: "Policies" },
+  footer_no_policies: { bn: "কোনো নীতিমালা প্রকাশিত নেই", en: "No policies published" },
+  footer_contact: { bn: "যোগাযোগ", en: "Contact" },
+  footer_newsletter: { bn: "নিউজলেটার", en: "Newsletter" },
+  footer_email_placeholder: { bn: "আপনার ইমেইল", en: "Your email" },
+  footer_social_media: { bn: "সোশ্যাল মিডিয়া", en: "Social Media" },
+  footer_app_download: { bn: "আমাদের অ্যাপ ডাউনলোড করুন", en: "Download Our App" },
+  footer_app_desc: { bn: "মোবাইলে অ্যাপের মতো ব্যবহার করুন", en: "Use like an app on your mobile" },
+  footer_install: { bn: "ইনস্টল করুন", en: "Install" },
+  footer_made_with: { bn: "তৈরি করা হয়েছে", en: "Made with" },
+  footer_with: { bn: "দিয়ে", en: "" },
+  footer_newsletter_success: { bn: "নিউজলেটারে সাবস্ক্রাইব হয়েছে! ✅", en: "Subscribed to newsletter! ✅" },
+  footer_newsletter_fail: { bn: "সাবস্ক্রাইব ব্যর্থ", en: "Subscription failed" },
+  footer_default_desc: { bn: "প্রতিটি শিশুর মুখে হাসি ফোটানো আমাদের অঙ্গীকার।", en: "Our commitment is to bring smiles to every child's face." },
+  footer_view_map: { bn: "গুগল ম্যাপে দেখুন →", en: "View on Google Maps →" },
+  footer_projects: { bn: "প্রকল্পসমূহ", en: "Projects" },
+  footer_donations: { bn: "অনুদান", en: "Donations" },
+  footer_events: { bn: "ইভেন্ট", en: "Events" },
+  footer_blog: { bn: "ব্লগ", en: "Blog" },
+  footer_blood: { bn: "রক্তদান", en: "Blood Donation" },
+  footer_gallery: { bn: "গ্যালারি", en: "Gallery" },
+  footer_transparency: { bn: "স্বচ্ছতা", en: "Transparency" },
+
+  // ─── Admin Dashboard ───
+  dash_title: { bn: "ড্যাশবোর্ড", en: "Dashboard" },
+  dash_total_donations: { bn: "মোট অনুদান", en: "Total Donations" },
+  dash_total_income: { bn: "মোট আয়", en: "Total Income" },
+  dash_total_expenses: { bn: "মোট ব্যয়", en: "Total Expenses" },
+  dash_monthly_donations: { bn: "মাসভিত্তিক অনুদান", en: "Monthly Donations" },
+  dash_donation_label: { bn: "অনুদান", en: "Donations" },
+  dash_no_data: { bn: "ডেটা নেই", en: "No data" },
+  dash_total_projects: { bn: "মোট প্রকল্প", en: "Total Projects" },
+  dash_active_projects: { bn: "সক্রিয় প্রকল্প", en: "Active Projects" },
+  dash_completed_projects: { bn: "সম্পন্ন প্রকল্প", en: "Completed Projects" },
+  dash_projects: { bn: "প্রকল্প", en: "Projects" },
+  dash_volunteers: { bn: "স্বেচ্ছাসেবক", en: "Volunteers" },
+  dash_events: { bn: "ইভেন্ট", en: "Events" },
+  dash_blog_posts: { bn: "ব্লগ পোস্ট", en: "Blog Posts" },
+
+  // ─── Months ───
+  month_jan: { bn: "জানু", en: "Jan" },
+  month_feb: { bn: "ফেব্রু", en: "Feb" },
+  month_mar: { bn: "মার্চ", en: "Mar" },
+  month_apr: { bn: "এপ্রি", en: "Apr" },
+  month_may: { bn: "মে", en: "May" },
+  month_jun: { bn: "জুন", en: "Jun" },
+  month_jul: { bn: "জুলা", en: "Jul" },
+  month_aug: { bn: "আগ", en: "Aug" },
+  month_sep: { bn: "সেপ্টে", en: "Sep" },
+  month_oct: { bn: "অক্টো", en: "Oct" },
+  month_nov: { bn: "নভে", en: "Nov" },
+  month_dec: { bn: "ডিসে", en: "Dec" },
+
+  // ─── PWA Install ───
+  pwa_install_title: { bn: "শিশুফুল অ্যাপ ইনস্টল করুন!", en: "Install Shishuful App!" },
+  pwa_install_desc: { bn: "মোবাইলে অ্যাপের মতো ব্যবহার করুন", en: "Use like an app on your mobile" },
+  pwa_install_btn: { bn: "ইনস্টল", en: "Install" },
+  pwa_ios_instruction: { bn: "Safari-এ Share বাটন (⬆️) চাপুন → তারপর \"Add to Home Screen\" সিলেক্ট করুন।", en: "Tap the Share button (⬆️) in Safari → then select \"Add to Home Screen\"." },
+  pwa_android_instruction: { bn: "ব্রাউজারের মেনু (⋮) চাপুন → তারপর \"Install app\" বা \"Add to Home Screen\" সিলেক্ট করুন।", en: "Tap the browser menu (⋮) → then select \"Install app\" or \"Add to Home Screen\"." },
+};
 
 export type TranslationKey = keyof typeof translations;

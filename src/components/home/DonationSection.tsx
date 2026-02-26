@@ -3,10 +3,12 @@ import { supabase } from "@/lib/supabase";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ScrollReveal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const presets = [100, 500, 1000, 5000];
 
 const DonationSection = () => {
+  const { t } = useLanguage();
   const [payment, setPayment] = useState({ bkash: "", nagad: "", bank: "" });
 
   useEffect(() => {
@@ -35,9 +37,9 @@ const DonationSection = () => {
             <div className="inline-flex items-center justify-center w-18 h-18 rounded-full bg-gradient-to-br from-primary/15 to-accent/15 text-primary mb-5">
               <Heart className="h-10 w-10 donation-pulse" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-3">অনুদান দিন</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading mb-3">{t("donation_title")}</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full mb-4" />
-            <p className="text-muted-foreground mb-8">আপনার ছোট অনুদানও একটি শিশুর জীবন বদলে দিতে পারে।</p>
+            <p className="text-muted-foreground mb-8">{t("donation_subtitle")}</p>
           </div>
         </ScrollReveal>
         <ScrollReveal delay={150}>
@@ -50,16 +52,16 @@ const DonationSection = () => {
               ))}
             </div>
             <div className="bg-background rounded-2xl p-6 border border-border/50 text-left space-y-3 mb-6 hover:shadow-md transition-shadow duration-300">
-              <h4 className="font-bold font-heading">পেমেন্ট তথ্য</h4>
+              <h4 className="font-bold font-heading">{t("donation_payment_info")}</h4>
               <div className="text-sm text-muted-foreground space-y-1">
-                <p><strong>বিকাশ:</strong> {payment.bkash || "01XXX-XXXXXX (পার্সোনাল)"}</p>
-                <p><strong>নগদ:</strong> {payment.nagad || "01XXX-XXXXXX"}</p>
-                <p><strong>ব্যাংক:</strong> {payment.bank || "শিশুফুল ফাউন্ডেশন, অ্যাকাউন্ট নং: XXXXXXXXXXXX"}</p>
+                <p><strong>{t("donation_bkash")}:</strong> {payment.bkash || t("donation_bkash_default")}</p>
+                <p><strong>{t("donation_nagad")}:</strong> {payment.nagad || t("donation_nagad_default")}</p>
+                <p><strong>{t("donation_bank")}:</strong> {payment.bank || t("donation_bank_default")}</p>
               </div>
             </div>
             <div className="text-center">
               <Button className="btn-press gap-2 text-base px-8 py-5 bg-gradient-to-r from-primary to-accent shadow-lg hero-btn-glow" size="lg">
-                <Heart className="h-5 w-5" /> অনুদান সম্পর্কে জানুন
+                <Heart className="h-5 w-5" /> {t("donation_learn_more")}
               </Button>
             </div>
           </div>

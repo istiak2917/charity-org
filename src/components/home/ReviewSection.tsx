@@ -2,16 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Star, Quote } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Review {
-  id: string;
-  name: string;
-  role?: string;
-  image_url?: string;
-  text: string;
-  rating: number;
-  is_active: boolean;
-  sort_order: number;
+  id: string; name: string; role?: string; image_url?: string;
+  text: string; rating: number; is_active: boolean; sort_order: number;
 }
 
 const DEMO_REVIEWS: Review[] = [
@@ -22,6 +17,7 @@ const DEMO_REVIEWS: Review[] = [
 
 const ReviewSection = () => {
   const [reviews, setReviews] = useState<Review[]>(DEMO_REVIEWS);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const load = async () => {
@@ -44,9 +40,9 @@ const ReviewSection = () => {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-3">
             <Star className="h-6 w-6 text-primary fill-primary" />
-            <span className="text-sm font-medium text-primary uppercase tracking-wider">রিভিউ ও মতামত</span>
+            <span className="text-sm font-medium text-primary uppercase tracking-wider">{t("review_label")}</span>
           </div>
-          <h2 className="text-3xl font-bold font-heading">তারা আমাদের সম্পর্কে বলেন</h2>
+          <h2 className="text-3xl font-bold font-heading">{t("review_title")}</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
           {reviews.map((review) => (

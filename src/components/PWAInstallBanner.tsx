@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Download, X, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -11,6 +12,7 @@ const PWAInstallBanner = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (window.matchMedia("(display-mode: standalone)").matches) {
@@ -28,8 +30,6 @@ const PWAInstallBanner = () => {
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-
-    // Show banner after delay for all platforms
     const timer = setTimeout(() => setShowBanner(true), 2000);
 
     return () => {
@@ -48,17 +48,11 @@ const PWAInstallBanner = () => {
       }
       setDeferredPrompt(null);
     } else {
-      // For iOS or when prompt isn't available, show instructions
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (isIOS) {
-        alert("Safari-এ Share বাটন (⬆️) চাপুন → তারপর \"Add to Home Screen\" সিলেক্ট করুন।");
-      } else {
-        alert("ব্রাউজারের মেনু (⋮) চাপুন → তারপর \"Install app\" বা \"Add to Home Screen\" সিলেক্ট করুন।");
-      }
+      alert(isIOS ? t("pwa_ios_instruction") : t("pwa_android_instruction"));
     }
-  }, [deferredPrompt]);
+  }, [deferredPrompt, t]);
 
-  // Listen for footer install button
   useEffect(() => {
     const footerInstallHandler = () => handleInstall();
     window.addEventListener("show-pwa-install", footerInstallHandler);
@@ -80,8 +74,8 @@ const PWAInstallBanner = () => {
             <Smartphone className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-sm truncate">শিশুফুল অ্যাপ ইনস্টল করুন!</p>
-            <p className="text-xs opacity-90 truncate">মোবাইলে অ্যাপের মতো ব্যবহার করুন</p>
+            <p className="font-bold text-sm truncate">{t("pwa_install_title")}</p>
+            <p className="text-xs opacity-90 truncate">{t("pwa_install_desc")}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -92,12 +86,12 @@ const PWAInstallBanner = () => {
             className="gap-1.5 bg-white text-primary hover:bg-white/90 font-bold text-xs"
           >
             <Download className="h-3.5 w-3.5" />
-            ইনস্টল
+            {t("pwa_install_btn")}
           </Button>
           <button
             onClick={handleDismiss}
             className="p-1 rounded-full hover:bg-white/20 transition-colors"
-            aria-label="বন্ধ করুন"
+            aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>

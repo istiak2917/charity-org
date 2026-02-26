@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Target, Eye, Heart } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
-
-const icons = [Heart, Target, Eye];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AboutSection = () => {
   const [org, setOrg] = useState<any>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     supabase.from("organizations").select("*").limit(1).maybeSingle().then(({ data }) => {
@@ -15,9 +15,9 @@ const AboutSection = () => {
   }, []);
 
   const items = [
-    { icon: Heart, title: "আমাদের লক্ষ্য", desc: org?.description || "প্রতিটি সুবিধাবঞ্চিত শিশুর জীবনে আলো জ্বালানো।" },
-    { icon: Target, title: "আমাদের মিশন", desc: org?.mission || "শিক্ষা, স্বাস্থ্যসেবা এবং সামাজিক সহায়তা।" },
-    { icon: Eye, title: "আমাদের ভিশন", desc: org?.vision || "প্রতিটি শিশু নিরাপদ, শিক্ষিত এবং সুখী।" },
+    { icon: Heart, title: t("about_goal"), desc: org?.description || t("about_goal_desc") },
+    { icon: Target, title: t("about_mission"), desc: org?.mission || t("about_mission_desc") },
+    { icon: Eye, title: t("about_vision"), desc: org?.vision || t("about_vision_desc") },
   ];
 
   return (
@@ -27,11 +27,11 @@ const AboutSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <ScrollReveal>
           <div className="text-center mb-14">
-            <span className="text-primary text-sm font-medium tracking-wider uppercase">আমাদের পরিচয়</span>
-            <h2 className="text-3xl md:text-4xl font-bold font-heading text-foreground mt-2 mb-4">আমাদের সম্পর্কে</h2>
+            <span className="text-primary text-sm font-medium tracking-wider uppercase">{t("about_identity")}</span>
+            <h2 className="text-3xl md:text-4xl font-bold font-heading text-foreground mt-2 mb-4">{t("about_title")}</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
             <p className="text-muted-foreground max-w-2xl mx-auto mt-4">
-              {org?.description || "শিশুফুল একটি অলাভজনক মানবিক সংগঠন যা শিশুদের সামগ্রিক কল্যাণে নিবেদিত।"}
+              {org?.description || t("about_default_desc")}
             </p>
           </div>
         </ScrollReveal>
