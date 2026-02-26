@@ -72,6 +72,9 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { module: "dashboard", labelKey: "admin_impact", path: "/admin/impact", icon: "TrendingUp" },
   { module: "dashboard", labelKey: "admin_notifications", path: "/admin/notifications", icon: "Bell" },
   { module: "dashboard", labelKey: "admin_directories", path: "/admin/directories", icon: "List" },
+  { module: "dashboard", labelKey: "admin_forms", path: "/admin/forms", icon: "FileText" },
+  { module: "dashboard", labelKey: "admin_polls", path: "/admin/polls", icon: "BarChart3" },
+  { module: "dashboard", labelKey: "admin_faq_reviews", path: "/admin/faq-reviews", icon: "MessageCircle" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {

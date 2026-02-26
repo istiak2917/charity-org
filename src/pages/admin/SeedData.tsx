@@ -388,8 +388,20 @@ const SeedData = () => {
       }
     } catch (e: any) { addResult("chat_messages", false, e.message); }
 
-    // 23. Integration & Chat site_settings
+    // 23. Integration & Chat site_settings + FAQ & Reviews
     try {
+      const demoFaqs = [
+        { id: crypto.randomUUID(), question: "আপনারা কীভাবে কাজ করেন?", answer: "আমরা সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও খাদ্য সহায়তা দিই। আমাদের স্বেচ্ছাসেবকরা মাঠ পর্যায়ে কাজ করেন।", is_active: true, sort_order: 0 },
+        { id: crypto.randomUUID(), question: "কীভাবে অনুদান দিতে পারি?", answer: "বিকাশ, নগদ, ব্যাংক ট্রান্সফার বা আমাদের ওয়েবসাইটের মাধ্যমে অনুদান দিতে পারেন।", is_active: true, sort_order: 1 },
+        { id: crypto.randomUUID(), question: "স্বেচ্ছাসেবক হতে চাইলে কী করতে হবে?", answer: "আমাদের ওয়েবসাইটে রেজিস্ট্রেশন করুন এবং স্বেচ্ছাসেবক ফর্ম পূরণ করুন। আমরা আপনার সাথে যোগাযোগ করব।", is_active: true, sort_order: 2 },
+        { id: crypto.randomUUID(), question: "অনুদানের অর্থ কোথায় ব্যয় হয়?", answer: "সকল অনুদানের বিস্তারিত হিসাব আমাদের স্বচ্ছতা পেজে প্রকাশ করা হয়। প্রতিটি টাকার হিসাব রাখা হয়।", is_active: true, sort_order: 3 },
+      ];
+      const demoReviews = [
+        { id: crypto.randomUUID(), name: "আব্দুর রহমান", role: "নিয়মিত দাতা", image_url: "", text: "শিশুফুল ফাউন্ডেশনের কাজে আমি অত্যন্ত সন্তুষ্ট। তারা প্রতিটি টাকার সঠিক ব্যবহার নিশ্চিত করে।", rating: 5, is_active: true, sort_order: 0 },
+        { id: crypto.randomUUID(), name: "ফাতেমা বেগম", role: "স্বেচ্ছাসেবক", image_url: "", text: "স্বেচ্ছাসেবক হিসেবে কাজ করে দারুণ অভিজ্ঞতা হয়েছে। শিশুদের হাসি দেখে মন ভরে যায়।", rating: 5, is_active: true, sort_order: 1 },
+        { id: crypto.randomUUID(), name: "তানভীর হাসান", role: "কর্পোরেট স্পন্সর", image_url: "", text: "একটি স্বচ্ছ ও দায়বদ্ধ সংগঠন। তাদের সাথে কাজ করতে পেরে গর্বিত।", rating: 4, is_active: true, sort_order: 2 },
+      ];
+
       const extraSettings = [
         { setting_key: "chat_enabled", setting_value: JSON.stringify("true") },
         { setting_key: "support_chat_enabled", setting_value: JSON.stringify("true") },
@@ -397,10 +409,76 @@ const SeedData = () => {
         { setting_key: "seo_title", setting_value: JSON.stringify("শিশুফুল ফাউন্ডেশন - সুবিধাবঞ্চিত শিশুদের পাশে") },
         { setting_key: "seo_description", setting_value: JSON.stringify("শিশুফুল ফাউন্ডেশন সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও সামাজিক উন্নয়নে কাজ করে।") },
         { setting_key: "seo_keywords", setting_value: JSON.stringify("চ্যারিটি, এনজিও, শিশু শিক্ষা, অনুদান, বাংলাদেশ") },
+        { setting_key: "homepage_faqs", setting_value: JSON.stringify(demoFaqs) },
+        { setting_key: "homepage_reviews", setting_value: JSON.stringify(demoReviews) },
       ];
       await supabase.from("site_settings").upsert(extraSettings, { onConflict: "setting_key" });
-      addResult("site_settings (extra)", true, "চ্যাট ও SEO সেটিংস যোগ হয়েছে");
+      addResult("site_settings (extra)", true, "চ্যাট, SEO, FAQ ও রিভিউ সেটিংস যোগ হয়েছে");
     } catch (e: any) { addResult("site_settings (extra)", false, e.message); }
+
+    // 24. Demo Form
+    try {
+      const formSlug = "volunteer-registration";
+      const { data: existingForm } = await supabase.from("custom_forms").select("id").eq("slug", formSlug).limit(1);
+      if (!existingForm || existingForm.length === 0) {
+        await safeInsert("custom_forms", {
+          title: "স্বেচ্ছাসেবক রেজিস্ট্রেশন ফর্ম",
+          slug: formSlug,
+          description: "স্বেচ্ছাসেবক হিসেবে যোগ দিতে এই ফর্মটি পূরণ করুন।",
+          config: {
+            fields: [
+              { id: crypto.randomUUID(), label: "পুরো নাম", type: "text", required: true, width: "full" },
+              { id: crypto.randomUUID(), label: "ইমেইল", type: "email", required: true, width: "half" },
+              { id: crypto.randomUUID(), label: "ফোন নম্বর", type: "phone", required: true, width: "half" },
+              { id: crypto.randomUUID(), label: "ঠিকানা", type: "textarea", required: false, width: "full" },
+              { id: crypto.randomUUID(), label: "দক্ষতা", type: "select", required: true, options: ["শিক্ষকতা", "গ্রাফিক ডিজাইন", "ফটোগ্রাফি", "ইভেন্ট ম্যানেজমেন্ট", "অন্যান্য"], width: "full" },
+            ],
+            submit_text: "আবেদন করুন",
+            success_message: "আপনার আবেদন সফলভাবে জমা হয়েছে! শীঘ্রই আপনার সাথে যোগাযোগ করা হবে।",
+            is_public: true,
+          },
+          is_active: true,
+        });
+        addResult("custom_forms", true, "ডেমো ফর্ম তৈরি হয়েছে");
+      } else {
+        addResult("custom_forms", true, "আগে থেকেই আছে");
+      }
+    } catch (e: any) { addResult("custom_forms", false, e.message); }
+
+    // 25. Demo Poll
+    try {
+      const { data: existingPoll } = await supabase.from("polls").select("id").limit(1);
+      if (!existingPoll || existingPoll.length === 0) {
+        await safeInsert("polls", {
+          question: "আপনি কোন খাতে অনুদান দিতে চান?",
+          description: "আপনার পছন্দ জানান যাতে আমরা সেই অনুযায়ী কাজ করতে পারি।",
+          options: [
+            { id: crypto.randomUUID(), text: "শিশু শিক্ষা", votes: 45 },
+            { id: crypto.randomUUID(), text: "স্বাস্থ্য সেবা", votes: 30 },
+            { id: crypto.randomUUID(), text: "খাদ্য সহায়তা", votes: 25 },
+            { id: crypto.randomUUID(), text: "শীতবস্ত্র বিতরণ", votes: 20 },
+          ],
+          is_active: true,
+          show_results: true,
+          total_votes: 120,
+        });
+        addResult("polls", true, "ডেমো পোল তৈরি হয়েছে");
+      } else {
+        addResult("polls", true, "আগে থেকেই আছে");
+      }
+    } catch (e: any) { addResult("polls", false, e.message); }
+
+    // 26. Homepage sections: add faq & reviews
+    try {
+      const { data: existingFaq } = await supabase.from("homepage_sections").select("id").eq("section_key", "faq").limit(1);
+      if (!existingFaq || existingFaq.length === 0) {
+        await safeInsert("homepage_sections", { section_key: "faq", title: "সচরাচর জিজ্ঞাসা", is_visible: true, position: 12 });
+        await safeInsert("homepage_sections", { section_key: "reviews", title: "রিভিউ ও মতামত", is_visible: true, position: 13 });
+        addResult("homepage_sections (faq/reviews)", true, "FAQ ও রিভিউ সেকশন যোগ হয়েছে");
+      } else {
+        addResult("homepage_sections (faq/reviews)", true, "আগে থেকেই আছে");
+      }
+    } catch (e: any) { addResult("homepage_sections (faq/reviews)", false, e.message); }
 
     setRunning(false);
     toast({ title: "✅ সিড ডেটা প্রক্রিয়া সম্পন্ন!" });

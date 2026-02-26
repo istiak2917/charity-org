@@ -59,6 +59,9 @@ export const translations = {
   admin_impact: { bn: "ইমপ্যাক্ট", en: "Impact" },
   admin_notifications: { bn: "নোটিফিকেশন", en: "Notifications" },
   admin_directories: { bn: "পাবলিক ডিরেক্টরি", en: "Public Directories" },
+  admin_forms: { bn: "ফর্ম বিল্ডার", en: "Form Builder" },
+  admin_polls: { bn: "পোল/সার্ভে", en: "Polls/Surveys" },
+  admin_faq_reviews: { bn: "FAQ ও রিভিউ", en: "FAQ & Reviews" },
   admin_return_site: { bn: "সাইটে ফিরুন", en: "Back to Site" },
   admin_role_label: { bn: "রোল", en: "Role" },
 

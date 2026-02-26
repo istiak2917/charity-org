@@ -78,7 +78,12 @@ import DocumentVault from "./pages/admin/DocumentVault";
 import ImpactDashboard from "./pages/admin/ImpactDashboard";
 import NotificationQueue from "./pages/admin/NotificationQueue";
 import DirectoryManager from "./pages/admin/DirectoryManager";
+import FormBuilder from "./pages/admin/FormBuilder";
+import PollManager from "./pages/admin/PollManager";
+import FAQReviewManager from "./pages/admin/FAQReviewManager";
 import DirectoryPage from "./pages/public/DirectoryPage";
+import FormPage from "./pages/public/FormPage";
+import PollPage from "./pages/public/PollPage";
 
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
@@ -137,6 +142,8 @@ const App = () => (
             <Route path="/map" element={<MapPage />} />
             <Route path="/api" element={<PublicAPI />} />
             <Route path="/directory/:slug" element={<DirectoryPage />} />
+            <Route path="/forms/:slug" element={<FormPage />} />
+            <Route path="/polls" element={<PollPage />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
@@ -176,6 +183,9 @@ const App = () => (
             <Route path="/admin/impact" element={<AdminRoute><ImpactDashboard /></AdminRoute>} />
             <Route path="/admin/notifications" element={<AdminRoute><NotificationQueue /></AdminRoute>} />
             <Route path="/admin/directories" element={<AdminRoute><DirectoryManager /></AdminRoute>} />
+            <Route path="/admin/forms" element={<AdminRoute><FormBuilder /></AdminRoute>} />
+            <Route path="/admin/polls" element={<AdminRoute><PollManager /></AdminRoute>} />
+            <Route path="/admin/faq-reviews" element={<AdminRoute><FAQReviewManager /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />

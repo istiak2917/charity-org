@@ -18,6 +18,8 @@ const FALLBACK_COMPONENTS: Record<string, React.LazyExoticComponent<React.Compon
   gallery: lazy(() => import("@/components/home/GallerySection")),
   contact: lazy(() => import("@/components/home/ContactSection")),
   transparency: lazy(() => import("@/components/home/TransparencySection")),
+  faq: lazy(() => import("@/components/home/FAQSection")),
+  reviews: lazy(() => import("@/components/home/ReviewSection")),
 };
 
 const Index = () => {
