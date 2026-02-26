@@ -1,0 +1,68 @@
+export interface Currency {
+  code: string;
+  symbol: string;
+  name: string;
+  name_bn: string;
+}
+
+export const currencies: Currency[] = [
+  { code: "BDT", symbol: "৳", name: "Bangladeshi Taka", name_bn: "বাংলাদেশি টাকা" },
+  { code: "USD", symbol: "$", name: "US Dollar", name_bn: "মার্কিন ডলার" },
+  { code: "EUR", symbol: "€", name: "Euro", name_bn: "ইউরো" },
+  { code: "GBP", symbol: "£", name: "British Pound", name_bn: "ব্রিটিশ পাউন্ড" },
+  { code: "INR", symbol: "₹", name: "Indian Rupee", name_bn: "ভারতীয় রুপি" },
+  { code: "SAR", symbol: "﷼", name: "Saudi Riyal", name_bn: "সৌদি রিয়াল" },
+  { code: "AED", symbol: "د.إ", name: "UAE Dirham", name_bn: "ইউএই দিরহাম" },
+  { code: "MYR", symbol: "RM", name: "Malaysian Ringgit", name_bn: "মালয়েশিয়ান রিঙ্গিত" },
+  { code: "SGD", symbol: "S$", name: "Singapore Dollar", name_bn: "সিঙ্গাপুর ডলার" },
+  { code: "CAD", symbol: "C$", name: "Canadian Dollar", name_bn: "কানাডিয়ান ডলার" },
+  { code: "AUD", symbol: "A$", name: "Australian Dollar", name_bn: "অস্ট্রেলিয়ান ডলার" },
+  { code: "JPY", symbol: "¥", name: "Japanese Yen", name_bn: "জাপানি ইয়েন" },
+  { code: "CNY", symbol: "¥", name: "Chinese Yuan", name_bn: "চীনা ইউয়ান" },
+  { code: "KRW", symbol: "₩", name: "South Korean Won", name_bn: "দক্ষিণ কোরিয়ান ওন" },
+  { code: "CHF", symbol: "CHF", name: "Swiss Franc", name_bn: "সুইস ফ্রাঙ্ক" },
+  { code: "SEK", symbol: "kr", name: "Swedish Krona", name_bn: "সুইডিশ ক্রোনা" },
+  { code: "NOK", symbol: "kr", name: "Norwegian Krone", name_bn: "নরওয়েজিয়ান ক্রোন" },
+  { code: "DKK", symbol: "kr", name: "Danish Krone", name_bn: "ডেনিশ ক্রোন" },
+  { code: "NZD", symbol: "NZ$", name: "New Zealand Dollar", name_bn: "নিউজিল্যান্ড ডলার" },
+  { code: "ZAR", symbol: "R", name: "South African Rand", name_bn: "দক্ষিণ আফ্রিকান র‍্যান্ড" },
+  { code: "BRL", symbol: "R$", name: "Brazilian Real", name_bn: "ব্রাজিলিয়ান রিয়াল" },
+  { code: "MXN", symbol: "Mex$", name: "Mexican Peso", name_bn: "মেক্সিকান পেসো" },
+  { code: "TRY", symbol: "₺", name: "Turkish Lira", name_bn: "তুর্কি লিরা" },
+  { code: "RUB", symbol: "₽", name: "Russian Ruble", name_bn: "রুশ রুবল" },
+  { code: "PLN", symbol: "zł", name: "Polish Zloty", name_bn: "পোলিশ জ্লোটি" },
+  { code: "THB", symbol: "฿", name: "Thai Baht", name_bn: "থাই বাত" },
+  { code: "IDR", symbol: "Rp", name: "Indonesian Rupiah", name_bn: "ইন্দোনেশিয়ান রুপিয়া" },
+  { code: "PHP", symbol: "₱", name: "Philippine Peso", name_bn: "ফিলিপাইন পেসো" },
+  { code: "VND", symbol: "₫", name: "Vietnamese Dong", name_bn: "ভিয়েতনামি ডং" },
+  { code: "PKR", symbol: "₨", name: "Pakistani Rupee", name_bn: "পাকিস্তানি রুপি" },
+  { code: "LKR", symbol: "Rs", name: "Sri Lankan Rupee", name_bn: "শ্রীলঙ্কান রুপি" },
+  { code: "NPR", symbol: "रू", name: "Nepalese Rupee", name_bn: "নেপালি রুপি" },
+  { code: "MMK", symbol: "K", name: "Myanmar Kyat", name_bn: "মিয়ানমার কিয়াত" },
+  { code: "EGP", symbol: "E£", name: "Egyptian Pound", name_bn: "মিশরীয় পাউন্ড" },
+  { code: "NGN", symbol: "₦", name: "Nigerian Naira", name_bn: "নাইজেরিয়ান নাইরা" },
+  { code: "KES", symbol: "KSh", name: "Kenyan Shilling", name_bn: "কেনিয়ান শিলিং" },
+  { code: "GHS", symbol: "GH₵", name: "Ghanaian Cedi", name_bn: "ঘানিয়ান সেডি" },
+  { code: "QAR", symbol: "QR", name: "Qatari Riyal", name_bn: "কাতারি রিয়াল" },
+  { code: "KWD", symbol: "KD", name: "Kuwaiti Dinar", name_bn: "কুয়েতি দিনার" },
+  { code: "BHD", symbol: "BD", name: "Bahraini Dinar", name_bn: "বাহরাইনি দিনার" },
+  { code: "OMR", symbol: "OMR", name: "Omani Rial", name_bn: "ওমানি রিয়াল" },
+  { code: "JOD", symbol: "JD", name: "Jordanian Dinar", name_bn: "জর্ডানি দিনার" },
+  { code: "ILS", symbol: "₪", name: "Israeli Shekel", name_bn: "ইসরায়েলি শেকেল" },
+  { code: "HKD", symbol: "HK$", name: "Hong Kong Dollar", name_bn: "হংকং ডলার" },
+  { code: "TWD", symbol: "NT$", name: "Taiwan Dollar", name_bn: "তাইওয়ান ডলার" },
+  { code: "CZK", symbol: "Kč", name: "Czech Koruna", name_bn: "চেক কোরুনা" },
+  { code: "HUF", symbol: "Ft", name: "Hungarian Forint", name_bn: "হাঙ্গেরিয়ান ফোরিন্ট" },
+  { code: "RON", symbol: "lei", name: "Romanian Leu", name_bn: "রোমানিয়ান লেউ" },
+  { code: "BGN", symbol: "лв", name: "Bulgarian Lev", name_bn: "বুলগেরিয়ান লেভ" },
+  { code: "HRK", symbol: "kn", name: "Croatian Kuna", name_bn: "ক্রোয়েশিয়ান কুনা" },
+  { code: "COP", symbol: "Col$", name: "Colombian Peso", name_bn: "কলম্বিয়ান পেসো" },
+  { code: "ARS", symbol: "AR$", name: "Argentine Peso", name_bn: "আর্জেন্টিনা পেসো" },
+  { code: "CLP", symbol: "CL$", name: "Chilean Peso", name_bn: "চিলিয়ান পেসো" },
+  { code: "PEN", symbol: "S/", name: "Peruvian Sol", name_bn: "পেরুভিয়ান সোল" },
+  { code: "UAH", symbol: "₴", name: "Ukrainian Hryvnia", name_bn: "ইউক্রেনীয় রিভনিয়া" },
+  { code: "ISK", symbol: "kr", name: "Icelandic Krona", name_bn: "আইসল্যান্ডিক ক্রোনা" },
+];
+
+export const getCurrencyByCode = (code: string): Currency | undefined =>
+  currencies.find(c => c.code === code);
