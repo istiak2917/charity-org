@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Heart, TrendingUp, RefreshCw, CreditCard } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
+import QRCodeGenerator from "@/components/QRCodeGenerator";
 
 const DonationsPage = () => {
   const [stats, setStats] = useState({ total: 0, count: 0, campaigns: 0 });
@@ -162,6 +163,14 @@ const DonationsPage = () => {
                 <p><strong>{lb("ব্যাংক", "Bank")}:</strong> {settings.payment_bank || lb("অ্যাকাউন্ট নং সেট করুন", "Set account number")}</p>
               </div>
             </Card>
+
+            {/* QR Code */}
+            <div className="flex justify-center mb-10">
+              <QRCodeGenerator
+                defaultUrl={`${window.location.origin}/donations`}
+                title={lb("ডোনেশন QR কোড", "Donation QR Code")}
+              />
+            </div>
 
             {/* Recurring donation link */}
             <div className="text-center mb-10">

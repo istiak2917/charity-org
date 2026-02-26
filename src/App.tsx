@@ -39,7 +39,7 @@ import MapPage from "./pages/public/MapPage";
 import PublicAPI from "./pages/public/PublicAPI";
 import RecurringDonationPage from "./pages/public/RecurringDonationPage";
 import PaymentResultPage from "./pages/public/PaymentResultPage";
-
+import TestimonialsPage from "./pages/public/TestimonialsPage";
 // Admin pages
 import AdminHome from "./pages/admin/AdminHome";
 import ProjectManager from "./pages/admin/ProjectManager";
@@ -141,6 +141,7 @@ const App = () => (
             <Route path="/donations" element={<DonationsPage />} />
             <Route path="/recurring-donation" element={<RecurringDonationPage />} />
             <Route path="/payment/result" element={<PaymentResultPage />} />
+            <Route path="/testimonials" element={<TestimonialsPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/page/:slug" element={<PolicyPage />} />
             <Route path="/map" element={<MapPage />} />
