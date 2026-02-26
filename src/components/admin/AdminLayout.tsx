@@ -10,7 +10,7 @@ import {
   ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database,
   ScrollText, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
   Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
-  FolderLock, TrendingUp, Bell, Code
+  FolderLock, TrendingUp, Bell, Code, List
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -24,7 +24,7 @@ const ICON_MAP: Record<string, any> = {
   Calendar, Droplets, Newspaper, Image, UserCircle, FileText, MessageSquare,
   Shield, Home, ScrollText, Settings, Database, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
   Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
-  FolderLock, TrendingUp, Bell, Code,
+  FolderLock, TrendingUp, Bell, Code, List,
 };
 
 interface MenuItem {
@@ -71,6 +71,7 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { module: "dashboard", labelKey: "admin_documents", path: "/admin/documents", icon: "FolderLock" },
   { module: "dashboard", labelKey: "admin_impact", path: "/admin/impact", icon: "TrendingUp" },
   { module: "dashboard", labelKey: "admin_notifications", path: "/admin/notifications", icon: "Bell" },
+  { module: "dashboard", labelKey: "admin_directories", path: "/admin/directories", icon: "List" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {

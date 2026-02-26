@@ -73,6 +73,8 @@ import AttendanceTracker from "./pages/admin/AttendanceTracker";
 import DocumentVault from "./pages/admin/DocumentVault";
 import ImpactDashboard from "./pages/admin/ImpactDashboard";
 import NotificationQueue from "./pages/admin/NotificationQueue";
+import DirectoryManager from "./pages/admin/DirectoryManager";
+import DirectoryPage from "./pages/public/DirectoryPage";
 
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
@@ -127,6 +129,7 @@ const App = () => (
             <Route path="/page/:slug" element={<PolicyPage />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/api" element={<PublicAPI />} />
+            <Route path="/directory/:slug" element={<DirectoryPage />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />
@@ -165,6 +168,7 @@ const App = () => (
             <Route path="/admin/documents" element={<AdminRoute><DocumentVault /></AdminRoute>} />
             <Route path="/admin/impact" element={<AdminRoute><ImpactDashboard /></AdminRoute>} />
             <Route path="/admin/notifications" element={<AdminRoute><NotificationQueue /></AdminRoute>} />
+            <Route path="/admin/directories" element={<AdminRoute><DirectoryManager /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />
