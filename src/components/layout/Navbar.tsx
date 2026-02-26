@@ -86,8 +86,8 @@ const Navbar = () => {
 
       {/* Mobile nav */}
       {open && (
-        <div className="lg:hidden border-t border-border bg-background animate-fade-in">
-          <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+        <div className="lg:hidden border-t border-border bg-background animate-fade-in fixed inset-x-0 top-16 bottom-0 z-50 overflow-y-auto">
+          <div className="container mx-auto px-4 py-4 flex flex-col gap-3 pb-20">
             {navLinks.map((link) =>
               link.href.startsWith("#") ? (
                 <a key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{t(link.key)}</a>
