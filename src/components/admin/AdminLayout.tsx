@@ -143,20 +143,20 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-3 h-14 flex items-center gap-2 min-w-0">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 max-w-full overflow-hidden">
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-2 sm:px-3 h-14 flex items-center gap-1 sm:gap-2 min-w-0 max-w-full">
           <button className="lg:hidden shrink-0" onClick={() => setSidebarOpen(true)}><Menu className="h-5 w-5" /></button>
-          <Link to="/" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 shrink-0">
-            <ChevronLeft className="h-4 w-4" /> {t("admin_return_site")}
+          <Link to="/" className="text-xs sm:text-sm text-muted-foreground hover:text-primary flex items-center gap-1 shrink-0">
+            <ChevronLeft className="h-4 w-4" /><span className="hidden sm:inline">{t("admin_return_site")}</span><span className="sm:hidden">হোম</span>
           </Link>
-          <div className="ml-auto flex items-center gap-1 shrink-0">
+          <div className="ml-auto flex items-center gap-0.5 sm:gap-1 shrink-0">
             <ThemeToggle size="sm" />
             <LanguageSwitcher size="sm" />
-            <CurrencySelector compact />
+            <span className="hidden sm:inline-flex"><CurrencySelector compact /></span>
             <NotificationCenter />
           </div>
         </header>
-        <main className="flex-1 p-3 md:p-6 overflow-x-auto w-full min-w-0">{children}</main>
+        <main className="flex-1 p-2 sm:p-3 md:p-6 w-full min-w-0 max-w-full overflow-x-hidden overflow-y-auto">{children}</main>
       </div>
     </div>
   );
