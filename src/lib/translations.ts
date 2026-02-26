@@ -58,6 +58,7 @@ export const translations = {
   admin_documents: { bn: "ডকুমেন্ট ভল্ট", en: "Document Vault" },
   admin_impact: { bn: "ইমপ্যাক্ট", en: "Impact" },
   admin_notifications: { bn: "নোটিফিকেশন", en: "Notifications" },
+  admin_directories: { bn: "পাবলিক ডিরেক্টরি", en: "Public Directories" },
   admin_return_site: { bn: "সাইটে ফিরুন", en: "Back to Site" },
   admin_role_label: { bn: "রোল", en: "Role" },
 
