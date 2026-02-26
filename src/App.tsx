@@ -13,6 +13,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import SiteSettingsLoader from "@/components/SiteSettingsLoader";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import SupportChatWidget from "@/components/SupportChatWidget";
+import PWAInstallBanner from "@/components/PWAInstallBanner";
 import MemberLayout from "@/pages/member/MemberLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -210,6 +211,7 @@ const App = () => (
           </Routes>
           <WhatsAppFloat />
           <SupportChatWidget />
+          <PWAInstallBanner />
         </SiteSettingsLoader>
         </CurrencyProvider>
         </LanguageProvider>
