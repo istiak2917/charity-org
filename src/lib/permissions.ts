@@ -104,8 +104,26 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<Module, Permission[]>>> 
   },
 };
 
+// Runtime permission overrides (loaded from site_settings)
+// Format: { "admin:projects:create": false, "editor:blog:delete": true }
+let _permissionOverrides: Record<string, boolean> = {};
+
+export function setPermissionOverrides(overrides: Record<string, boolean>) {
+  _permissionOverrides = overrides || {};
+}
+
+export function getPermissionOverrides(): Record<string, boolean> {
+  return _permissionOverrides;
+}
+
+/** Get default permission (from static matrix, ignoring overrides) */
+export function getDefaultPermission(role: AppRole, module: Module, permission: Permission): boolean {
+  return PERMISSION_MATRIX[role]?.[module]?.includes(permission) ?? false;
+}
+
 /**
  * Check if any of the given roles has a specific permission on a module
+ * Checks runtime overrides first, then falls back to static matrix
  */
 export function hasPermission(
   roles: string[],
@@ -113,6 +131,10 @@ export function hasPermission(
   permission: Permission
 ): boolean {
   return roles.some((role) => {
+    const overrideKey = `${role}:${module}:${permission}`;
+    if (overrideKey in _permissionOverrides) {
+      return _permissionOverrides[overrideKey];
+    }
     const perms = PERMISSION_MATRIX[role as AppRole]?.[module];
     return perms?.includes(permission) ?? false;
   });
