@@ -314,6 +314,7 @@ const SeedData = () => {
           { section_key: "about", title: "আমাদের সম্পর্কে" },
           { section_key: "projects", title: "প্রকল্পসমূহ" },
           { section_key: "impact", title: "আমাদের প্রভাব" },
+          { section_key: "goals", title: "লক্ষ্য ও অগ্রগতি" },
           { section_key: "donation", title: "অনুদান" },
           { section_key: "events", title: "ইভেন্ট" },
           { section_key: "team", title: "আমাদের টিম" },
