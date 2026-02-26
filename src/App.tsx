@@ -117,11 +117,11 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ScrollToTop />
+        <AuthProvider>
         <LanguageProvider>
         <CurrencyProvider>
-        <AuthProvider>
         <SiteSettingsLoader>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -211,9 +211,9 @@ const App = () => (
           <WhatsAppFloat />
           <SupportChatWidget />
         </SiteSettingsLoader>
-        </AuthProvider>
         </CurrencyProvider>
         </LanguageProvider>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
     </ThemeProvider>
