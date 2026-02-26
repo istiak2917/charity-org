@@ -10,7 +10,7 @@ import {
   ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database,
   ScrollText, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
   Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
-  FolderLock, TrendingUp, Bell, Code, List, MessageCircle
+  FolderLock, TrendingUp, Bell, Code, List, MessageCircle, Mail, FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -24,7 +24,7 @@ const ICON_MAP: Record<string, any> = {
   Calendar, Droplets, Newspaper, Image, UserCircle, FileText, MessageSquare,
   Shield, Home, ScrollText, Settings, Database, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
   Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
-  FolderLock, TrendingUp, Bell, Code, List, MessageCircle,
+  FolderLock, TrendingUp, Bell, Code, List, MessageCircle, Mail, FlaskConical,
 };
 
 interface MenuItem {
@@ -75,6 +75,10 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { module: "dashboard", labelKey: "admin_forms", path: "/admin/forms", icon: "FileText" },
   { module: "dashboard", labelKey: "admin_polls", path: "/admin/polls", icon: "BarChart3" },
   { module: "dashboard", labelKey: "admin_faq_reviews", path: "/admin/faq-reviews", icon: "MessageCircle" },
+  { module: "dashboard", labelKey: "admin_email_templates", path: "/admin/email-templates", icon: "Mail" },
+  { module: "dashboard", labelKey: "admin_webhooks", path: "/admin/webhooks", icon: "Code" },
+  { module: "dashboard", labelKey: "admin_ab_testing", path: "/admin/ab-testing", icon: "FlaskConical" },
+  { module: "dashboard", labelKey: "admin_advanced_reports", path: "/admin/advanced-reports", icon: "TrendingUp" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {

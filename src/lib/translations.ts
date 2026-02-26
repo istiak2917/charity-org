@@ -116,6 +116,10 @@ export const translations = {
   // Chat
   nav_chat: { bn: "চ্যাট", en: "Chat" },
   admin_chat: { bn: "চ্যাট ম্যানেজমেন্ট", en: "Chat Management" },
+  admin_email_templates: { bn: "ইমেইল টেমপ্লেট", en: "Email Templates" },
+  admin_webhooks: { bn: "ওয়েবহুক", en: "Webhooks" },
+  admin_ab_testing: { bn: "A/B টেস্টিং", en: "A/B Testing" },
+  admin_advanced_reports: { bn: "অ্যাডভান্সড রিপোর্ট", en: "Advanced Reports" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
