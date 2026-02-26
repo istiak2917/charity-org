@@ -4,9 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
+body {
+  overflow-x: auto;
+  -webkit-text-size-adjust: 100%;
 }
 
 @layer base {
