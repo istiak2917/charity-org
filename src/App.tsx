@@ -10,6 +10,7 @@ import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 import SiteSettingsLoader from "@/components/SiteSettingsLoader";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 import MemberLayout from "@/pages/member/MemberLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -35,6 +36,8 @@ import InventoryPage from "./pages/public/InventoryPage";
 import PolicyPage from "./pages/public/PolicyPage";
 import MapPage from "./pages/public/MapPage";
 import PublicAPI from "./pages/public/PublicAPI";
+import RecurringDonationPage from "./pages/public/RecurringDonationPage";
+import PaymentResultPage from "./pages/public/PaymentResultPage";
 
 // Admin pages
 import AdminHome from "./pages/admin/AdminHome";
@@ -125,6 +128,8 @@ const App = () => (
             <Route path="/projects/:slug" element={<ProjectDetailPage />} />
             <Route path="/volunteers" element={<VolunteersPage />} />
             <Route path="/donations" element={<DonationsPage />} />
+            <Route path="/recurring-donation" element={<RecurringDonationPage />} />
+            <Route path="/payment/result" element={<PaymentResultPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/page/:slug" element={<PolicyPage />} />
             <Route path="/map" element={<MapPage />} />
@@ -177,6 +182,7 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <WhatsAppFloat />
         </SiteSettingsLoader>
         </AuthProvider>
         </CurrencyProvider>
