@@ -4,9 +4,33 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  overflow-x: auto;
+html, body {
+  width: 100%;
+  overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
+}
+
+/* Admin pages: force single-column grids on small mobile screens */
+@media (max-width: 480px) {
+  main .grid-cols-2,
+  main .grid-cols-3,
+  main .grid-cols-4,
+  main .grid-cols-5 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  /* Allow tables to scroll horizontally */
+  main table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  main thead, main tbody, main tr {
+    display: table;
+    width: 100%;
+    table-layout: auto;
+  }
 }
 
 @layer base {

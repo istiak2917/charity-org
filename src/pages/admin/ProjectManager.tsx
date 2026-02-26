@@ -131,11 +131,11 @@ const ProjectManager = () => {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট প্রকল্প</div><div className="text-2xl font-bold">{items.length}</div></Card>
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">সক্রিয়</div><div className="text-2xl font-bold text-green-600">{activeProjects}</div></Card>
-        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট বাজেট</div><div className="text-2xl font-bold">৳{totalBudget.toLocaleString("bn-BD")}</div></Card>
-        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট ব্যয়</div><div className="text-2xl font-bold text-primary">৳{totalSpent.toLocaleString("bn-BD")}</div></Card>
+        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট বাজেট</div><div className="text-xl font-bold">৳{totalBudget.toLocaleString("bn-BD")}</div></Card>
+        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট ব্যয়</div><div className="text-xl font-bold text-primary">৳{totalSpent.toLocaleString("bn-BD")}</div></Card>
       </div>
 
       <Tabs defaultValue="list">
@@ -145,8 +145,8 @@ const ProjectManager = () => {
         </TabsList>
 
         <TabsContent value="list">
-          <Card>
-            <Table>
+          <Card className="overflow-x-auto">
+            <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>নাম</TableHead><TableHead>স্ট্যাটাস</TableHead><TableHead>বাজেট</TableHead>
