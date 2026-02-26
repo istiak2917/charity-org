@@ -78,7 +78,14 @@ const ChatPage = () => {
         table: "chat_messages",
         filter: `channel=eq.${channel}`,
       }, (payload) => {
-        setMessages((prev) => [...prev, payload.new as ChatMessage]);
+        const newMsg = payload.new as ChatMessage;
+        setMessages((prev) => {
+          // Deduplicate: skip if already exists (from optimistic update)
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          // Also remove temp messages from same user with same text
+          const cleaned = prev.filter((m) => !(m.id.startsWith("temp-") && m.user_id === newMsg.user_id && m.message === newMsg.message));
+          return [...cleaned, newMsg];
+        });
       })
       .subscribe();
 
@@ -110,15 +117,40 @@ const ChatPage = () => {
 
   const sendMessage = async () => {
     if (!newMsg.trim() || !user) return;
-    const msg = {
+    const msgText = newMsg.trim();
+    const uname = username || user.email?.split("@")[0] || "User";
+    
+    // Optimistic update - show message immediately
+    const optimisticMsg: ChatMessage = {
+      id: `temp-${Date.now()}`,
       channel,
       user_id: user.id,
-      username: username || user.email?.split("@")[0] || "User",
+      username: uname,
       avatar_url: avatarUrl,
-      message: newMsg.trim(),
+      message: msgText,
+      created_at: new Date().toISOString(),
     };
-    await supabase.from("chat_messages").insert(msg);
+    setMessages((prev) => [...prev, optimisticMsg]);
     setNewMsg("");
+
+    const { data, error } = await supabase.from("chat_messages").insert({
+      channel,
+      user_id: user.id,
+      username: uname,
+      avatar_url: avatarUrl,
+      message: msgText,
+    }).select().single();
+
+    if (data) {
+      // Replace optimistic message with real one, and deduplicate from realtime
+      setMessages((prev) => {
+        const withoutOptimistic = prev.filter((m) => m.id !== optimisticMsg.id && m.id !== data.id);
+        return [...withoutOptimistic, data];
+      });
+    } else if (error) {
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

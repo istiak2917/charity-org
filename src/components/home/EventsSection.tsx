@@ -1,9 +1,22 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-interface Event { id: string; title: string; description: string; location: string; event_date: string; }
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  event_date: string;
+  image_url?: string;
+  slug?: string;
+  status?: string;
+}
 
 const EventsSection = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -24,31 +37,72 @@ const EventsSection = () => {
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
           </div>
         </ScrollReveal>
-        <div className="max-w-3xl mx-auto relative">
-          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary/40 via-accent/40 to-primary/10 md:-translate-x-px" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {events.map((e, i) => (
-            <ScrollReveal key={e.id} delay={i * 150}>
-              <div className={`relative flex flex-col md:flex-row items-start md:items-center gap-4 mb-10 ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}>
-                <div className="absolute left-4 md:left-1/2 w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/30 -translate-x-1/2 mt-6 md:mt-0 z-10" />
-                <div className={`ml-10 md:ml-0 md:w-[calc(50%-2rem)] ${i % 2 === 0 ? "md:pr-8 md:text-right" : "md:pl-8"}`}>
-                  <div className="group bg-card rounded-2xl p-6 border border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
-                    <div className={`flex items-center gap-2 text-sm text-primary mb-3 ${i % 2 === 0 ? "md:justify-end" : ""}`}>
-                      <Calendar className="h-4 w-4" /> {e.event_date ? new Date(e.event_date).toLocaleDateString("bn-BD") : "তারিখ নির্ধারিত হয়নি"}
+            <ScrollReveal key={e.id} delay={i * 120}>
+              <Link to={`/events/${e.slug || e.id}`}>
+                <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full group">
+                  {e.image_url ? (
+                    <div className="relative h-52 overflow-hidden">
+                      <img
+                        src={e.image_url}
+                        alt={e.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      {e.event_date && (
+                        <Badge className="absolute top-3 left-3 bg-primary/90 backdrop-blur-sm">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {new Date(e.event_date).toLocaleDateString("bn-BD", { day: "numeric", month: "short", year: "numeric" })}
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="absolute top-3 right-3 backdrop-blur-sm">
+                        {e.status === "completed" ? "সম্পন্ন" : "আসন্ন"}
+                      </Badge>
                     </div>
-                    <h3 className="text-lg font-bold font-heading mb-2">{e.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{e.description}</p>
-                    {e.location && (
-                      <div className={`flex items-center gap-1 text-xs text-muted-foreground ${i % 2 === 0 ? "md:justify-end" : ""}`}>
-                        <MapPin className="h-3 w-3" /> {e.location}
-                      </div>
+                  ) : (
+                    <div className="h-32 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                      <Calendar className="h-10 w-10 text-primary/40" />
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <h3 className="font-bold font-heading text-lg mb-2 group-hover:text-primary transition-colors">{e.title}</h3>
+                    {e.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{e.description}</p>
                     )}
+                    <div className="flex items-center justify-between">
+                      {e.location && (
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5 text-primary/70" />
+                          <span>{e.location}</span>
+                        </div>
+                      )}
+                      <span className="text-xs text-primary font-medium flex items-center gap-1">
+                        বিস্তারিত <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </Card>
+              </Link>
             </ScrollReveal>
           ))}
         </div>
-        {events.length === 0 && <div className="text-center text-muted-foreground py-8">কোনো ইভেন্ট নেই</div>}
+
+        {events.length === 0 && (
+          <div className="text-center text-muted-foreground py-8">কোনো ইভেন্ট নেই</div>
+        )}
+
+        {events.length > 0 && (
+          <div className="text-center mt-10">
+            <Link to="/events">
+              <Button variant="outline" className="gap-2">
+                সব ইভেন্ট দেখুন <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
