@@ -8,7 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, Plus, Trash2, Filter, CalendarDays } from "lucide-react";
+import { Download, Plus, Trash2, Filter, CalendarDays, Printer, Mail, MessageCircle } from "lucide-react";
+import DonationReceipt from "@/components/DonationReceipt";
+import EmailCompose from "@/components/EmailCompose";
+import WhatsAppSend from "@/components/WhatsAppSend";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface Donation {
@@ -37,6 +40,9 @@ const DonationManager = () => {
   const campaigns = useAdminCrud<Campaign>({ table: "donation_campaigns" });
   const [donOpen, setDonOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [receiptDonation, setReceiptDonation] = useState<Donation | null>(null);
+  const [emailDonation, setEmailDonation] = useState<Donation | null>(null);
+  const [waDonation, setWaDonation] = useState<Donation | null>(null);
   const [filterMethod, setFilterMethod] = useState("all");
   const [donForm, setDonForm] = useState({
     donor_name: "", donor_email: "", amount: 0, method: "", status: "confirmed",
@@ -229,7 +235,10 @@ const DonationManager = () => {
                       <TableCell>{camp ? <Badge variant="secondary">{camp.title}</Badge> : "-"}</TableCell>
                       <TableCell><Badge variant={statusOpt?.color as any || "secondary"}>{statusOpt?.label || d.status}</Badge></TableCell>
                       <TableCell className="text-sm">{new Date(d.created_at).toLocaleDateString("bn-BD")}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-1">
+                        <Button size="icon" variant="ghost" title="রসিদ" onClick={() => setReceiptDonation(d)}><Printer className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" title="ইমেইল" onClick={() => setEmailDonation(d)}><Mail className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" title="WhatsApp" onClick={() => setWaDonation(d)}><MessageCircle className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" onClick={() => remove(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </TableCell>
                     </TableRow>
@@ -330,6 +339,37 @@ const DonationManager = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Receipt Dialog */}
+      <Dialog open={!!receiptDonation} onOpenChange={() => setReceiptDonation(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>দানের রসিদ</DialogTitle></DialogHeader>
+          {receiptDonation && <DonationReceipt donation={receiptDonation} onClose={() => setReceiptDonation(null)} />}
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Dialog */}
+      <Dialog open={!!emailDonation} onOpenChange={() => setEmailDonation(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>দাতাকে ইমেইল</DialogTitle></DialogHeader>
+          {emailDonation && <EmailCompose
+            to={emailDonation.donor_email}
+            subject={`আপনার ৳${emailDonation.amount} অনুদানের জন্য ধন্যবাদ`}
+            body={`প্রিয় ${emailDonation.donor_name},\n\nআপনার ৳${emailDonation.amount} অনুদানের জন্য আন্তরিক ধন্যবাদ জানাচ্ছি।\n\nশুভেচ্ছান্তে,\nশিশুফুল ফাউন্ডেশন`}
+            onSent={() => setEmailDonation(null)}
+          />}
+        </DialogContent>
+      </Dialog>
+
+      {/* WhatsApp Dialog */}
+      <Dialog open={!!waDonation} onOpenChange={() => setWaDonation(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>WhatsApp মেসেজ</DialogTitle></DialogHeader>
+          {waDonation && <WhatsAppSend
+            defaultMessage={`আসসালামু আলাইকুম ${waDonation.donor_name},\n\nআপনার ৳${waDonation.amount} অনুদানের জন্য আন্তরিক ধন্যবাদ। আল্লাহ আপনাকে উত্তম প্রতিদান দিন।\n\n- শিশুফুল ফাউন্ডেশন`}
+          />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
