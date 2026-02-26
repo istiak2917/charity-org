@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Heart, LogIn, UserCircle, LogOut, Shield } from "lucide-react";
+import { Menu, X, Heart, LogIn, UserCircle, LogOut, Shield, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -26,7 +26,8 @@ const navLinks: { key: TranslationKey; href: string }[] = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const lb = (bn: string, en: string) => lang === "bn" ? bn : en;
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
@@ -61,6 +62,9 @@ const Navbar = () => {
               )}
               <Link to="/member">
                 <Button variant="ghost" size="sm" className="gap-1"><UserCircle className="h-4 w-4" /> {t("nav_profile")}</Button>
+              </Link>
+              <Link to="/member/chat">
+                <Button variant="ghost" size="sm" className="gap-1"><MessageCircle className="h-4 w-4" /> {lb("চ্যাট", "Chat")}</Button>
               </Link>
               <Button variant="ghost" size="sm" className="gap-1" onClick={() => signOut()}>
                 <LogOut className="h-4 w-4" /> {t("nav_logout")}

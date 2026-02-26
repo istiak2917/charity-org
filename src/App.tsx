@@ -11,6 +11,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 import SiteSettingsLoader from "@/components/SiteSettingsLoader";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
+import SupportChatWidget from "@/components/SupportChatWidget";
 import MemberLayout from "@/pages/member/MemberLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -82,6 +83,7 @@ import DirectoryPage from "./pages/public/DirectoryPage";
 import MemberProfile from "./pages/member/MemberProfile";
 import MemberDonations from "./pages/member/MemberDonations";
 import VolunteerPanel from "./pages/member/VolunteerPanel";
+import ChatPage from "./pages/member/ChatPage";
 
 const queryClient = new QueryClient();
 
@@ -179,10 +181,12 @@ const App = () => (
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />
             <Route path="/member/donations" element={<MemberRoute><MemberDonations /></MemberRoute>} />
             <Route path="/member/volunteer" element={<MemberRoute><VolunteerPanel /></MemberRoute>} />
+            <Route path="/member/chat" element={<MemberRoute><ChatPage /></MemberRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
           <WhatsAppFloat />
+          <SupportChatWidget />
         </SiteSettingsLoader>
         </AuthProvider>
         </CurrencyProvider>

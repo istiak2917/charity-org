@@ -109,6 +109,10 @@ export const translations = {
   common_search: { bn: "খুঁজুন", en: "Search" },
   common_loading: { bn: "লোড হচ্ছে...", en: "Loading..." },
   common_no_data: { bn: "কোনো তথ্য পাওয়া যায়নি", en: "No data found" },
+
+  // Chat
+  nav_chat: { bn: "চ্যাট", en: "Chat" },
+  admin_chat: { bn: "চ্যাট ম্যানেজমেন্ট", en: "Chat Management" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

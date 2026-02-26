@@ -10,7 +10,7 @@ import {
   ClipboardList, MessageSquare, UserCircle, FileText, Megaphone, Home, Database,
   ScrollText, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
   Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
-  FolderLock, TrendingUp, Bell, Code, List
+  FolderLock, TrendingUp, Bell, Code, List, MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -24,7 +24,7 @@ const ICON_MAP: Record<string, any> = {
   Calendar, Droplets, Newspaper, Image, UserCircle, FileText, MessageSquare,
   Shield, Home, ScrollText, Settings, Database, Contact, HandHeart, Package, Building2, BarChart3, HardDrive, BookOpen,
   Sparkles, Landmark, AlertTriangle, BriefcaseMedical, CalendarDays, ClipboardCheck,
-  FolderLock, TrendingUp, Bell, Code, List,
+  FolderLock, TrendingUp, Bell, Code, List, MessageCircle,
 };
 
 interface MenuItem {
