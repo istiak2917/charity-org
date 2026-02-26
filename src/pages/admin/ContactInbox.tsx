@@ -24,8 +24,9 @@ const ContactInbox = () => {
   };
 
   const handleReply = async () => {
-    if (selected && replyText) {
-      await update(selected.id, { reply: replyText } as any);
+    if (selected && replyText.trim()) {
+      await update(selected.id, { reply: replyText.trim() } as any);
+      setReplyText("");
       setSelected(null);
     }
   };

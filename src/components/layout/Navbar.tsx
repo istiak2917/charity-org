@@ -73,7 +73,7 @@ const Navbar = () => {
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login"><Button variant="ghost" size="sm" className="gap-1"><LogIn className="h-4 w-4" /> {t("nav_login")}</Button></Link>
-              <Button className="btn-press gap-1" size="sm"><Heart className="h-4 w-4" /> {t("nav_donate")}</Button>
+              <Link to="/donations"><Button className="btn-press gap-1" size="sm"><Heart className="h-4 w-4" /> {t("nav_donate")}</Button></Link>
             </div>
           )}
         </div>
@@ -126,7 +126,7 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            <Button className="btn-press gap-1 mt-2" size="sm"><Heart className="h-4 w-4" /> {t("nav_donate")}</Button>
+            <Link to="/donations" onClick={() => setOpen(false)}><Button className="btn-press gap-1 mt-2 w-full" size="sm"><Heart className="h-4 w-4" /> {t("nav_donate")}</Button></Link>
           </div>
         </div>
       )}
