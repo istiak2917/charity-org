@@ -3,24 +3,29 @@ import { Link } from "react-router-dom";
 import { Menu, X, Heart, LogIn, UserCircle, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import CurrencySelector from "@/components/CurrencySelector";
 import logo from "@/assets/shishuful-logo.jpg";
+import type { TranslationKey } from "@/lib/translations";
 
-const navLinks = [
-  { label: "হোম", href: "/" },
-  { label: "প্রকল্প", href: "/projects" },
-  { label: "অনুদান", href: "/donations" },
-  { label: "ইভেন্ট", href: "/events" },
-  { label: "ব্লগ", href: "/blog" },
-  { label: "রক্তদান", href: "/blood" },
-  { label: "গ্যালারি", href: "/gallery" },
-  { label: "স্বেচ্ছাসেবক", href: "/volunteers" },
-  { label: "স্বচ্ছতা", href: "/transparency" },
-  { label: "যোগাযোগ", href: "#contact" },
+const navLinks: { key: TranslationKey; href: string }[] = [
+  { key: "nav_home", href: "/" },
+  { key: "nav_projects", href: "/projects" },
+  { key: "nav_donations", href: "/donations" },
+  { key: "nav_events", href: "/events" },
+  { key: "nav_blog", href: "/blog" },
+  { key: "nav_blood", href: "/blood" },
+  { key: "nav_gallery", href: "/gallery" },
+  { key: "nav_volunteers", href: "/volunteers" },
+  { key: "nav_transparency", href: "/transparency" },
+  { key: "nav_contact", href: "#contact" },
 ];
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
@@ -31,32 +36,38 @@ const Navbar = () => {
         </a>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-5">
           {navLinks.map((link) =>
             link.href.startsWith("#") ? (
-              <a key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200">{link.label}</a>
+              <a key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200">{t(link.key)}</a>
             ) : (
-              <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200">{link.label}</Link>
+              <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200">{t(link.key)}</Link>
             )
           )}
+
+          <div className="flex items-center gap-1 border-l border-border pl-3 ml-1">
+            <LanguageSwitcher size="sm" />
+            <CurrencySelector compact />
+          </div>
+
           {user ? (
             <div className="flex items-center gap-2">
               {isAdmin && (
                 <Link to="/admin">
-                  <Button variant="outline" size="sm" className="gap-1"><Shield className="h-4 w-4" /> অ্যাডমিন</Button>
+                  <Button variant="outline" size="sm" className="gap-1"><Shield className="h-4 w-4" /> {t("nav_admin")}</Button>
                 </Link>
               )}
               <Link to="/member">
-                <Button variant="ghost" size="sm" className="gap-1"><UserCircle className="h-4 w-4" /> প্রোফাইল</Button>
+                <Button variant="ghost" size="sm" className="gap-1"><UserCircle className="h-4 w-4" /> {t("nav_profile")}</Button>
               </Link>
               <Button variant="ghost" size="sm" className="gap-1" onClick={() => signOut()}>
-                <LogOut className="h-4 w-4" /> লগআউট
+                <LogOut className="h-4 w-4" /> {t("nav_logout")}
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/login"><Button variant="ghost" size="sm" className="gap-1"><LogIn className="h-4 w-4" /> লগইন</Button></Link>
-              <Button className="btn-press gap-1" size="sm"><Heart className="h-4 w-4" /> অনুদান দিন</Button>
+              <Link to="/login"><Button variant="ghost" size="sm" className="gap-1"><LogIn className="h-4 w-4" /> {t("nav_login")}</Button></Link>
+              <Button className="btn-press gap-1" size="sm"><Heart className="h-4 w-4" /> {t("nav_donate")}</Button>
             </div>
           )}
         </div>
@@ -73,37 +84,42 @@ const Navbar = () => {
           <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
             {navLinks.map((link) =>
               link.href.startsWith("#") ? (
-                <a key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{link.label}</a>
+                <a key={link.href} href={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{t(link.key)}</a>
               ) : (
-                <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{link.label}</Link>
+                <Link key={link.href} to={link.href} className="text-sm font-medium text-foreground/80 hover:text-primary py-2 transition-colors duration-200" onClick={() => setOpen(false)}>{t(link.key)}</Link>
               )
             )}
+
+            <div className="flex items-center gap-2 py-2 border-t border-border mt-1 pt-3">
+              <LanguageSwitcher />
+              <CurrencySelector compact />
+            </div>
             
             {user ? (
               <>
                 {isAdmin && (
                   <Link to="/admin" onClick={() => setOpen(false)}>
-                    <Button variant="outline" size="sm" className="gap-1 w-full"><Shield className="h-4 w-4" /> অ্যাডমিন প্যানেল</Button>
+                    <Button variant="outline" size="sm" className="gap-1 w-full"><Shield className="h-4 w-4" /> {t("nav_admin_panel")}</Button>
                   </Link>
                 )}
                 <Link to="/member" onClick={() => setOpen(false)}>
-                  <Button variant="ghost" size="sm" className="gap-1 w-full"><UserCircle className="h-4 w-4" /> আমার প্রোফাইল</Button>
+                  <Button variant="ghost" size="sm" className="gap-1 w-full"><UserCircle className="h-4 w-4" /> {t("nav_my_profile")}</Button>
                 </Link>
                 <Button variant="ghost" size="sm" className="gap-1 w-full" onClick={() => { signOut(); setOpen(false); }}>
-                  <LogOut className="h-4 w-4" /> লগআউট
+                  <LogOut className="h-4 w-4" /> {t("nav_logout")}
                 </Button>
               </>
             ) : (
               <>
                 <Link to="/login" onClick={() => setOpen(false)}>
-                  <Button variant="ghost" size="sm" className="gap-1 w-full"><LogIn className="h-4 w-4" /> লগইন</Button>
+                  <Button variant="ghost" size="sm" className="gap-1 w-full"><LogIn className="h-4 w-4" /> {t("nav_login")}</Button>
                 </Link>
                 <Link to="/signup" onClick={() => setOpen(false)}>
-                  <Button variant="outline" size="sm" className="gap-1 w-full"><UserCircle className="h-4 w-4" /> রেজিস্ট্রেশন</Button>
+                  <Button variant="outline" size="sm" className="gap-1 w-full"><UserCircle className="h-4 w-4" /> {t("nav_register")}</Button>
                 </Link>
               </>
             )}
-            <Button className="btn-press gap-1 mt-2" size="sm"><Heart className="h-4 w-4" /> অনুদান দিন</Button>
+            <Button className="btn-press gap-1 mt-2" size="sm"><Heart className="h-4 w-4" /> {t("nav_donate")}</Button>
           </div>
         </div>
       )}
