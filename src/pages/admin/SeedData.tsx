@@ -372,6 +372,36 @@ const SeedData = () => {
       }
     } catch (e: any) { addResult("branches", false, e.message); }
 
+    // 22. Chat Messages (demo)
+    try {
+      if (user) {
+        const chatData = [
+          { channel: "general", user_id: user.id, username: "অ্যাডমিন", message: "সবাইকে স্বাগতম! এটি সাধারণ চ্যানেল।" },
+          { channel: "general", user_id: user.id, username: "অ্যাডমিন", message: "যেকোনো প্রশ্ন থাকলে এখানে জিজ্ঞাসা করুন।" },
+          { channel: "volunteers", user_id: user.id, username: "অ্যাডমিন", message: "স্বেচ্ছাসেবকদের জন্য গুরুত্বপূর্ণ: আগামী শনিবার মিটিং আছে।" },
+          { channel: "announcements", user_id: user.id, username: "অ্যাডমিন", message: "📢 নতুন প্রকল্প শুরু হচ্ছে! বিস্তারিত শীঘ্রই জানানো হবে।" },
+        ];
+        for (const cm of chatData) {
+          const { error } = await safeInsert("chat_messages", cm);
+          addResult("chat_messages", !error, error?.message || `চ্যাট: ${cm.channel}`);
+        }
+      }
+    } catch (e: any) { addResult("chat_messages", false, e.message); }
+
+    // 23. Integration & Chat site_settings
+    try {
+      const extraSettings = [
+        { setting_key: "chat_enabled", setting_value: JSON.stringify("true") },
+        { setting_key: "support_chat_enabled", setting_value: JSON.stringify("true") },
+        { setting_key: "support_welcome_message", setting_value: JSON.stringify("আমরা সবসময় আপনার পাশে আছি!") },
+        { setting_key: "seo_title", setting_value: JSON.stringify("শিশুফুল ফাউন্ডেশন - সুবিধাবঞ্চিত শিশুদের পাশে") },
+        { setting_key: "seo_description", setting_value: JSON.stringify("শিশুফুল ফাউন্ডেশন সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও সামাজিক উন্নয়নে কাজ করে।") },
+        { setting_key: "seo_keywords", setting_value: JSON.stringify("চ্যারিটি, এনজিও, শিশু শিক্ষা, অনুদান, বাংলাদেশ") },
+      ];
+      await supabase.from("site_settings").upsert(extraSettings, { onConflict: "setting_key" });
+      addResult("site_settings (extra)", true, "চ্যাট ও SEO সেটিংস যোগ হয়েছে");
+    } catch (e: any) { addResult("site_settings (extra)", false, e.message); }
+
     setRunning(false);
     toast({ title: "✅ সিড ডেটা প্রক্রিয়া সম্পন্ন!" });
   };

@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useTheme } from "next-themes";
-import { Settings, Save, Upload, Trash2, Type, Globe, Coins, Moon, Sun, Palette, CreditCard, MessageCircle, Mail } from "lucide-react";
+import { Settings, Save, Upload, Trash2, Type, Globe, Coins, Moon, Sun, Palette, CreditCard, MessageCircle, Mail, Plug, Plus, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -188,6 +188,9 @@ const SettingsPage = () => {
           <TabsTrigger value="language" className="gap-1"><Globe className="h-3.5 w-3.5" /> {t("settings_language")}</TabsTrigger>
           <TabsTrigger value="currency" className="gap-1"><Coins className="h-3.5 w-3.5" /> {t("settings_currency")}</TabsTrigger>
           <TabsTrigger value="fonts" className="gap-1"><Type className="h-3.5 w-3.5" /> {t("settings_fonts")}</TabsTrigger>
+          <TabsTrigger value="integrations" className="gap-1"><Plug className="h-3.5 w-3.5" /> {lb("ইন্টিগ্রেশন", "Integrations")}</TabsTrigger>
+          <TabsTrigger value="chat" className="gap-1"><MessageCircle className="h-3.5 w-3.5" /> {lb("চ্যাট", "Chat")}</TabsTrigger>
+          <TabsTrigger value="profile_fields" className="gap-1"><Plus className="h-3.5 w-3.5" /> {lb("প্রোফাইল ফিল্ড", "Profile Fields")}</TabsTrigger>
         </TabsList>
 
         {/* ===== Organization Tab ===== */}
@@ -505,7 +508,162 @@ const SettingsPage = () => {
           </Card>
           <Button onClick={saveSiteSettings} className="gap-2"><Save className="h-4 w-4" /> {t("common_save")}</Button>
         </TabsContent>
+
+        {/* ===== Integrations Tab ===== */}
+        <TabsContent value="integrations" className="space-y-4">
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold text-lg flex items-center gap-2"><Plug className="h-5 w-5" /> {lb("থার্ড-পার্টি ইন্টিগ্রেশন", "Third-Party Integrations")}</h2>
+            <p className="text-sm text-muted-foreground">{lb("বিভিন্ন বাইরের সেবা ইন্টিগ্রেট করুন।", "Configure external service integrations.")}</p>
+            
+            <div className="space-y-6">
+              {/* Google OAuth */}
+              <div className="border border-border rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">🔐 Google OAuth {lb("লগইন", "Login")}</h3>
+                <p className="text-xs text-muted-foreground">{lb("Google একাউন্ট দিয়ে লগইন সচল করতে Supabase Dashboard → Authentication → Providers → Google এ গিয়ে Google Client ID ও Secret সেট করুন।", "To enable Google login, go to Supabase Dashboard → Authentication → Providers → Google and set your Client ID & Secret.")}</p>
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">Google Client ID</label>
+                    <Input placeholder="xxx.apps.googleusercontent.com" value={settings.google_client_id || ""} onChange={(e) => updateSetting("google_client_id", e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Analytics */}
+              <div className="border border-border rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">📊 Google Analytics</h3>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">GA Measurement ID</label>
+                  <Input placeholder="G-XXXXXXXXXX" value={settings.google_analytics_id || ""} onChange={(e) => updateSetting("google_analytics_id", e.target.value)} />
+                </div>
+              </div>
+
+              {/* Facebook Pixel */}
+              <div className="border border-border rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">📱 Facebook Pixel</h3>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Pixel ID</label>
+                  <Input placeholder="123456789" value={settings.facebook_pixel_id || ""} onChange={(e) => updateSetting("facebook_pixel_id", e.target.value)} />
+                </div>
+              </div>
+
+              {/* SEO */}
+              <div className="border border-border rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">🔍 SEO</h3>
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{lb("সাইট টাইটেল", "Site Title")}</label>
+                    <Input value={settings.seo_title || ""} onChange={(e) => updateSetting("seo_title", e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{lb("মেটা ডেসক্রিপশন", "Meta Description")}</label>
+                    <Textarea rows={2} value={settings.seo_description || ""} onChange={(e) => updateSetting("seo_description", e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">OG Image URL</label>
+                    <Input value={settings.seo_og_image || ""} onChange={(e) => updateSetting("seo_og_image", e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{lb("কীওয়ার্ড", "Keywords")}</label>
+                    <Input placeholder={lb("চ্যারিটি, এনজিও, অনুদান", "charity, NGO, donation")} value={settings.seo_keywords || ""} onChange={(e) => updateSetting("seo_keywords", e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Custom Script */}
+              <div className="border border-border rounded-lg p-4 space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">⚡ {lb("কাস্টম হেড স্ক্রিপ্ট", "Custom Head Script")}</h3>
+                <Textarea rows={4} placeholder="<script>...</script>" value={settings.custom_head_script || ""} onChange={(e) => updateSetting("custom_head_script", e.target.value)} />
+              </div>
+            </div>
+          </Card>
+          <Button onClick={saveSiteSettings} className="gap-2"><Save className="h-4 w-4" /> {t("common_save")}</Button>
+        </TabsContent>
+
+        {/* ===== Chat Settings Tab ===== */}
+        <TabsContent value="chat" className="space-y-4">
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold text-lg flex items-center gap-2"><MessageCircle className="h-5 w-5" /> {lb("চ্যাট সেটিংস", "Chat Settings")}</h2>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Switch checked={settings.chat_enabled !== "false"} onCheckedChange={(v) => updateSetting("chat_enabled", v.toString())} />
+                <Label>{lb("রিয়েল-টাইম চ্যাট সচল", "Enable real-time chat")}</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch checked={settings.support_chat_enabled !== "false"} onCheckedChange={(v) => updateSetting("support_chat_enabled", v.toString())} />
+                <Label>{lb("সাপোর্ট চ্যাট উইজেট দেখান", "Show support chat widget")}</Label>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{lb("সাপোর্ট চ্যাটের ওয়েলকাম মেসেজ", "Support chat welcome message")}</label>
+                <Input value={settings.support_welcome_message || ""} onChange={(e) => updateSetting("support_welcome_message", e.target.value)} placeholder={lb("আমরা সবসময় আপনার পাশে আছি", "We're here to help")} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{lb("প্রিসেট মেসেজ (কমা দিয়ে আলাদা)", "Preset messages (comma separated)")}</label>
+                <Textarea rows={3} value={settings.support_preset_messages || ""} onChange={(e) => updateSetting("support_preset_messages", e.target.value)} placeholder={lb("আমি অনুদান দিতে চাই, স্বেচ্ছাসেবক হতে চাই, ধন্যবাদ", "I want to donate, I want to volunteer, Thank you")} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Messenger URL</label>
+                <Input value={settings.messenger_url || ""} onChange={(e) => updateSetting("messenger_url", e.target.value)} placeholder="https://m.me/pagename" />
+              </div>
+            </div>
+          </Card>
+          <Button onClick={saveSiteSettings} className="gap-2"><Save className="h-4 w-4" /> {t("common_save")}</Button>
+        </TabsContent>
+
+        {/* ===== Profile Custom Fields Tab ===== */}
+        <TabsContent value="profile_fields" className="space-y-4">
+          <Card className="p-6 space-y-4">
+            <h2 className="font-semibold text-lg">{lb("প্রোফাইল কাস্টম ফিল্ড", "Profile Custom Fields")}</h2>
+            <p className="text-sm text-muted-foreground">{lb("ইউজার প্রোফাইলে অতিরিক্ত ফিল্ড যোগ করুন।", "Add extra fields to user profiles.")}</p>
+            <ProfileCustomFieldsEditor settings={settings} updateSetting={updateSetting} lb={lb} />
+          </Card>
+          <Button onClick={saveSiteSettings} className="gap-2"><Save className="h-4 w-4" /> {t("common_save")}</Button>
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+};
+
+// Sub-component for profile custom fields
+const ProfileCustomFieldsEditor = ({ settings, updateSetting, lb }: { settings: Record<string, string>; updateSetting: (k: string, v: string) => void; lb: (bn: string, en: string) => string }) => {
+  const [fields, setFields] = useState<{ key: string; label: string }[]>([]);
+  const [newKey, setNewKey] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(settings.profile_custom_fields || "[]");
+      if (Array.isArray(parsed)) setFields(parsed);
+    } catch { setFields([]); }
+  }, [settings.profile_custom_fields]);
+
+  const addField = () => {
+    if (!newKey || !newLabel) return;
+    const updated = [...fields, { key: newKey.toLowerCase().replace(/\s+/g, "_"), label: newLabel }];
+    setFields(updated);
+    updateSetting("profile_custom_fields", JSON.stringify(updated));
+    setNewKey(""); setNewLabel("");
+  };
+
+  const removeField = (idx: number) => {
+    const updated = fields.filter((_, i) => i !== idx);
+    setFields(updated);
+    updateSetting("profile_custom_fields", JSON.stringify(updated));
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <Input placeholder={lb("ফিল্ড কী (ইংরেজি)", "Field key")} value={newKey} onChange={(e) => setNewKey(e.target.value)} className="flex-1" />
+        <Input placeholder={lb("লেবেল", "Label")} value={newLabel} onChange={(e) => setNewLabel(e.target.value)} className="flex-1" />
+        <Button size="sm" onClick={addField} className="gap-1"><Plus className="h-3.5 w-3.5" /> {lb("যোগ", "Add")}</Button>
+      </div>
+      {fields.map((f, i) => (
+        <div key={i} className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2">
+          <span className="text-xs font-mono text-muted-foreground">{f.key}</span>
+          <span className="text-sm font-medium flex-1">{f.label}</span>
+          <Button variant="ghost" size="sm" onClick={() => removeField(i)}><X className="h-3.5 w-3.5 text-destructive" /></Button>
+        </div>
+      ))}
     </div>
   );
 };
