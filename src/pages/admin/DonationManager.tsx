@@ -178,7 +178,7 @@ const DonationManager = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট অনুদান</div><div className="text-2xl font-bold text-primary">৳{totalDonations.toLocaleString("bn-BD")}</div></Card>
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">নিশ্চিত অনুদান</div><div className="text-2xl font-bold text-green-600">৳{confirmedTotal.toLocaleString("bn-BD")}</div></Card>
         <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট দাতা</div><div className="text-2xl font-bold">{items.length}</div></Card>
@@ -213,8 +213,8 @@ const DonationManager = () => {
             </Select>
             <span className="text-sm text-muted-foreground ml-auto">{filteredItems.length} টি ফলাফল</span>
           </div>
-          <Card>
-            <Table>
+          <Card className="overflow-x-auto">
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>দাতা</TableHead><TableHead>পরিমাণ</TableHead><TableHead>পদ্ধতি</TableHead>

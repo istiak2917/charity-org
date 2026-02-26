@@ -106,7 +106,7 @@ const AdminHome = () => {
         <Card className="p-4 text-center"><div className="text-2xl font-bold text-blue-600">{projectStats.completed}</div><div className="text-sm text-muted-foreground">{t("dash_completed_projects")}</div></Card>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {stats.map((s) => (
           <Link to={s.link} key={s.label}>
             <Card className="p-4 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
