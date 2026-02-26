@@ -79,6 +79,7 @@ const ALL_MENU_ITEMS: MenuItem[] = [
   { module: "dashboard", labelKey: "admin_webhooks", path: "/admin/webhooks", icon: "Code" },
   { module: "dashboard", labelKey: "admin_ab_testing", path: "/admin/ab-testing", icon: "FlaskConical" },
   { module: "dashboard", labelKey: "admin_advanced_reports", path: "/admin/advanced-reports", icon: "TrendingUp" },
+  { module: "audit", labelKey: "admin_sessions" as TranslationKey, path: "/admin/sessions", icon: "Shield" },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
