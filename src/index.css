@@ -10,26 +10,14 @@ html, body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* Admin pages: force single-column grids on small mobile screens */
-@media (max-width: 480px) {
-  main .grid-cols-2,
-  main .grid-cols-3,
-  main .grid-cols-4,
-  main .grid-cols-5 {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+/* Mobile-first: force single-column grids on screens up to 768px */
+@media (max-width: 767px) {
+  main [class*="grid-cols-"] {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
   }
   
-  /* Allow tables to scroll horizontally */
-  main table {
-    display: block;
-    overflow-x: auto;
+  main .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
-  }
-  
-  main thead, main tbody, main tr {
-    display: table;
-    width: 100%;
-    table-layout: auto;
   }
 }
 
