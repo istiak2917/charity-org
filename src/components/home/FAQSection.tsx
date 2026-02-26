@@ -11,26 +11,30 @@ interface FAQItem {
   sort_order: number;
 }
 
+const DEMO_FAQS: FAQItem[] = [
+  { id: "1", question: "আপনারা কীভাবে কাজ করেন?", answer: "আমরা সুবিধাবঞ্চিত শিশুদের শিক্ষা, স্বাস্থ্য ও খাদ্য সহায়তা দিই। আমাদের স্বেচ্ছাসেবকরা মাঠ পর্যায়ে কাজ করেন।", is_active: true, sort_order: 0 },
+  { id: "2", question: "কীভাবে অনুদান দিতে পারি?", answer: "বিকাশ, নগদ, ব্যাংক ট্রান্সফার বা আমাদের ওয়েবসাইটের মাধ্যমে অনুদান দিতে পারেন।", is_active: true, sort_order: 1 },
+  { id: "3", question: "স্বেচ্ছাসেবক হতে চাইলে কী করতে হবে?", answer: "আমাদের ওয়েবসাইটে রেজিস্ট্রেশন করুন এবং স্বেচ্ছাসেবক ফর্ম পূরণ করুন। আমরা আপনার সাথে যোগাযোগ করব।", is_active: true, sort_order: 2 },
+  { id: "4", question: "অনুদানের অর্থ কোথায় ব্যয় হয়?", answer: "সকল অনুদানের বিস্তারিত হিসাব আমাদের স্বচ্ছতা পেজে প্রকাশ করা হয়। প্রতিটি টাকার হিসাব রাখা হয়।", is_active: true, sort_order: 3 },
+];
+
 const FAQSection = () => {
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
+  const [faqs, setFaqs] = useState<FAQItem[]>(DEMO_FAQS);
 
   useEffect(() => {
     const load = async () => {
-      // Load from site_settings
       const { data } = await supabase.from("site_settings").select("*").eq("setting_key", "homepage_faqs").single();
       if (data) {
         try {
           const raw = typeof data.setting_value === "string" ? JSON.parse(data.setting_value) : data.setting_value;
           const items = (Array.isArray(raw) ? raw : []).filter((f: any) => f.is_active !== false);
           items.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
-          setFaqs(items);
+          if (items.length > 0) setFaqs(items);
         } catch {}
       }
     };
     load();
   }, []);
-
-  if (faqs.length === 0) return null;
 
   return (
     <section className="py-16 bg-muted/30">

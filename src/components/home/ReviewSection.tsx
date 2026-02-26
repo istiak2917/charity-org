@@ -14,8 +14,14 @@ interface Review {
   sort_order: number;
 }
 
+const DEMO_REVIEWS: Review[] = [
+  { id: "1", name: "আব্দুর রহমান", role: "নিয়মিত দাতা", text: "শিশুফুল ফাউন্ডেশনের কাজে আমি অত্যন্ত সন্তুষ্ট। তারা প্রতিটি টাকার সঠিক ব্যবহার নিশ্চিত করে।", rating: 5, is_active: true, sort_order: 0 },
+  { id: "2", name: "ফাতেমা বেগম", role: "স্বেচ্ছাসেবক", text: "স্বেচ্ছাসেবক হিসেবে কাজ করে দারুণ অভিজ্ঞতা হয়েছে। শিশুদের হাসি দেখে মন ভরে যায়।", rating: 5, is_active: true, sort_order: 1 },
+  { id: "3", name: "তানভীর হাসান", role: "কর্পোরেট স্পন্সর", text: "একটি স্বচ্ছ ও দায়বদ্ধ সংগঠন। তাদের সাথে কাজ করতে পেরে গর্বিত।", rating: 4, is_active: true, sort_order: 2 },
+];
+
 const ReviewSection = () => {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<Review[]>(DEMO_REVIEWS);
 
   useEffect(() => {
     const load = async () => {
@@ -25,14 +31,12 @@ const ReviewSection = () => {
           const raw = typeof data.setting_value === "string" ? JSON.parse(data.setting_value) : data.setting_value;
           const items = (Array.isArray(raw) ? raw : []).filter((r: any) => r.is_active !== false);
           items.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
-          setReviews(items);
+          if (items.length > 0) setReviews(items);
         } catch {}
       }
     };
     load();
   }, []);
-
-  if (reviews.length === 0) return null;
 
   return (
     <section className="py-16">

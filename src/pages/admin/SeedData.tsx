@@ -411,6 +411,12 @@ const SeedData = () => {
         { setting_key: "seo_keywords", setting_value: JSON.stringify("চ্যারিটি, এনজিও, শিশু শিক্ষা, অনুদান, বাংলাদেশ") },
         { setting_key: "homepage_faqs", setting_value: JSON.stringify(demoFaqs) },
         { setting_key: "homepage_reviews", setting_value: JSON.stringify(demoReviews) },
+        { setting_key: "auto_donation_email", setting_value: JSON.stringify("true") },
+        { setting_key: "auto_welcome_email", setting_value: JSON.stringify("true") },
+        { setting_key: "auto_volunteer_email", setting_value: JSON.stringify("true") },
+        { setting_key: "auto_event_reminder", setting_value: JSON.stringify("true") },
+        { setting_key: "donation_email_template", setting_value: JSON.stringify("প্রিয় {{name}}, আপনার ৳{{amount}} অনুদানের জন্য আন্তরিক ধন্যবাদ! আপনার অবদান {{project}} প্রকল্পে ব্যবহৃত হবে।") },
+        { setting_key: "messenger_url", setting_value: JSON.stringify("https://m.me/shishuful") },
       ];
       await supabase.from("site_settings").upsert(extraSettings, { onConflict: "setting_key" });
       addResult("site_settings (extra)", true, "চ্যাট, SEO, FAQ ও রিভিউ সেটিংস যোগ হয়েছে");

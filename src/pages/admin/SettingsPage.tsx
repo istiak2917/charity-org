@@ -378,7 +378,8 @@ const SettingsPage = () => {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">{lb("অটো ইমেইল টেমপ্লেট (দানের পর)", "Auto Email Template (After Donation)")}</label>
-                <Textarea rows={4} placeholder={lb("প্রিয় {name}, আপনার ৳{amount} অনুদানের জন্য ধন্যবাদ...", "Dear {name}, thank you for your ৳{amount} donation...")} value={settings.donation_email_template || ""} onChange={(e) => updateSetting("donation_email_template", e.target.value)} />
+                <Textarea rows={4} placeholder={lb("প্রিয় {{name}}, আপনার ৳{{amount}} অনুদানের জন্য ধন্যবাদ...", "Dear {{name}}, thank you for your ৳{{amount}} donation...")} value={settings.donation_email_template || ""} onChange={(e) => updateSetting("donation_email_template", e.target.value)} />
+                <p className="text-xs text-muted-foreground">{lb("ভেরিয়েবল: {{name}}, {{email}}, {{amount}}, {{project}}, {{date}}", "Variables: {{name}}, {{email}}, {{amount}}, {{project}}, {{date}}")}</p>
               </div>
               <div className="flex items-center gap-3">
                 <Switch checked={settings.auto_donation_email === "true"} onCheckedChange={(v) => updateSetting("auto_donation_email", v.toString())} />
@@ -387,6 +388,18 @@ const SettingsPage = () => {
               <div className="flex items-center gap-3">
                 <Switch checked={settings.auto_whatsapp_donation === "true"} onCheckedChange={(v) => updateSetting("auto_whatsapp_donation", v.toString())} />
                 <Label>{lb("দানের পর অটো WhatsApp মেসেজ পাঠান", "Send auto WhatsApp after donation")}</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch checked={settings.auto_welcome_email === "true"} onCheckedChange={(v) => updateSetting("auto_welcome_email", v.toString())} />
+                <Label>{lb("নতুন সদস্যকে স্বাগতম ইমেইল পাঠান", "Send welcome email to new members")}</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch checked={settings.auto_volunteer_email === "true"} onCheckedChange={(v) => updateSetting("auto_volunteer_email", v.toString())} />
+                <Label>{lb("স্বেচ্ছাসেবক অনুমোদনে ইমেইল পাঠান", "Send email on volunteer approval")}</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch checked={settings.auto_event_reminder === "true"} onCheckedChange={(v) => updateSetting("auto_event_reminder", v.toString())} />
+                <Label>{lb("ইভেন্টের আগে রিমাইন্ডার ইমেইল", "Send event reminder email")}</Label>
               </div>
             </div>
           </Card>

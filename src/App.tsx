@@ -81,6 +81,10 @@ import DirectoryManager from "./pages/admin/DirectoryManager";
 import FormBuilder from "./pages/admin/FormBuilder";
 import PollManager from "./pages/admin/PollManager";
 import FAQReviewManager from "./pages/admin/FAQReviewManager";
+import EmailTemplateManager from "./pages/admin/EmailTemplateManager";
+import WebhookManager from "./pages/admin/WebhookManager";
+import ABTestManager from "./pages/admin/ABTestManager";
+import AdvancedReporting from "./pages/admin/AdvancedReporting";
 import DirectoryPage from "./pages/public/DirectoryPage";
 import FormPage from "./pages/public/FormPage";
 import PollPage from "./pages/public/PollPage";
@@ -186,6 +190,10 @@ const App = () => (
             <Route path="/admin/forms" element={<AdminRoute><FormBuilder /></AdminRoute>} />
             <Route path="/admin/polls" element={<AdminRoute><PollManager /></AdminRoute>} />
             <Route path="/admin/faq-reviews" element={<AdminRoute><FAQReviewManager /></AdminRoute>} />
+            <Route path="/admin/email-templates" element={<AdminRoute><EmailTemplateManager /></AdminRoute>} />
+            <Route path="/admin/webhooks" element={<AdminRoute><WebhookManager /></AdminRoute>} />
+            <Route path="/admin/ab-testing" element={<AdminRoute><ABTestManager /></AdminRoute>} />
+            <Route path="/admin/advanced-reports" element={<AdminRoute><AdvancedReporting /></AdminRoute>} />
 
             {/* Member Routes */}
             <Route path="/member" element={<MemberRoute><MemberProfile /></MemberRoute>} />
