@@ -247,14 +247,16 @@ const BlockContentEditor = ({ block, onChange }: { block: SectionBlock; onChange
 };
 
 // ========== Fallback Section Content Info ==========
-const FALLBACK_SECTION_INFO: Record<string, {
+type FieldDef = { key: string; label: string; settingKey?: string; orgField?: string; type?: "text" | "toggle" | "json" | "textarea" };
+type SectionInfo = {
   label: string;
   source: "site_settings" | "organizations" | "db_table" | "translation";
-  fields?: { key: string; label: string; settingKey?: string; orgField?: string }[];
+  fields?: FieldDef[];
   adminLink?: string;
   adminLabel?: string;
   description?: string;
-}> = {
+};
+const FALLBACK_SECTION_INFO: Record<string, SectionInfo> = {
   hero: {
     label: "হিরো সেকশন",
     source: "site_settings",
@@ -301,29 +303,33 @@ const FALLBACK_SECTION_INFO: Record<string, {
     label: "FAQ সেকশন",
     source: "site_settings",
     fields: [
-      { key: "homepage_faqs", label: "FAQ ডেটা (JSON)", settingKey: "homepage_faqs" },
+      { key: "faq_section_title", label: "সেকশন শিরোনাম", settingKey: "faq_section_title" },
+      { key: "homepage_faqs", label: "FAQ ডেটা (JSON)", settingKey: "homepage_faqs", type: "json" },
     ],
-    description: "JSON ফরম্যাটে FAQ — নিচে কোড কপি-পেস্ট করে পরিবর্তন করুন",
+    description: "সহজভাবে এডিট করতে FAQ ম্যানেজার খুলুন",
     adminLink: "/admin/faq-reviews", adminLabel: "FAQ ম্যানেজার",
   },
   reviews: {
     label: "রিভিউ সেকশন",
     source: "site_settings",
     fields: [
-      { key: "homepage_reviews", label: "রিভিউ ডেটা (JSON)", settingKey: "homepage_reviews" },
+      { key: "review_section_title", label: "সেকশন শিরোনাম", settingKey: "review_section_title" },
+      { key: "homepage_reviews", label: "রিভিউ ডেটা (JSON)", settingKey: "homepage_reviews", type: "json" },
     ],
-    description: "JSON ফরম্যাটে রিভিউ — নিচে কোড কপি-পেস্ট করে পরিবর্তন করুন",
+    description: "সহজভাবে এডিট করতে রিভিউ ম্যানেজার খুলুন",
     adminLink: "/admin/faq-reviews", adminLabel: "রিভিউ ম্যানেজার",
   },
   contact: {
     label: "যোগাযোগ সেকশন",
     source: "site_settings",
     fields: [
+      { key: "contact_section_title", label: "সেকশন শিরোনাম", settingKey: "contact_section_title" },
+      { key: "contact_section_subtitle", label: "সেকশন সাবটাইটেল", settingKey: "contact_section_subtitle" },
       { key: "contact_phone", label: "ফোন নম্বর", settingKey: "contact_phone" },
       { key: "contact_email", label: "ইমেইল", settingKey: "contact_email" },
       { key: "contact_address", label: "ঠিকানা", settingKey: "contact_address" },
     ],
-    description: "যোগাযোগ তথ্য — ফর্ম কন্টেন্ট অটোমেটিক",
+    description: "যোগাযোগ তথ্য এডিট করুন",
   },
   projects: {
     label: "প্রকল্প সেকশন", source: "db_table",
@@ -351,8 +357,16 @@ const FALLBACK_SECTION_INFO: Record<string, {
     adminLink: "/admin/gallery", adminLabel: "গ্যালারি ম্যানেজার",
   },
   transparency: {
-    label: "স্বচ্ছতা সেকশন", source: "db_table",
-    description: "donations ও expenses টেবিল থেকে ডেটা আসে",
+    label: "স্বচ্ছতা সেকশন",
+    source: "site_settings",
+    fields: [
+      { key: "transparency_custom_title", label: "সেকশন শিরোনাম", settingKey: "transparency_custom_title" },
+      { key: "transparency_custom_subtitle", label: "সেকশন সাবটাইটেল", settingKey: "transparency_custom_subtitle" },
+      { key: "transparency_show_donations", label: "মোট অনুদান কার্ড দেখান", settingKey: "transparency_show_donations", type: "toggle" },
+      { key: "transparency_show_fund_usage", label: "তহবিল ব্যবহার কার্ড দেখান", settingKey: "transparency_show_fund_usage", type: "toggle" },
+      { key: "transparency_show_expenses", label: "মোট ব্যয় কার্ড দেখান", settingKey: "transparency_show_expenses", type: "toggle" },
+    ],
+    description: "কোন কোন তথ্য দেখাবে তা নির্ধারণ করুন",
     adminLink: "/admin/finance", adminLabel: "আয়-ব্যয় ম্যানেজার",
   },
   goals: {
@@ -475,8 +489,20 @@ const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
       )}
       {info.fields?.map(field => {
         const val = values[field.settingKey || field.key] || values[field.key] || "";
-        const isJson = field.label.includes("JSON");
+        const isJson = field.type === "json" || field.label.includes("JSON");
+        const isToggle = field.type === "toggle";
         const displayVal = isJson ? (typeof val === "object" ? JSON.stringify(val, null, 2) : val) : val;
+        
+        if (isToggle) {
+          const isOn = val === "" || val === "true";
+          return (
+            <div key={field.key} className="flex items-center justify-between py-1.5">
+              <Label className="text-xs">{field.label}</Label>
+              <Switch checked={isOn} onCheckedChange={(checked) => setValues(prev => ({ ...prev, [field.settingKey || field.key]: String(checked), [field.key]: String(checked) }))} />
+            </div>
+          );
+        }
+        
         return (
           <div key={field.key}>
             <Label className="text-xs">{field.label}</Label>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,22 @@ const ContactSection = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [customTitle, setCustomTitle] = useState("");
+  const [customSubtitle, setCustomSubtitle] = useState("");
+
+  useEffect(() => {
+    supabase.from("site_settings").select("*").then(({ data }) => {
+      if (data) {
+        data.forEach((s: any) => {
+          const k = s.setting_key || s.key || "";
+          const raw = s.setting_value || s.value || "";
+          const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : String(raw);
+          if (k === "contact_section_title" && val) setCustomTitle(val);
+          if (k === "contact_section_subtitle" && val) setCustomSubtitle(val);
+        });
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,8 +62,8 @@ const ContactSection = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold font-heading mb-3">{t("contact_title")}</h2>
-            <p className="text-muted-foreground">{t("contact_subtitle")}</p>
+            <h2 className="text-3xl font-bold font-heading mb-3">{customTitle || t("contact_title")}</h2>
+            <p className="text-muted-foreground">{customSubtitle || t("contact_subtitle")}</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4 bg-card p-8 rounded-xl border border-border">
             <Input name="name" placeholder={t("contact_name")} required />
