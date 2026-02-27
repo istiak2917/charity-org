@@ -42,6 +42,7 @@ import PublicAPI from "./pages/public/PublicAPI";
 import RecurringDonationPage from "./pages/public/RecurringDonationPage";
 import PaymentResultPage from "./pages/public/PaymentResultPage";
 import TestimonialsPage from "./pages/public/TestimonialsPage";
+import AboutPage from "./pages/public/AboutPage";
 // Admin pages
 import AdminHome from "./pages/admin/AdminHome";
 import ProjectManager from "./pages/admin/ProjectManager";
@@ -153,6 +154,7 @@ const App = () => (
             <Route path="/directory/:slug" element={<DirectoryPage />} />
             <Route path="/forms/:slug" element={<FormPage />} />
             <Route path="/polls" element={<PollPage />} />
+            <Route path="/about" element={<AboutPage />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminRoute><AdminHome /></AdminRoute>} />

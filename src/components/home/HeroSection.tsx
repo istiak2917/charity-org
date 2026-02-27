@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Heart, Users, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 import logo from "@/assets/shishuful-logo.jpg";
 import heroChild1 from "@/assets/hero-child-1.jpg";
 import heroEducation from "@/assets/hero-education.jpg";
@@ -22,6 +23,7 @@ const collageImages = [
 
 const HeroSection = () => {
   const { t, lang } = useLanguage();
+  const navigate = useNavigate();
   const [headline, setHeadline] = useState("");
   const [subtext, setSubtext] = useState("");
   const [ctaText, setCtaText] = useState("");
@@ -89,13 +91,13 @@ const HeroSection = () => {
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed hero-subtext max-w-xl">{displaySubtext}</p>
           <div className="flex flex-wrap justify-center gap-3 hero-cta-entrance">
-            <Button className="btn-press gap-2 text-base px-7 py-5 bg-gradient-to-r from-primary to-accent shadow-lg hero-btn-glow" size="lg">
+            <Button onClick={() => navigate("/donations")} className="btn-press gap-2 text-base px-7 py-5 bg-gradient-to-r from-primary to-accent shadow-lg hero-btn-glow" size="lg">
               <Heart className="h-5 w-5" /> {displayCta}
             </Button>
-            <Button variant="outline" className="btn-press gap-2 text-base px-7 py-5 border-primary text-primary hover:bg-primary hover:text-primary-foreground" size="lg">
+            <Button onClick={() => navigate("/volunteers")} variant="outline" className="btn-press gap-2 text-base px-7 py-5 border-primary text-primary hover:bg-primary hover:text-primary-foreground" size="lg">
               <Users className="h-5 w-5" /> {t("hero_cta_volunteer")}
             </Button>
-            <Button variant="ghost" className="btn-press gap-2 text-base px-7 py-5 text-muted-foreground" size="lg">
+            <Button onClick={() => navigate("/about")} variant="ghost" className="btn-press gap-2 text-base px-7 py-5 text-muted-foreground" size="lg">
               <BookOpen className="h-5 w-5" /> {t("hero_cta_learn_more")}
             </Button>
           </div>
