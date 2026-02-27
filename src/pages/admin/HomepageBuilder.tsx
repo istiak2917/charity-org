@@ -14,8 +14,9 @@ import { BLOCK_TYPES, BLOCK_CATEGORIES, type HomepageSection, type SectionBlock,
 import {
   Plus, Trash2, Copy, ArrowUp, ArrowDown, Eye, EyeOff,
   Settings, Layers, Save, Download, Upload, GripVertical, PanelLeft, PanelRight,
-  Undo2, Redo2, Monitor, RefreshCw, X, ChevronRight
+  Undo2, Redo2, Monitor, RefreshCw, X, ChevronRight, ExternalLink, Database
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // ========== Safe DB helpers ==========
 async function safeUpsertBlock(block: Partial<SectionBlock>): Promise<{ data: any; error: any }> {
@@ -243,6 +244,291 @@ const BlockContentEditor = ({ block, onChange }: { block: SectionBlock; onChange
         </div>
       );
   }
+};
+
+// ========== Fallback Section Content Info ==========
+const FALLBACK_SECTION_INFO: Record<string, {
+  label: string;
+  source: "site_settings" | "organizations" | "db_table" | "translation";
+  fields?: { key: string; label: string; settingKey?: string; orgField?: string }[];
+  adminLink?: string;
+  adminLabel?: string;
+  description?: string;
+}> = {
+  hero: {
+    label: "হিরো সেকশন",
+    source: "site_settings",
+    fields: [
+      { key: "hero_headline", label: "শিরোনাম (Headline)", settingKey: "hero_headline" },
+      { key: "hero_subtext", label: "উপশিরোনাম (Subtext)", settingKey: "hero_subtext" },
+      { key: "cta_button_text", label: "বাটন টেক্সট", settingKey: "cta_button_text" },
+    ],
+  },
+  about: {
+    label: "আমাদের সম্পর্কে",
+    source: "organizations",
+    fields: [
+      { key: "description", label: "বিবরণ", orgField: "description" },
+      { key: "mission", label: "মিশন", orgField: "mission" },
+      { key: "vision", label: "ভিশন", orgField: "vision" },
+    ],
+  },
+  donation: {
+    label: "ডোনেশন সেকশন",
+    source: "site_settings",
+    fields: [
+      { key: "payment_bkash", label: "বিকাশ নম্বর", settingKey: "payment_bkash" },
+      { key: "payment_nagad", label: "নগদ নম্বর", settingKey: "payment_nagad" },
+      { key: "payment_bank", label: "ব্যাংক তথ্য", settingKey: "payment_bank" },
+    ],
+  },
+  projects: {
+    label: "প্রকল্প সেকশন", source: "db_table",
+    description: "projects টেবিল থেকে ডেটা আসে",
+    adminLink: "/admin/projects", adminLabel: "প্রকল্প ম্যানেজার",
+  },
+  events: {
+    label: "ইভেন্ট সেকশন", source: "db_table",
+    description: "events টেবিল থেকে ডেটা আসে",
+    adminLink: "/admin/events", adminLabel: "ইভেন্ট ম্যানেজার",
+  },
+  team: {
+    label: "টিম সেকশন", source: "db_table",
+    description: "team_members টেবিল থেকে ডেটা আসে",
+    adminLink: "/admin/team", adminLabel: "টিম ম্যানেজার",
+  },
+  blog: {
+    label: "ব্লগ সেকশন", source: "db_table",
+    description: "blog_posts টেবিল থেকে ডেটা আসে",
+    adminLink: "/admin/blog", adminLabel: "ব্লগ ম্যানেজার",
+  },
+  gallery: {
+    label: "গ্যালারি সেকশন", source: "db_table",
+    description: "gallery_items টেবিল থেকে ডেটা আসে",
+    adminLink: "/admin/gallery", adminLabel: "গ্যালারি ম্যানেজার",
+  },
+  impact: {
+    label: "ইমপ্যাক্ট সেকশন", source: "translation",
+    description: "হার্ডকোডেড সংখ্যা — কোডে পরিবর্তন করতে হবে",
+  },
+  contact: {
+    label: "যোগাযোগ সেকশন", source: "translation",
+    description: "যোগাযোগ ফর্ম — কন্টেন্ট ট্রান্সলেশন ফাইল থেকে আসে",
+  },
+  transparency: {
+    label: "স্বচ্ছতা সেকশন", source: "db_table",
+    description: "donations ও expenses টেবিল থেকে ডেটা আসে",
+    adminLink: "/admin/finance", adminLabel: "আয়-ব্যয় ম্যানেজার",
+  },
+  faq: {
+    label: "FAQ সেকশন", source: "translation",
+    description: "ট্রান্সলেশন ফাইল থেকে কন্টেন্ট আসে",
+  },
+  reviews: {
+    label: "রিভিউ সেকশন", source: "translation",
+    description: "ট্রান্সলেশন ফাইল থেকে কন্টেন্ট আসে",
+  },
+  goals: {
+    label: "গোল ট্র্যাকার", source: "db_table",
+    description: "projects টেবিল থেকে ডেটা আসে",
+    adminLink: "/admin/projects", adminLabel: "প্রকল্প ম্যানেজার",
+  },
+};
+
+// ========== Fallback Section Editor ==========
+const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
+  const { toast } = useToast();
+  const info = FALLBACK_SECTION_INFO[sectionKey];
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!info) { setLoading(false); return; }
+    setLoading(true);
+    if (info.source === "site_settings" && info.fields) {
+      supabase.from("site_settings").select("*").then(({ data }) => {
+        const vals: Record<string, string> = {};
+        if (data) {
+          data.forEach((s: any) => {
+            const k = s.key || s.setting_key || s.name || "";
+            const raw = s.value || s.setting_value || "";
+            vals[k] = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
+          });
+        }
+        setValues(vals);
+        setLoading(false);
+      });
+    } else if (info.source === "organizations" && info.fields) {
+      supabase.from("organizations").select("*").limit(1).maybeSingle().then(({ data }) => {
+        const vals: Record<string, string> = {};
+        if (data) {
+          info.fields!.forEach(f => {
+            if (f.orgField && data[f.orgField]) vals[f.key] = data[f.orgField];
+          });
+        }
+        setValues(vals);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
+  }, [sectionKey]);
+
+  const saveSiteSettings = async () => {
+    if (!info?.fields) return;
+    setSaving(true);
+    for (const field of info.fields) {
+      if (!field.settingKey) continue;
+      const val = values[field.settingKey] || values[field.key] || "";
+      const { data: existing } = await supabase.from("site_settings").select("id").eq("setting_key", field.settingKey).maybeSingle();
+      if (existing) {
+        await supabase.from("site_settings").update({ setting_value: val }).eq("id", existing.id);
+      } else {
+        await supabase.from("site_settings").insert({ setting_key: field.settingKey, setting_value: val });
+      }
+    }
+    setSaving(false);
+    toast({ title: "✅ সেভ হয়েছে!" });
+  };
+
+  const saveOrganization = async () => {
+    if (!info?.fields) return;
+    setSaving(true);
+    const updates: Record<string, string> = {};
+    info.fields.forEach(f => { if (f.orgField) updates[f.orgField] = values[f.key] || ""; });
+    const { data: org } = await supabase.from("organizations").select("id").limit(1).maybeSingle();
+    if (org) {
+      await supabase.from("organizations").update(updates).eq("id", org.id);
+    } else {
+      await supabase.from("organizations").insert({ name: "Shishuful", ...updates });
+    }
+    setSaving(false);
+    toast({ title: "✅ সেভ হয়েছে!" });
+  };
+
+  if (!info) return <p className="text-xs text-muted-foreground">এই সেকশনের জন্য কোনো এডিটর নেই।</p>;
+
+  if (info.source === "db_table" || info.source === "translation") {
+    return (
+      <div className="space-y-3">
+        <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground flex items-start gap-2">
+          <Database className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>{info.description}</span>
+        </div>
+        {info.adminLink && (
+          <Link to={info.adminLink}>
+            <Button variant="outline" size="sm" className="w-full gap-1 text-xs">
+              <ExternalLink className="h-3 w-3" /> {info.adminLabel} খুলুন
+            </Button>
+          </Link>
+        )}
+      </div>
+    );
+  }
+
+  if (loading) return <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" /></div>;
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-accent/30 rounded-lg p-2 text-[10px] text-muted-foreground">
+        ℹ️ এই কন্টেন্ট {info.source === "site_settings" ? "সাইট সেটিংস" : "অর্গানাইজেশন"} থেকে আসে। পরিবর্তন করে সেভ করুন।
+      </div>
+      {info.fields?.map(field => {
+        const val = values[field.settingKey || field.key] || values[field.key] || "";
+        return (
+          <div key={field.key}>
+            <Label className="text-xs">{field.label}</Label>
+            {val.length > 80 ? (
+              <Textarea rows={3} value={val} onChange={e => setValues(prev => ({ ...prev, [field.settingKey || field.key]: e.target.value, [field.key]: e.target.value }))} className="text-xs" />
+            ) : (
+              <Input value={val} onChange={e => setValues(prev => ({ ...prev, [field.settingKey || field.key]: e.target.value, [field.key]: e.target.value }))} className="h-8 text-xs" />
+            )}
+          </div>
+        );
+      })}
+      <Button size="sm" className="w-full" onClick={info.source === "site_settings" ? saveSiteSettings : saveOrganization} disabled={saving}>
+        {saving ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+        কন্টেন্ট সেভ করুন
+      </Button>
+    </div>
+  );
+};
+
+// ========== Fallback Section Canvas Preview ==========
+const FallbackCanvasPreview = ({ sectionKey }: { sectionKey: string }) => {
+  const info = FALLBACK_SECTION_INFO[sectionKey];
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!info) { setLoaded(true); return; }
+    if (info.source === "site_settings" && info.fields) {
+      supabase.from("site_settings").select("*").then(({ data }) => {
+        const vals: Record<string, string> = {};
+        if (data) {
+          data.forEach((s: any) => {
+            const k = s.key || s.setting_key || s.name || "";
+            const raw = s.value || s.setting_value || "";
+            vals[k] = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : JSON.stringify(raw).replace(/^"|"$/g, "");
+          });
+        }
+        setValues(vals);
+        setLoaded(true);
+      });
+    } else if (info.source === "organizations" && info.fields) {
+      supabase.from("organizations").select("*").limit(1).maybeSingle().then(({ data }) => {
+        const vals: Record<string, string> = {};
+        if (data) {
+          info.fields!.forEach(f => { if (f.orgField && data[f.orgField]) vals[f.key] = data[f.orgField]; });
+        }
+        setValues(vals);
+        setLoaded(true);
+      });
+    } else {
+      setLoaded(true);
+    }
+  }, [sectionKey]);
+
+  if (!info) return null;
+
+  if (info.source === "db_table") {
+    return (
+      <div className="text-xs text-muted-foreground flex items-center gap-1.5 py-2">
+        <Database className="h-3.5 w-3.5 shrink-0" />
+        <span>{info.description}</span>
+        {info.adminLink && (
+          <Link to={info.adminLink} className="text-primary underline ml-1 shrink-0" onClick={e => e.stopPropagation()}>
+            {info.adminLabel}
+          </Link>
+        )}
+      </div>
+    );
+  }
+
+  if (info.source === "translation") {
+    return <div className="text-xs text-muted-foreground py-2">📝 {info.description}</div>;
+  }
+
+  if (!loaded) return <div className="animate-pulse h-8 bg-muted rounded" />;
+
+  return (
+    <div className="space-y-1.5 text-xs">
+      {info.fields?.map(field => {
+        const val = values[field.settingKey || field.key] || values[field.key] || "";
+        if (!val) return null;
+        return (
+          <div key={field.key}>
+            <span className="text-[10px] text-primary/70 font-medium">{field.label}:</span>
+            <div className="text-foreground line-clamp-2 font-medium">{val}</div>
+          </div>
+        );
+      })}
+      {info.fields?.every(f => !(values[f.settingKey || f.key] || values[f.key])) && (
+        <div className="text-muted-foreground italic">কন্টেন্ট সেট করা হয়নি — ক্লিক করে এডিট করুন</div>
+      )}
+    </div>
+  );
 };
 
 const HomepageBuilder = () => {
@@ -878,9 +1164,13 @@ const HomepageBuilder = () => {
                       )}
 
                       {sectionBlocks.length === 0 ? (
-                        <div className="text-center py-6 text-muted-foreground text-sm border-2 border-dashed rounded-lg bg-muted/20">
-                          <Plus className="h-5 w-5 mx-auto mb-1 opacity-40" />
-                          ব্লক ট্যাব থেকে ব্লক যোগ করুন
+                        <div className="border-2 border-dashed rounded-lg bg-muted/20 p-3">
+                          {/* Show actual content from fallback component */}
+                          <FallbackCanvasPreview sectionKey={section.section_key || ""} />
+                          <div className="text-center pt-2 text-muted-foreground text-[10px]">
+                            <Plus className="h-4 w-4 mx-auto mb-0.5 opacity-40" />
+                            কাস্টম ব্লক যোগ করতে "ব্লক" ট্যাব ব্যবহার করুন
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-2">
@@ -1019,6 +1309,15 @@ const HomepageBuilder = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Fallback content editor for sections without blocks */}
+                {(blocks[selectedSection.id] || []).length === 0 && selectedSection.section_key && (
+                  <>
+                    <hr />
+                    <h4 className="text-xs font-semibold">📝 এই সেকশনের কন্টেন্ট</h4>
+                    <FallbackSectionEditor sectionKey={selectedSection.section_key} />
+                  </>
+                )}
 
                 {/* Show section's blocks for quick editing */}
                 {(blocks[selectedSection.id] || []).length > 0 && (
