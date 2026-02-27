@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, ArrowUp, ArrowDown, HelpCircle, Star, Save } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, HelpCircle, Star, Save, ExternalLink, Settings } from "lucide-react";
 
 interface FAQItem {
   id: string;
@@ -32,19 +32,35 @@ interface ReviewItem {
 const FAQReviewManager = () => {
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [trustpilotEnabled, setTrustpilotEnabled] = useState(false);
+  const [trustpilotUrl, setTrustpilotUrl] = useState("");
+  const [trustpilotText, setTrustpilotText] = useState("See our reviews on Trustpilot");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from("site_settings").select("*").in("setting_key", ["homepage_faqs", "homepage_reviews"]);
+      const { data } = await supabase.from("site_settings").select("*").in("setting_key", [
+        "homepage_faqs", "homepage_reviews",
+        "trustpilot_enabled", "trustpilot_url", "trustpilot_text"
+      ]);
       if (data) {
         data.forEach((s: any) => {
           try {
-            const val = typeof s.setting_value === "string" ? JSON.parse(s.setting_value) : s.setting_value;
-            if (s.setting_key === "homepage_faqs") setFaqs(Array.isArray(val) ? val : []);
-            if (s.setting_key === "homepage_reviews") setReviews(Array.isArray(val) ? val : []);
+            const raw = s.setting_value;
+            const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : raw;
+            if (s.setting_key === "homepage_faqs") {
+              const parsed = typeof val === "string" ? JSON.parse(val) : val;
+              setFaqs(Array.isArray(parsed) ? parsed : []);
+            }
+            if (s.setting_key === "homepage_reviews") {
+              const parsed = typeof val === "string" ? JSON.parse(val) : val;
+              setReviews(Array.isArray(parsed) ? parsed : []);
+            }
+            if (s.setting_key === "trustpilot_enabled") setTrustpilotEnabled(val === "true" || val === true);
+            if (s.setting_key === "trustpilot_url") setTrustpilotUrl(String(val || ""));
+            if (s.setting_key === "trustpilot_text") setTrustpilotText(String(val || "See our reviews on Trustpilot"));
           } catch {}
         });
       }
@@ -53,14 +69,32 @@ const FAQReviewManager = () => {
     load();
   }, []);
 
+  const saveSetting = async (key: string, value: any) => {
+    const stringVal = typeof value === "string" ? value : JSON.stringify(value);
+    const { data: existing } = await supabase.from("site_settings").select("id").eq("setting_key", key).maybeSingle();
+    if (existing) {
+      await supabase.from("site_settings").update({ setting_value: stringVal }).eq("id", existing.id);
+    } else {
+      await supabase.from("site_settings").insert({ setting_key: key, setting_value: stringVal });
+    }
+  };
+
   const save = async (key: string, data: any[]) => {
     setSaving(true);
-    await supabase.from("site_settings").upsert(
-      { setting_key: key, setting_value: JSON.stringify(data) },
-      { onConflict: "setting_key" }
-    );
+    await saveSetting(key, data);
     setSaving(false);
-    toast({ title: "সেভ হয়েছে!" });
+    toast({ title: "✅ সেভ হয়েছে!" });
+  };
+
+  const saveTrustpilot = async () => {
+    setSaving(true);
+    await Promise.all([
+      saveSetting("trustpilot_enabled", String(trustpilotEnabled)),
+      saveSetting("trustpilot_url", trustpilotUrl),
+      saveSetting("trustpilot_text", trustpilotText),
+    ]);
+    setSaving(false);
+    toast({ title: "✅ Trustpilot সেটিংস সেভ হয়েছে!" });
   };
 
   // FAQ helpers
@@ -85,6 +119,7 @@ const FAQReviewManager = () => {
         <TabsList>
           <TabsTrigger value="faq" className="gap-1"><HelpCircle className="h-4 w-4" /> FAQ</TabsTrigger>
           <TabsTrigger value="reviews" className="gap-1"><Star className="h-4 w-4" /> রিভিউ</TabsTrigger>
+          <TabsTrigger value="trustpilot" className="gap-1"><ExternalLink className="h-4 w-4" /> Trustpilot</TabsTrigger>
         </TabsList>
 
         <TabsContent value="faq" className="space-y-4">
@@ -95,14 +130,20 @@ const FAQReviewManager = () => {
               <Button size="sm" onClick={() => save("homepage_faqs", faqs)} disabled={saving} className="gap-1"><Save className="h-4 w-4" /> সেভ</Button>
             </div>
           </div>
+          {faqs.length === 0 && (
+            <Card className="p-8 text-center text-muted-foreground">
+              <HelpCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p>কোনো FAQ নেই। "FAQ যোগ" বাটনে ক্লিক করে শুরু করুন।</p>
+            </Card>
+          )}
           {faqs.map((faq, i) => (
             <Card key={faq.id} className="p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-mono">#{i + 1}</span>
                 <div className="flex-1" />
                 <label className="flex items-center gap-1 text-xs"><Switch checked={faq.is_active} onCheckedChange={v => updateFaq(faq.id, { is_active: v })} /> সক্রিয়</label>
-                <Button size="icon" variant="ghost" onClick={() => moveFaq(i, -1)}><ArrowUp className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" onClick={() => moveFaq(i, 1)}><ArrowDown className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => moveFaq(i, -1)} disabled={i === 0}><ArrowUp className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => moveFaq(i, 1)} disabled={i === faqs.length - 1}><ArrowDown className="h-3 w-3" /></Button>
                 <Button size="icon" variant="ghost" className="text-destructive" onClick={() => removeFaq(faq.id)}><Trash2 className="h-4 w-4" /></Button>
               </div>
               <div><Label className="text-xs">প্রশ্ন</Label><Input value={faq.question} onChange={e => updateFaq(faq.id, { question: e.target.value })} placeholder="প্রশ্ন লিখুন" /></div>
@@ -119,14 +160,20 @@ const FAQReviewManager = () => {
               <Button size="sm" onClick={() => save("homepage_reviews", reviews)} disabled={saving} className="gap-1"><Save className="h-4 w-4" /> সেভ</Button>
             </div>
           </div>
+          {reviews.length === 0 && (
+            <Card className="p-8 text-center text-muted-foreground">
+              <Star className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p>কোনো রিভিউ নেই। "রিভিউ যোগ" বাটনে ক্লিক করে শুরু করুন।</p>
+            </Card>
+          )}
           {reviews.map((rev, i) => (
             <Card key={rev.id} className="p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-mono">#{i + 1}</span>
                 <div className="flex-1" />
                 <label className="flex items-center gap-1 text-xs"><Switch checked={rev.is_active} onCheckedChange={v => updateReview(rev.id, { is_active: v })} /> সক্রিয়</label>
-                <Button size="icon" variant="ghost" onClick={() => moveReview(i, -1)}><ArrowUp className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" onClick={() => moveReview(i, 1)}><ArrowDown className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => moveReview(i, -1)} disabled={i === 0}><ArrowUp className="h-3 w-3" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => moveReview(i, 1)} disabled={i === reviews.length - 1}><ArrowDown className="h-3 w-3" /></Button>
                 <Button size="icon" variant="ghost" className="text-destructive" onClick={() => removeReview(rev.id)}><Trash2 className="h-4 w-4" /></Button>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -147,6 +194,66 @@ const FAQReviewManager = () => {
               <div><Label className="text-xs">মন্তব্য</Label><Textarea value={rev.text} onChange={e => updateReview(rev.id, { text: e.target.value })} rows={3} /></div>
             </Card>
           ))}
+        </TabsContent>
+
+        <TabsContent value="trustpilot" className="space-y-4">
+          <Card className="p-6 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[hsl(152,69%,41%)]/10 flex items-center justify-center">
+                <Star className="h-5 w-5 text-[hsl(152,69%,41%)]" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Trustpilot ইন্টিগ্রেশন</h3>
+                <p className="text-xs text-muted-foreground">হোমপেজের রিভিউ সেকশনে Trustpilot ব্যাজ দেখান</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <Label className="text-sm font-medium">Trustpilot ব্যাজ দেখান</Label>
+                <p className="text-xs text-muted-foreground">অন করলে রিভিউ সেকশনে "See our reviews on Trustpilot" দেখাবে</p>
+              </div>
+              <Switch checked={trustpilotEnabled} onCheckedChange={setTrustpilotEnabled} />
+            </div>
+
+            <div>
+              <Label className="text-xs">Trustpilot প্রোফাইল URL</Label>
+              <Input
+                value={trustpilotUrl}
+                onChange={e => setTrustpilotUrl(e.target.value)}
+                placeholder="https://www.trustpilot.com/review/your-org"
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                আপনার Trustpilot প্রোফাইল পেজের URL দিন। ভিজিটররা ক্লিক করে সরাসরি Trustpilot এ যেতে পারবে।
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-xs">ব্যাজ টেক্সট</Label>
+              <Input
+                value={trustpilotText}
+                onChange={e => setTrustpilotText(e.target.value)}
+                placeholder="See our reviews on Trustpilot"
+                className="mt-1"
+              />
+            </div>
+
+            {trustpilotEnabled && trustpilotUrl && (
+              <div className="p-4 bg-card rounded-xl border border-border text-center">
+                <p className="text-xs text-muted-foreground mb-2">প্রিভিউ:</p>
+                <a href={trustpilotUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(152,69%,41%)] text-white font-medium text-sm hover:opacity-90 transition-opacity">
+                  <Star className="h-4 w-4 fill-white" />
+                  {trustpilotText}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
+
+            <Button onClick={saveTrustpilot} disabled={saving} className="w-full gap-1">
+              <Save className="h-4 w-4" /> Trustpilot সেটিংস সেভ করুন
+            </Button>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

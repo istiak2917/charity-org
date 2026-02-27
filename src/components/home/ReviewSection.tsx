@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Review {
@@ -17,18 +17,30 @@ const DEMO_REVIEWS: Review[] = [
 
 const ReviewSection = () => {
   const [reviews, setReviews] = useState<Review[]>(DEMO_REVIEWS);
+  const [trustpilot, setTrustpilot] = useState({ enabled: false, url: "", text: "See our reviews on Trustpilot" });
   const { t } = useLanguage();
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from("site_settings").select("*").eq("setting_key", "homepage_reviews").single();
+      const { data } = await supabase.from("site_settings").select("*").in("setting_key", [
+        "homepage_reviews", "trustpilot_enabled", "trustpilot_url", "trustpilot_text"
+      ]);
       if (data) {
-        try {
-          const raw = typeof data.setting_value === "string" ? JSON.parse(data.setting_value) : data.setting_value;
-          const items = (Array.isArray(raw) ? raw : []).filter((r: any) => r.is_active !== false);
-          items.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
-          if (items.length > 0) setReviews(items);
-        } catch {}
+        data.forEach((s: any) => {
+          try {
+            const raw = s.setting_value;
+            const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : raw;
+            if (s.setting_key === "homepage_reviews") {
+              const parsed = typeof val === "string" ? JSON.parse(val) : val;
+              const items = (Array.isArray(parsed) ? parsed : []).filter((r: any) => r.is_active !== false);
+              items.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+              if (items.length > 0) setReviews(items);
+            }
+            if (s.setting_key === "trustpilot_enabled") setTrustpilot(p => ({ ...p, enabled: val === "true" || val === true }));
+            if (s.setting_key === "trustpilot_url") setTrustpilot(p => ({ ...p, url: String(val || "") }));
+            if (s.setting_key === "trustpilot_text") setTrustpilot(p => ({ ...p, text: String(val || "See our reviews on Trustpilot") }));
+          } catch {}
+        });
       }
     };
     load();
@@ -68,6 +80,22 @@ const ReviewSection = () => {
             </Card>
           ))}
         </div>
+
+        {/* Trustpilot Badge */}
+        {trustpilot.enabled && trustpilot.url && (
+          <div className="text-center mt-10">
+            <a
+              href={trustpilot.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[hsl(152,69%,41%)] text-white font-medium text-sm hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl"
+            >
+              <Star className="h-4 w-4 fill-white" />
+              {trustpilot.text}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -299,6 +299,7 @@ const FALLBACK_SECTION_INFO: Record<string, {
       { key: "homepage_faqs", label: "FAQ ডেটা (JSON)", settingKey: "homepage_faqs" },
     ],
     description: "JSON ফরম্যাটে FAQ — নিচে কোড কপি-পেস্ট করে পরিবর্তন করুন",
+    adminLink: "/admin/faq-reviews", adminLabel: "FAQ ম্যানেজার",
   },
   reviews: {
     label: "রিভিউ সেকশন",
@@ -307,6 +308,7 @@ const FALLBACK_SECTION_INFO: Record<string, {
       { key: "homepage_reviews", label: "রিভিউ ডেটা (JSON)", settingKey: "homepage_reviews" },
     ],
     description: "JSON ফরম্যাটে রিভিউ — নিচে কোড কপি-পেস্ট করে পরিবর্তন করুন",
+    adminLink: "/admin/faq-reviews", adminLabel: "রিভিউ ম্যানেজার",
   },
   contact: {
     label: "যোগাযোগ সেকশন",
@@ -454,6 +456,13 @@ const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
       <div className="bg-accent/30 rounded-lg p-2 text-[10px] text-muted-foreground">
         ℹ️ এই কন্টেন্ট {info.source === "site_settings" ? "সাইট সেটিংস" : "অর্গানাইজেশন"} থেকে আসে। পরিবর্তন করে সেভ করুন।
       </div>
+      {info.adminLink && (
+        <Link to={info.adminLink}>
+          <Button variant="outline" size="sm" className="w-full gap-1 text-xs mb-2">
+            <ExternalLink className="h-3 w-3" /> {info.adminLabel} খুলুন (সহজ এডিটর)
+          </Button>
+        </Link>
+      )}
       {info.description && (
         <div className="bg-muted/50 rounded-lg p-2 text-[10px] text-muted-foreground">
           💡 {info.description}
