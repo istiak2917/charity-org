@@ -26,34 +26,45 @@ const FALLBACK_COMPONENTS: Record<string, React.LazyExoticComponent<React.Compon
 const Index = () => {
   const [sections, setSections] = useState<HomepageSection[]>([]);
   const [blocks, setBlocks] = useState<Record<string, SectionBlock[]>>({});
+  const [customHtml, setCustomHtml] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const load = async () => {
-      // Fetch sections
-      const { data: sData } = await supabase
-        .from("homepage_sections")
-        .select("*")
-        .order("position", { ascending: true });
+      const [sRes, bRes, settingsRes] = await Promise.all([
+        supabase.from("homepage_sections").select("*").order("position", { ascending: true }),
+        supabase.from("section_blocks").select("*").order("position", { ascending: true }),
+        supabase.from("site_settings").select("*"),
+      ]);
 
-      if (sData) {
-        setSections(sData.filter((s: any) => s.is_visible === true));
+      if (sRes.data) {
+        setSections(sRes.data.filter((s: any) => s.is_visible === true));
       }
 
-      // Fetch blocks
-      const { data: bData } = await supabase
-        .from("section_blocks")
-        .select("*")
-        .order("position", { ascending: true });
-
-      if (bData) {
+      if (bRes.data) {
         const grouped: Record<string, SectionBlock[]> = {};
-        bData.forEach((b: any) => {
+        bRes.data.forEach((b: any) => {
           const sid = b.section_id;
           if (!grouped[sid]) grouped[sid] = [];
           grouped[sid].push(b as SectionBlock);
         });
         setBlocks(grouped);
+      }
+
+      // Load custom HTML overrides
+      if (settingsRes.data) {
+        const htmlMap: Record<string, string> = {};
+        settingsRes.data.forEach((s: any) => {
+          const k = s.setting_key || s.key || "";
+          if (k.startsWith("custom_html_")) {
+            const raw = s.setting_value || "";
+            const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : String(raw);
+            if (val.trim()) {
+              htmlMap[k.replace("custom_html_", "")] = val;
+            }
+          }
+        });
+        setCustomHtml(htmlMap);
       }
 
       setLoaded(true);
@@ -76,6 +87,7 @@ const Index = () => {
         {sections.map((section) => {
           const sectionBlocks = blocks[section.id] || [];
           const config: SectionConfig = section.content || {};
+          const sectionCustomHtml = customHtml[section.section_key];
 
           // Build section styles
           const style: React.CSSProperties = {};
@@ -104,14 +116,18 @@ const Index = () => {
               className={className}
               style={style}
             >
-              {sectionBlocks.length > 0 ? (
+              {/* Priority 1: Custom HTML override */}
+              {sectionCustomHtml ? (
+                <div dangerouslySetInnerHTML={{ __html: sectionCustomHtml }} />
+              ) : sectionBlocks.length > 0 ? (
+                /* Priority 2: Custom blocks */
                 sectionBlocks
                   .filter((b: any) => b.is_visible !== false)
                   .map((block) => (
                     <BlockRenderer key={block.id} block={block} />
                   ))
               ) : (
-                // Fallback: render original component if available
+                /* Priority 3: Fallback component */
                 (() => {
                   const FallbackComp = FALLBACK_COMPONENTS[section.section_key];
                   if (FallbackComp) {

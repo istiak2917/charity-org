@@ -376,6 +376,77 @@ const FALLBACK_SECTION_INFO: Record<string, SectionInfo> = {
   },
 };
 
+// ========== Custom HTML Editor (shared by all sections) ==========
+const CustomHtmlEditor = ({ sectionKey }: { sectionKey: string }) => {
+  const { toast } = useToast();
+  const settingKey = `custom_html_${sectionKey}`;
+  const [html, setHtml] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    supabase.from("site_settings").select("*").eq("setting_key", settingKey).maybeSingle().then(({ data }) => {
+      if (data) {
+        const raw = data.setting_value || "";
+        setHtml(typeof raw === "string" ? raw.replace(/^"|"$/g, "") : String(raw));
+      }
+      setLoaded(true);
+    });
+  }, [settingKey]);
+
+  const saveHtml = async () => {
+    setSaving(true);
+    const { data: existing } = await supabase.from("site_settings").select("id").eq("setting_key", settingKey).maybeSingle();
+    if (existing) {
+      await supabase.from("site_settings").update({ setting_value: html }).eq("id", existing.id);
+    } else {
+      await supabase.from("site_settings").insert({ setting_key: settingKey, setting_value: html });
+    }
+    setSaving(false);
+    toast({ title: html.trim() ? "✅ কাস্টম HTML সেভ হয়েছে!" : "✅ কাস্টম HTML সরানো হয়েছে!" });
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <div className="border-t border-border pt-3 mt-3">
+      <button
+        className="flex items-center justify-between w-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span>🧩 কাস্টম HTML ওভাররাইড</span>
+        <ChevronRight className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-90" : ""}`} />
+      </button>
+      {expanded && (
+        <div className="mt-2 space-y-2">
+          <div className="bg-muted/50 rounded p-2 text-[10px] text-muted-foreground">
+            💡 এখানে HTML কোড দিলে এই সেকশনের ডিফল্ট ডিজাইন রিপ্লেস হবে। খালি রাখলে ডিফল্ট ডিজাইন দেখাবে।
+          </div>
+          <Textarea
+            rows={12}
+            value={html}
+            onChange={e => setHtml(e.target.value)}
+            className="text-[10px] font-mono"
+            placeholder={`<section class="py-16 bg-white">\n  <div class="container mx-auto px-4">\n    <h2>আপনার কাস্টম ডিজাইন</h2>\n  </div>\n</section>`}
+          />
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1" onClick={saveHtml} disabled={saving}>
+              {saving ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
+              HTML সেভ করুন
+            </Button>
+            {html.trim() && (
+              <Button size="sm" variant="outline" onClick={() => { setHtml(""); }} className="text-xs">
+                রিসেট
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ========== Fallback Section Editor ==========
 const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
   const { toast } = useToast();
@@ -387,7 +458,7 @@ const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
   useEffect(() => {
     if (!info) { setLoading(false); return; }
     setLoading(true);
-    if (info.source === "site_settings" && info.fields) {
+    if ((info.source === "site_settings") && info.fields) {
       supabase.from("site_settings").select("*").then(({ data }) => {
         const vals: Record<string, string> = {};
         if (data) {
@@ -448,7 +519,14 @@ const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
     toast({ title: "✅ সেভ হয়েছে!" });
   };
 
-  if (!info) return <p className="text-xs text-muted-foreground">এই সেকশনের জন্য কোনো এডিটর নেই।</p>;
+  if (!info) {
+    return (
+      <div className="space-y-3">
+        <p className="text-xs text-muted-foreground">এই সেকশনের জন্য কোনো এডিটর নেই।</p>
+        <CustomHtmlEditor sectionKey={sectionKey} />
+      </div>
+    );
+  }
 
   if (info.source === "db_table" || info.source === "translation") {
     return (
@@ -464,6 +542,7 @@ const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
             </Button>
           </Link>
         )}
+        <CustomHtmlEditor sectionKey={sectionKey} />
       </div>
     );
   }
@@ -520,6 +599,7 @@ const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
         {saving ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
         কন্টেন্ট সেভ করুন
       </Button>
+      <CustomHtmlEditor sectionKey={sectionKey} />
     </div>
   );
 };
