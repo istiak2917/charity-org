@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useConfirmDelete } from "@/contexts/ConfirmDeleteContext";
 import { Plus, Trash2, FlaskConical, BarChart3 } from "lucide-react";
 
 interface Variant {
@@ -40,7 +41,7 @@ const ABTestManager = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: "", target: "hero_headline", variants: [{ name: "A", content: "" }, { name: "B", content: "" }] });
   const { toast } = useToast();
-
+  const { confirmDelete } = useConfirmDelete();
   useEffect(() => { load(); }, []);
 
   const load = async () => {
@@ -77,9 +78,11 @@ const ABTestManager = () => {
     toast({ title: "A/B টেস্ট তৈরি হয়েছে ✅" });
   };
 
-  const deleteTest = async (id: string) => {
-    await save(tests.filter(t => t.id !== id));
-    toast({ title: "টেস্ট মুছে ফেলা হয়েছে" });
+  const deleteTest = (id: string) => {
+    confirmDelete(async () => {
+      await save(tests.filter(t => t.id !== id));
+      toast({ title: "টেস্ট মুছে ফেলা হয়েছে" });
+    });
   };
 
   const toggleTest = async (id: string) => {

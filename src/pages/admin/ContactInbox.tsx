@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAdminCrud } from "@/hooks/useAdminCrud";
+import { useConfirmDelete } from "@/contexts/ConfirmDeleteContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

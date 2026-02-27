@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ConfirmDeleteProvider } from "@/contexts/ConfirmDeleteContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { canViewModule, type Module } from "@/lib/permissions";
@@ -108,6 +109,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const visibleMenu = ALL_MENU_ITEMS.filter(item => canViewModule(roles, item.module));
 
   return (
+    <ConfirmDeleteProvider>
     <div className="min-h-screen bg-background flex">
       {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
@@ -159,6 +161,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         <main className="flex-1 p-2 sm:p-3 md:p-6 w-full min-w-0 max-w-full overflow-x-hidden overflow-y-auto">{children}</main>
       </div>
     </div>
+    </ConfirmDeleteProvider>
   );
 };
 
