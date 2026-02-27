@@ -822,7 +822,7 @@ const HomepageBuilder = () => {
 
         {/* CENTER: Canvas or Preview */}
         <div className={`flex-1 overflow-auto bg-muted/20 ${mobilePanel === "canvas" ? "block" : "hidden lg:block"}`} style={{ maxHeight: "calc(100vh - 160px)" }}>
-          {showPreview ? (
+        {showPreview ? (
             <iframe
               ref={previewRef}
               src="/"
@@ -830,7 +830,7 @@ const HomepageBuilder = () => {
               title="লাইভ প্রিভিউ"
             />
           ) : (
-            <div className="max-w-5xl mx-auto py-4 px-2">
+            <div className="max-w-5xl mx-auto py-4 px-2 space-y-3">
               {sections.length === 0 && (
                 <div className="text-center py-20 text-muted-foreground">
                   <Layers className="h-12 w-12 mx-auto mb-4 opacity-30" />
@@ -857,34 +857,126 @@ const HomepageBuilder = () => {
                 return (
                   <div
                     key={section.id}
-                    className={`relative mb-4 rounded-lg transition-all ${isSelected ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/30"} ${!section.is_visible ? "opacity-40" : ""}`}
+                    className={`relative rounded-lg transition-all border-2 ${isSelected ? "border-primary shadow-lg" : "border-transparent hover:border-primary/30"} ${!section.is_visible ? "opacity-40" : ""}`}
                     style={sectionStyle}
-                    onClick={() => { setSelectedSectionId(section.id); setSelectedBlockId(null); }}
+                    onClick={() => { setSelectedSectionId(section.id); setSelectedBlockId(null); setMobilePanel("inspector"); }}
                   >
-                    <div className="absolute top-0 left-0 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-br-lg flex items-center gap-1">
-                      {section.title}
+                    {/* Section header badge */}
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-t-lg text-xs ${isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <GripVertical className="h-3 w-3 shrink-0" />
+                      <span className="font-semibold">{section.title}</span>
+                      <span className="opacity-60">({section.section_key})</span>
                       {section.id.startsWith("temp_") && <span className="bg-amber-500 text-white text-[8px] px-1 rounded">নতুন</span>}
+                      {!section.is_visible && <EyeOff className="h-3 w-3 ml-auto" />}
                     </div>
 
-                    <div className="pt-6 pb-2">
+                    {/* Section content preview - shows actual text */}
+                    <div className="p-3 min-h-[60px]">
+                      {/* If section has subtitle, show it */}
+                      {section.subtitle && (
+                        <p className="text-xs text-muted-foreground mb-2 italic">"{section.subtitle}"</p>
+                      )}
+
                       {sectionBlocks.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg mx-4">
+                        <div className="text-center py-6 text-muted-foreground text-sm border-2 border-dashed rounded-lg bg-muted/20">
+                          <Plus className="h-5 w-5 mx-auto mb-1 opacity-40" />
                           ব্লক ট্যাব থেকে ব্লক যোগ করুন
                         </div>
                       ) : (
-                        sectionBlocks.map((block, bIdx) => (
-                          <BlockRenderer
-                            key={block.id}
-                            block={block}
-                            isEditing={true}
-                            isSelected={selectedBlockId === block.id}
-                            onClick={() => { setSelectedBlockId(block.id); setSelectedSectionId(section.id); setMobilePanel("inspector"); }}
-                            onMoveUp={() => moveBlockUp(block, bIdx)}
-                            onMoveDown={() => moveBlockDown(block, bIdx)}
-                            onDelete={() => deleteBlockLocal(block.id, section.id)}
-                            onDuplicate={() => duplicateBlockLocal(block)}
-                          />
-                        ))
+                        <div className="space-y-2">
+                          {sectionBlocks.map((block, bIdx) => {
+                            const blockContent = block.content || block.config || {};
+                            const blockInfo = BLOCK_TYPES.find(bt => bt.type === block.block_type);
+                            const isBlockSelected = selectedBlockId === block.id;
+
+                            return (
+                              <div
+                                key={block.id}
+                                className={`relative rounded-md border p-3 cursor-pointer transition-all ${isBlockSelected ? "border-primary bg-primary/5 shadow-sm" : "border-border/50 hover:border-primary/40 hover:bg-accent/30"}`}
+                                onClick={(e) => { e.stopPropagation(); setSelectedBlockId(block.id); setSelectedSectionId(section.id); setMobilePanel("inspector"); }}
+                              >
+                                {/* Block type label */}
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <span className="text-sm">{blockInfo?.icon || "📦"}</span>
+                                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wide">{blockInfo?.label || block.block_type}</span>
+                                  <div className="ml-auto flex gap-0.5 opacity-0 group-hover:opacity-100">
+                                    <button onClick={(e) => { e.stopPropagation(); moveBlockUp(block, bIdx); }} className="p-0.5 hover:bg-muted rounded" title="উপরে"><ArrowUp className="h-3 w-3" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); moveBlockDown(block, bIdx); }} className="p-0.5 hover:bg-muted rounded" title="নিচে"><ArrowDown className="h-3 w-3" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); duplicateBlockLocal(block); }} className="p-0.5 hover:bg-muted rounded" title="কপি"><Copy className="h-3 w-3" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); deleteBlockLocal(block.id, section.id); }} className="p-0.5 hover:bg-destructive/20 rounded text-destructive" title="ডিলিট"><Trash2 className="h-3 w-3" /></button>
+                                  </div>
+                                </div>
+
+                                {/* Inline content preview - show actual text */}
+                                <div className="text-xs space-y-0.5">
+                                  {blockContent.heading && (
+                                    <div className="font-bold text-sm text-foreground">{blockContent.heading}</div>
+                                  )}
+                                  {blockContent.title && !blockContent.heading && (
+                                    <div className="font-bold text-sm text-foreground">{blockContent.title}</div>
+                                  )}
+                                  {blockContent.subheading && (
+                                    <div className="text-muted-foreground">{blockContent.subheading}</div>
+                                  )}
+                                  {blockContent.description && (
+                                    <div className="text-muted-foreground line-clamp-2">{blockContent.description}</div>
+                                  )}
+                                  {blockContent.text && (
+                                    <div className="text-muted-foreground line-clamp-2">{blockContent.text}</div>
+                                  )}
+                                  {blockContent.buttonText && (
+                                    <div className="mt-1"><span className="inline-block bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded">{blockContent.buttonText}</span></div>
+                                  )}
+                                  {blockContent.features && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {blockContent.features.slice(0, 4).map((f: any, i: number) => (
+                                        <span key={i} className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{f.icon} {f.title}</span>
+                                      ))}
+                                      {blockContent.features.length > 4 && <span className="text-[10px] text-muted-foreground">+{blockContent.features.length - 4}</span>}
+                                    </div>
+                                  )}
+                                  {blockContent.items && !blockContent.features && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {blockContent.items.slice(0, 4).map((item: any, i: number) => (
+                                        <span key={i} className="bg-muted px-1.5 py-0.5 rounded text-[10px]">
+                                          {item.icon || item.question?.substring(0, 20) || `${item.value}${item.suffix || ''}`} {item.label || ''}
+                                        </span>
+                                      ))}
+                                      {blockContent.items.length > 4 && <span className="text-[10px] text-muted-foreground">+{blockContent.items.length - 4}</span>}
+                                    </div>
+                                  )}
+                                  {blockContent.testimonials && (
+                                    <div className="mt-1 text-[10px] text-muted-foreground">
+                                      {blockContent.testimonials.length}টি টেস্টিমোনিয়াল
+                                    </div>
+                                  )}
+                                  {blockContent.html && (
+                                    <div className="mt-1 font-mono text-[10px] text-muted-foreground bg-muted p-1 rounded line-clamp-2">{blockContent.html}</div>
+                                  )}
+                                  {block.block_type === "spacer" && (
+                                    <div className="text-muted-foreground">↕ {blockContent.height || "40px"}</div>
+                                  )}
+                                  {block.block_type === "divider" && (
+                                    <hr className="my-1" style={{ borderStyle: blockContent.style || "solid", borderColor: blockContent.color || "hsl(var(--border))" }} />
+                                  )}
+                                  {block.block_type === "donation_progress" && (
+                                    <div className="text-muted-foreground">লক্ষ্যমাত্রা: ৳{(blockContent.goal || 100000).toLocaleString()}</div>
+                                  )}
+                                  {(block.block_type === "blog_preview" || block.block_type === "events_preview" || block.block_type === "gallery_grid" || block.block_type === "team_grid") && (
+                                    <div className="text-muted-foreground">সর্বোচ্চ: {blockContent.limit || blockContent.columns || 3}টি আইটেম</div>
+                                  )}
+                                </div>
+
+                                {/* Click hint */}
+                                {isBlockSelected && (
+                                  <div className="mt-2 text-[10px] text-primary flex items-center gap-1">
+                                    <ChevronRight className="h-3 w-3" /> ডানপাশে এডিট করুন
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -932,22 +1024,30 @@ const HomepageBuilder = () => {
                 {(blocks[selectedSection.id] || []).length > 0 && (
                   <>
                     <hr />
-                    <h4 className="text-xs font-semibold">এই সেকশনের ব্লকসমূহ</h4>
-                    <div className="space-y-1">
-                      {(blocks[selectedSection.id] || []).map(b => (
-                        <button
-                          key={b.id}
-                          onClick={() => setSelectedBlockId(b.id)}
-                          className="w-full text-left text-xs p-2 rounded-lg border bg-card hover:bg-accent transition flex items-center gap-2"
-                        >
-                          <span className="text-primary/70 shrink-0">{BLOCK_TYPES.find(bt => bt.type === b.block_type)?.icon || "📦"}</span>
-                          <div className="min-w-0">
-                            <div className="font-medium truncate">{BLOCK_TYPES.find(bt => bt.type === b.block_type)?.label || b.block_type}</div>
-                            <div className="text-[10px] text-muted-foreground truncate">{getBlockPreview(b)}</div>
-                          </div>
-                          <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground ml-auto" />
-                        </button>
-                      ))}
+                    <h4 className="text-xs font-semibold">এই সেকশনের ব্লকসমূহ — ক্লিক করে এডিট করুন</h4>
+                    <div className="space-y-1.5">
+                      {(blocks[selectedSection.id] || []).map(b => {
+                        const bc = b.content || b.config || {};
+                        const previewText = bc.heading || bc.title || bc.text?.substring(0, 50) || bc.description?.substring(0, 50) || bc.html?.substring(0, 30) || "";
+                        return (
+                          <button
+                            key={b.id}
+                            onClick={() => setSelectedBlockId(b.id)}
+                            className={`w-full text-left text-xs p-2.5 rounded-lg border transition flex items-start gap-2 ${selectedBlockId === b.id ? "border-primary bg-primary/5" : "bg-card hover:bg-accent"}`}
+                          >
+                            <span className="text-sm shrink-0 mt-0.5">{BLOCK_TYPES.find(bt => bt.type === b.block_type)?.icon || "📦"}</span>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium">{BLOCK_TYPES.find(bt => bt.type === b.block_type)?.label || b.block_type}</div>
+                              {previewText && <div className="text-[10px] text-muted-foreground truncate mt-0.5">"{previewText}"</div>}
+                              {bc.buttonText && <div className="text-[10px] text-primary mt-0.5">🔗 {bc.buttonText}</div>}
+                              {bc.features && <div className="text-[10px] text-muted-foreground mt-0.5">{bc.features.length}টি ফিচার</div>}
+                              {bc.items && <div className="text-[10px] text-muted-foreground mt-0.5">{bc.items.length}টি আইটেম</div>}
+                              {bc.testimonials && <div className="text-[10px] text-muted-foreground mt-0.5">{bc.testimonials.length}টি মতামত</div>}
+                            </div>
+                            <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground mt-1" />
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 )}
