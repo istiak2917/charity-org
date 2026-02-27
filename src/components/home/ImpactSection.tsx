@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 const ImpactSection = () => {
   const { t } = useLanguage();
   const [values, setValues] = useState({ beneficiaries: 1250, projects: 85, volunteers: 320, experience: 15 });
+  const [labels, setLabels] = useState({ l1: "", l2: "", l3: "", l4: "" });
 
   useEffect(() => {
     supabase.from("site_settings").select("*").then(({ data }) => {
@@ -17,21 +18,24 @@ const ImpactSection = () => {
           const raw = s.setting_value || s.value || "";
           const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : String(raw);
           const num = parseInt(val, 10);
-          if (isNaN(num)) return;
-          if (k === "impact_beneficiaries_count") setValues(p => ({ ...p, beneficiaries: num }));
-          if (k === "impact_projects_count") setValues(p => ({ ...p, projects: num }));
-          if (k === "impact_volunteers_count") setValues(p => ({ ...p, volunteers: num }));
-          if (k === "impact_experience_years") setValues(p => ({ ...p, experience: num }));
+          if (k === "impact_beneficiaries_count" && !isNaN(num)) setValues(p => ({ ...p, beneficiaries: num }));
+          if (k === "impact_projects_count" && !isNaN(num)) setValues(p => ({ ...p, projects: num }));
+          if (k === "impact_volunteers_count" && !isNaN(num)) setValues(p => ({ ...p, volunteers: num }));
+          if (k === "impact_experience_years" && !isNaN(num)) setValues(p => ({ ...p, experience: num }));
+          if (k === "impact_label_1") setLabels(p => ({ ...p, l1: val }));
+          if (k === "impact_label_2") setLabels(p => ({ ...p, l2: val }));
+          if (k === "impact_label_3") setLabels(p => ({ ...p, l3: val }));
+          if (k === "impact_label_4") setLabels(p => ({ ...p, l4: val }));
         });
       }
     });
   }, []);
 
   const counters = [
-    { icon: Users, target: values.beneficiaries, label: t("impact_beneficiaries"), suffix: "+" },
-    { icon: Heart, target: values.projects, label: t("impact_projects"), suffix: "+" },
-    { icon: BookOpen, target: values.volunteers, label: t("impact_volunteers"), suffix: "+" },
-    { icon: Award, target: values.experience, label: t("impact_experience"), suffix: "+" },
+    { icon: Users, target: values.beneficiaries, label: labels.l1 || t("impact_beneficiaries"), suffix: "+" },
+    { icon: Heart, target: values.projects, label: labels.l2 || t("impact_projects"), suffix: "+" },
+    { icon: BookOpen, target: values.volunteers, label: labels.l3 || t("impact_volunteers"), suffix: "+" },
+    { icon: Award, target: values.experience, label: labels.l4 || t("impact_experience"), suffix: "+" },
   ];
 
   return (
