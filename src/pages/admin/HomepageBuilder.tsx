@@ -282,6 +282,42 @@ const FALLBACK_SECTION_INFO: Record<string, {
       { key: "payment_bank", label: "ব্যাংক তথ্য", settingKey: "payment_bank" },
     ],
   },
+  impact: {
+    label: "ইমপ্যাক্ট সেকশন",
+    source: "site_settings",
+    fields: [
+      { key: "impact_beneficiaries_count", label: "সুবিধাভোগী শিশু (সংখ্যা)", settingKey: "impact_beneficiaries_count" },
+      { key: "impact_projects_count", label: "সম্পন্ন প্রকল্প (সংখ্যা)", settingKey: "impact_projects_count" },
+      { key: "impact_volunteers_count", label: "স্বেচ্ছাসেবক (সংখ্যা)", settingKey: "impact_volunteers_count" },
+      { key: "impact_experience_years", label: "বছরের অভিজ্ঞতা (সংখ্যা)", settingKey: "impact_experience_years" },
+    ],
+  },
+  faq: {
+    label: "FAQ সেকশন",
+    source: "site_settings",
+    fields: [
+      { key: "homepage_faqs", label: "FAQ ডেটা (JSON)", settingKey: "homepage_faqs" },
+    ],
+    description: "JSON ফরম্যাটে FAQ — নিচে কোড কপি-পেস্ট করে পরিবর্তন করুন",
+  },
+  reviews: {
+    label: "রিভিউ সেকশন",
+    source: "site_settings",
+    fields: [
+      { key: "homepage_reviews", label: "রিভিউ ডেটা (JSON)", settingKey: "homepage_reviews" },
+    ],
+    description: "JSON ফরম্যাটে রিভিউ — নিচে কোড কপি-পেস্ট করে পরিবর্তন করুন",
+  },
+  contact: {
+    label: "যোগাযোগ সেকশন",
+    source: "site_settings",
+    fields: [
+      { key: "contact_phone", label: "ফোন নম্বর", settingKey: "contact_phone" },
+      { key: "contact_email", label: "ইমেইল", settingKey: "contact_email" },
+      { key: "contact_address", label: "ঠিকানা", settingKey: "contact_address" },
+    ],
+    description: "যোগাযোগ তথ্য — ফর্ম কন্টেন্ট অটোমেটিক",
+  },
   projects: {
     label: "প্রকল্প সেকশন", source: "db_table",
     description: "projects টেবিল থেকে ডেটা আসে",
@@ -307,26 +343,10 @@ const FALLBACK_SECTION_INFO: Record<string, {
     description: "gallery_items টেবিল থেকে ডেটা আসে",
     adminLink: "/admin/gallery", adminLabel: "গ্যালারি ম্যানেজার",
   },
-  impact: {
-    label: "ইমপ্যাক্ট সেকশন", source: "translation",
-    description: "হার্ডকোডেড সংখ্যা — কোডে পরিবর্তন করতে হবে",
-  },
-  contact: {
-    label: "যোগাযোগ সেকশন", source: "translation",
-    description: "যোগাযোগ ফর্ম — কন্টেন্ট ট্রান্সলেশন ফাইল থেকে আসে",
-  },
   transparency: {
     label: "স্বচ্ছতা সেকশন", source: "db_table",
     description: "donations ও expenses টেবিল থেকে ডেটা আসে",
     adminLink: "/admin/finance", adminLabel: "আয়-ব্যয় ম্যানেজার",
-  },
-  faq: {
-    label: "FAQ সেকশন", source: "translation",
-    description: "ট্রান্সলেশন ফাইল থেকে কন্টেন্ট আসে",
-  },
-  reviews: {
-    label: "রিভিউ সেকশন", source: "translation",
-    description: "ট্রান্সলেশন ফাইল থেকে কন্টেন্ট আসে",
   },
   goals: {
     label: "গোল ট্র্যাকার", source: "db_table",
@@ -434,15 +454,24 @@ const FallbackSectionEditor = ({ sectionKey }: { sectionKey: string }) => {
       <div className="bg-accent/30 rounded-lg p-2 text-[10px] text-muted-foreground">
         ℹ️ এই কন্টেন্ট {info.source === "site_settings" ? "সাইট সেটিংস" : "অর্গানাইজেশন"} থেকে আসে। পরিবর্তন করে সেভ করুন।
       </div>
+      {info.description && (
+        <div className="bg-muted/50 rounded-lg p-2 text-[10px] text-muted-foreground">
+          💡 {info.description}
+        </div>
+      )}
       {info.fields?.map(field => {
         const val = values[field.settingKey || field.key] || values[field.key] || "";
+        const isJson = field.label.includes("JSON");
+        const displayVal = isJson ? (typeof val === "object" ? JSON.stringify(val, null, 2) : val) : val;
         return (
           <div key={field.key}>
             <Label className="text-xs">{field.label}</Label>
-            {val.length > 80 ? (
-              <Textarea rows={3} value={val} onChange={e => setValues(prev => ({ ...prev, [field.settingKey || field.key]: e.target.value, [field.key]: e.target.value }))} className="text-xs" />
+            {isJson ? (
+              <Textarea rows={10} value={displayVal} onChange={e => setValues(prev => ({ ...prev, [field.settingKey || field.key]: e.target.value, [field.key]: e.target.value }))} className="text-[10px] font-mono" placeholder='[{"question":"প্রশ্ন?","answer":"উত্তর","is_active":true,"sort_order":0}]' />
+            ) : displayVal.length > 80 ? (
+              <Textarea rows={3} value={displayVal} onChange={e => setValues(prev => ({ ...prev, [field.settingKey || field.key]: e.target.value, [field.key]: e.target.value }))} className="text-xs" />
             ) : (
-              <Input value={val} onChange={e => setValues(prev => ({ ...prev, [field.settingKey || field.key]: e.target.value, [field.key]: e.target.value }))} className="h-8 text-xs" />
+              <Input value={displayVal} onChange={e => setValues(prev => ({ ...prev, [field.settingKey || field.key]: e.target.value, [field.key]: e.target.value }))} className="h-8 text-xs" />
             )}
           </div>
         );
@@ -506,10 +535,6 @@ const FallbackCanvasPreview = ({ sectionKey }: { sectionKey: string }) => {
     );
   }
 
-  if (info.source === "translation") {
-    return <div className="text-xs text-muted-foreground py-2">📝 {info.description}</div>;
-  }
-
   if (!loaded) return <div className="animate-pulse h-8 bg-muted rounded" />;
 
   return (
@@ -517,6 +542,26 @@ const FallbackCanvasPreview = ({ sectionKey }: { sectionKey: string }) => {
       {info.fields?.map(field => {
         const val = values[field.settingKey || field.key] || values[field.key] || "";
         if (!val) return null;
+        const isJson = field.label.includes("JSON");
+        if (isJson) {
+          try {
+            const parsed = typeof val === "string" ? JSON.parse(val) : val;
+            if (Array.isArray(parsed)) {
+              return (
+                <div key={field.key}>
+                  <span className="text-[10px] text-primary/70 font-medium">{field.label}:</span>
+                  <div className="text-foreground font-medium">{parsed.length}টি আইটেম সেট করা আছে</div>
+                </div>
+              );
+            }
+          } catch {}
+          return (
+            <div key={field.key}>
+              <span className="text-[10px] text-primary/70 font-medium">{field.label}:</span>
+              <div className="text-foreground font-mono text-[10px] line-clamp-2">{String(val).substring(0, 100)}</div>
+            </div>
+          );
+        }
         return (
           <div key={field.key}>
             <span className="text-[10px] text-primary/70 font-medium">{field.label}:</span>
@@ -524,6 +569,9 @@ const FallbackCanvasPreview = ({ sectionKey }: { sectionKey: string }) => {
           </div>
         );
       })}
+      {info.description && (
+        <div className="text-[10px] text-muted-foreground mt-1">💡 {info.description}</div>
+      )}
       {info.fields?.every(f => !(values[f.settingKey || f.key] || values[f.key])) && (
         <div className="text-muted-foreground italic">কন্টেন্ট সেট করা হয়নি — ক্লিক করে এডিট করুন</div>
       )}

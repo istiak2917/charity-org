@@ -1,16 +1,37 @@
+import { useEffect, useState } from "react";
 import { Users, Heart, BookOpen, Award } from "lucide-react";
 import CountUp from "@/components/CountUp";
 import ScrollReveal from "@/components/ScrollReveal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/lib/supabase";
 
 const ImpactSection = () => {
   const { t } = useLanguage();
+  const [values, setValues] = useState({ beneficiaries: 1250, projects: 85, volunteers: 320, experience: 15 });
+
+  useEffect(() => {
+    supabase.from("site_settings").select("*").then(({ data }) => {
+      if (data) {
+        data.forEach((s: any) => {
+          const k = s.setting_key || s.key || s.name || "";
+          const raw = s.setting_value || s.value || "";
+          const val = typeof raw === "string" ? raw.replace(/^"|"$/g, "") : String(raw);
+          const num = parseInt(val, 10);
+          if (isNaN(num)) return;
+          if (k === "impact_beneficiaries_count") setValues(p => ({ ...p, beneficiaries: num }));
+          if (k === "impact_projects_count") setValues(p => ({ ...p, projects: num }));
+          if (k === "impact_volunteers_count") setValues(p => ({ ...p, volunteers: num }));
+          if (k === "impact_experience_years") setValues(p => ({ ...p, experience: num }));
+        });
+      }
+    });
+  }, []);
 
   const counters = [
-    { icon: Users, target: 1250, label: t("impact_beneficiaries"), suffix: "+" },
-    { icon: Heart, target: 85, label: t("impact_projects"), suffix: "+" },
-    { icon: BookOpen, target: 320, label: t("impact_volunteers"), suffix: "+" },
-    { icon: Award, target: 15, label: t("impact_experience"), suffix: "+" },
+    { icon: Users, target: values.beneficiaries, label: t("impact_beneficiaries"), suffix: "+" },
+    { icon: Heart, target: values.projects, label: t("impact_projects"), suffix: "+" },
+    { icon: BookOpen, target: values.volunteers, label: t("impact_volunteers"), suffix: "+" },
+    { icon: Award, target: values.experience, label: t("impact_experience"), suffix: "+" },
   ];
 
   return (
