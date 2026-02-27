@@ -25,7 +25,7 @@ const Footer = () => {
   const [nlEmail, setNlEmail] = useState("");
   const [nlLoading, setNlLoading] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     Promise.all([
@@ -101,7 +101,7 @@ const Footer = () => {
                 <img src={org?.logo_url || logo} alt={orgName} className="h-12 rounded-xl shadow-lg" />
                 <span className="text-xl font-bold font-heading">{orgName}</span>
               </div>
-              <p className="text-sm opacity-70 leading-relaxed">{org?.description?.slice(0, 120) || t("footer_default_desc")}</p>
+              <p className="text-sm opacity-70 leading-relaxed">{lang === "bn" ? (org?.description?.slice(0, 120) || t("footer_default_desc")) : t("footer_default_desc")}</p>
             </div>
 
             {/* Quick Links */}

@@ -6,7 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const AboutSection = () => {
   const [org, setOrg] = useState<any>(null);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     supabase.from("organizations").select("*").limit(1).maybeSingle().then(({ data }) => {
@@ -15,9 +15,9 @@ const AboutSection = () => {
   }, []);
 
   const items = [
-    { icon: Heart, title: t("about_goal"), desc: org?.description || t("about_goal_desc") },
-    { icon: Target, title: t("about_mission"), desc: org?.mission || t("about_mission_desc") },
-    { icon: Eye, title: t("about_vision"), desc: org?.vision || t("about_vision_desc") },
+    { icon: Heart, title: t("about_goal"), desc: lang === "bn" ? (org?.description || t("about_goal_desc")) : t("about_goal_desc") },
+    { icon: Target, title: t("about_mission"), desc: lang === "bn" ? (org?.mission || t("about_mission_desc")) : t("about_mission_desc") },
+    { icon: Eye, title: t("about_vision"), desc: lang === "bn" ? (org?.vision || t("about_vision_desc")) : t("about_vision_desc") },
   ];
 
   return (
@@ -31,7 +31,7 @@ const AboutSection = () => {
             <h2 className="text-3xl md:text-4xl font-bold font-heading text-foreground mt-2 mb-4">{t("about_title")}</h2>
             <div className="w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto rounded-full" />
             <p className="text-muted-foreground max-w-2xl mx-auto mt-4">
-              {org?.description || t("about_default_desc")}
+              {lang === "bn" ? (org?.description || t("about_default_desc")) : t("about_default_desc")}
             </p>
           </div>
         </ScrollReveal>
