@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useConfirmDelete } from "@/contexts/ConfirmDeleteContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ const DocumentVault = () => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-
+  const { confirmDelete } = useConfirmDelete();
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("documents").select("*").order("created_at", { ascending: false });
@@ -46,10 +47,12 @@ const DocumentVault = () => {
     setUploading(false);
   };
 
-  const remove = async (id: string) => {
-    await supabase.from("documents").delete().eq("id", id);
-    toast({ title: "মুছে ফেলা হয়েছে!" });
-    load();
+  const remove = (id: string) => {
+    confirmDelete(async () => {
+      await supabase.from("documents").delete().eq("id", id);
+      toast({ title: "মুছে ফেলা হয়েছে!" });
+      load();
+    });
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;

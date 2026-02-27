@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useConfirmDelete } from "@/contexts/ConfirmDeleteContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ const VolunteerCalendar = () => {
   const [filterDate, setFilterDate] = useState("");
   const [form, setForm] = useState({ volunteer_id: "", available_date: "", time_slot: "full_day", notes: "" });
   const { toast } = useToast();
-
+  const { confirmDelete } = useConfirmDelete();
   const load = async () => {
     setLoading(true);
     const { data: a } = await supabase.from("volunteer_availability").select("*").order("available_date", { ascending: true });
@@ -37,9 +38,11 @@ const VolunteerCalendar = () => {
     else { toast({ title: "উপলভ্যতা যোগ হয়েছে!" }); setForm({ volunteer_id: "", available_date: "", time_slot: "full_day", notes: "" }); load(); }
   };
 
-  const remove = async (id: string) => {
-    await supabase.from("volunteer_availability").delete().eq("id", id);
-    load();
+  const remove = (id: string) => {
+    confirmDelete(async () => {
+      await supabase.from("volunteer_availability").delete().eq("id", id);
+      load();
+    });
   };
 
   const getName = (id: string) => profiles.find(p => p.id === id)?.full_name || id?.slice(0, 8);

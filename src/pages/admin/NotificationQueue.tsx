@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { useConfirmDelete } from "@/contexts/ConfirmDeleteContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ const NotificationQueue = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ recipient_phone: "", recipient_email: "", channel: "sms", subject: "", message: "" });
   const { toast } = useToast();
+  const { confirmDelete } = useConfirmDelete();
 
   const load = async () => {
     setLoading(true);
@@ -41,9 +43,11 @@ const NotificationQueue = () => {
     else { toast({ title: "নোটিফিকেশন কিউতে যোগ হয়েছে!" }); setOpen(false); setForm({ recipient_phone: "", recipient_email: "", channel: "sms", subject: "", message: "" }); load(); }
   };
 
-  const remove = async (id: string) => {
-    await supabase.from("notification_queue").delete().eq("id", id);
-    load();
+  const remove = (id: string) => {
+    confirmDelete(async () => {
+      await supabase.from("notification_queue").delete().eq("id", id);
+      load();
+    });
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
