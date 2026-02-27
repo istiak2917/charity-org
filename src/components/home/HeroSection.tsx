@@ -21,7 +21,7 @@ const collageImages = [
 ];
 
 const HeroSection = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [headline, setHeadline] = useState("");
   const [subtext, setSubtext] = useState("");
   const [ctaText, setCtaText] = useState("");
@@ -41,9 +41,10 @@ const HeroSection = () => {
     });
   }, []);
 
-  const displayHeadline = headline || t("hero_default_headline");
-  const displaySubtext = subtext || t("hero_default_subtext");
-  const displayCta = ctaText || t("hero_cta_donate");
+  // When language is not Bengali, use translations instead of DB values
+  const displayHeadline = lang === "bn" ? (headline || t("hero_default_headline")) : t("hero_default_headline");
+  const displaySubtext = lang === "bn" ? (subtext || t("hero_default_subtext")) : t("hero_default_subtext");
+  const displayCta = lang === "bn" ? (ctaText || t("hero_cta_donate")) : t("hero_cta_donate");
 
   const headlineParts = displayHeadline.split(" ");
   const mid = Math.ceil(headlineParts.length / 2);

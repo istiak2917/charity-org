@@ -13,6 +13,7 @@ import DonationReceipt from "@/components/DonationReceipt";
 import EmailCompose from "@/components/EmailCompose";
 import WhatsAppSend from "@/components/WhatsAppSend";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Donation {
   id: string; donor_name: string; donor_email: string; amount: number;
@@ -23,19 +24,11 @@ interface Campaign {
   id: string; title: string; target_amount: number; current_amount: number; is_active: boolean;
 }
 
-const STATUS_OPTIONS = [
-  { value: "pending", label: "পেন্ডিং", color: "secondary" },
-  { value: "confirmed", label: "নিশ্চিত", color: "default" },
-  { value: "completed", label: "সম্পন্ন", color: "default" },
-  { value: "refunded", label: "ফেরত", color: "destructive" },
-];
-
-const METHOD_OPTIONS = ["বিকাশ", "নগদ", "রকেট", "ব্যাংক ট্রান্সফার", "হাতে হাতে", "অন্যান্য"];
-const SOURCE_OPTIONS = ["ওয়েবসাইট", "ইভেন্ট", "সরাসরি", "রেফারেল", "সোশ্যাল মিডিয়া", "অন্যান্য"];
 const HEATMAP_COLORS = ["hsl(var(--muted))", "hsl(330 80% 85%)", "hsl(330 80% 70%)", "hsl(330 80% 55%)", "hsl(330 80% 40%)"];
 const PIE_COLORS = ["hsl(330, 80%, 55%)", "hsl(340, 70%, 60%)", "hsl(38, 80%, 60%)", "hsl(145, 40%, 55%)", "hsl(200, 60%, 70%)", "hsl(270, 50%, 60%)"];
 
 const DonationManager = () => {
+  const { t, lang } = useLanguage();
   const { items, loading, create, remove } = useAdminCrud<Donation>({ table: "donations" });
   const campaigns = useAdminCrud<Campaign>({ table: "donation_campaigns" });
   const [donOpen, setDonOpen] = useState(false);
@@ -49,52 +42,59 @@ const DonationManager = () => {
     campaign_id: "", source: "",
   });
 
+  const STATUS_OPTIONS = [
+    { value: "pending", label: t("status_pending"), color: "secondary" },
+    { value: "confirmed", label: t("status_confirmed"), color: "default" },
+    { value: "completed", label: t("status_completed"), color: "default" },
+    { value: "refunded", label: t("status_refunded"), color: "destructive" },
+  ];
+
+  const METHOD_OPTIONS = ["বিকাশ", "নগদ", "রকেট", "ব্যাংক ট্রান্সফার", "হাতে হাতে", "অন্যান্য"];
+  const SOURCE_OPTIONS = ["ওয়েবসাইট", "ইভেন্ট", "সরাসরি", "রেফারেল", "সোশ্যাল মিডিয়া", "অন্যান্য"];
+
+  const locale = lang === "bn" ? "bn-BD" : "en-US";
+
   const handleDonSubmit = async () => {
     if (!donForm.donor_name || !donForm.amount) return;
     const payload: any = { ...donForm };
     if (!payload.campaign_id) delete payload.campaign_id;
     if (!payload.source) delete payload.source;
     await create(payload);
-    setDonOpen(false);
     setDonForm({ donor_name: "", donor_email: "", amount: 0, method: "", status: "confirmed", campaign_id: "", source: "" });
+    setDonOpen(false);
   };
 
   const exportCSV = () => {
-    const headers = "নাম,ইমেইল,পরিমাণ,পদ্ধতি,উৎস,স্ট্যাটাস,ক্যাম্পেইন,তারিখ\n";
-    const rows = filteredItems.map((d) => {
-      const camp = campaigns.items.find(c => c.id === d.campaign_id);
-      return `${d.donor_name},${d.donor_email},${d.amount},${d.method},${d.source || ""},${d.status},${camp?.title || ""},${new Date(d.created_at).toLocaleDateString("bn-BD")}`;
-    }).join("\n");
-    const blob = new Blob([headers + rows], { type: "text/csv" });
+    const headers = ["donor_name", "donor_email", "amount", "method", "status", "created_at"];
+    const rows = items.map(d => headers.map(h => String(d[h] || "")).join(","));
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "donations.csv"; a.click();
+    const a = document.createElement("a");
+    a.href = url; a.download = "donations.csv"; a.click();
   };
 
-  // Filtered items
   const filteredItems = useMemo(() => {
-    return items.filter(d => {
-      if (filterStatus !== "all" && d.status !== filterStatus) return false;
-      if (filterMethod !== "all" && d.method !== filterMethod) return false;
-      return true;
-    });
+    let list = [...items];
+    if (filterStatus !== "all") list = list.filter(d => d.status === filterStatus);
+    if (filterMethod !== "all") list = list.filter(d => d.method === filterMethod);
+    return list;
   }, [items, filterStatus, filterMethod]);
 
-  // Monthly breakdown
   const monthlyData = useMemo(() => {
-    const months = ["জানু", "ফেব্রু", "মার্চ", "এপ্রি", "মে", "জুন", "জুলা", "আগ", "সেপ্টে", "অক্টো", "নভে", "ডিসে"];
-    const map: Record<number, number> = {};
-    items.forEach(d => { const m = new Date(d.created_at).getMonth(); map[m] = (map[m] || 0) + (d.amount || 0); });
-    return months.map((month, i) => ({ month, amount: map[i] || 0 }));
-  }, [items]);
+    const monthKeys = ["month_jan","month_feb","month_mar","month_apr","month_may","month_jun","month_jul","month_aug","month_sep","month_oct","month_nov","month_dec"];
+    return monthKeys.map((key, i) => {
+      const sum = items.filter(d => new Date(d.created_at).getMonth() === i).reduce((s, d) => s + (d.amount || 0), 0);
+      return { month: t(key), amount: sum };
+    });
+  }, [items, t]);
 
-  // Method breakdown for pie chart
   const methodData = useMemo(() => {
     const map: Record<string, number> = {};
-    items.forEach(d => { const m = d.method || "অন্যান্য"; map[m] = (map[m] || 0) + (d.amount || 0); });
-    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    items.forEach(d => { if (d.method) map[d.method] = (map[d.method] || 0) + (d.amount || 0); });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [items]);
 
-  // Heatmap data (day of week x week of year for current year)
   const heatmapData = useMemo(() => {
     const year = new Date().getFullYear();
     const dayMap: Record<string, number> = {};
@@ -105,21 +105,19 @@ const DonationManager = () => {
         dayMap[key] = (dayMap[key] || 0) + (d.amount || 0);
       }
     });
-    // Build 12 months grid
-    const months = ["জানু", "ফেব্রু", "মার্চ", "এপ্রি", "মে", "জুন", "জুলা", "আগ", "সেপ্টে", "অক্টো", "নভে", "ডিসে"];
+    const monthKeys = ["month_jan","month_feb","month_mar","month_apr","month_may","month_jun","month_jul","month_aug","month_sep","month_oct","month_nov","month_dec"];
     const maxVal = Math.max(...Object.values(dayMap), 1);
-    return months.map((month, mi) => {
+    return monthKeys.map((key, mi) => {
       const daysInMonth = new Date(year, mi + 1, 0).getDate();
       const days = Array.from({ length: daysInMonth }, (_, di) => {
         const val = dayMap[`${mi}-${di + 1}`] || 0;
         const level = val === 0 ? 0 : Math.min(4, Math.ceil((val / maxVal) * 4));
         return { day: di + 1, amount: val, level };
       });
-      return { month, days };
+      return { month: t(key), days };
     });
-  }, [items]);
+  }, [items, t]);
 
-  // Campaign performance
   const campaignPerf = useMemo(() => {
     return campaigns.items.map(c => {
       const donations = items.filter(d => d.campaign_id === c.id);
@@ -136,41 +134,41 @@ const DonationManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-2xl font-bold font-heading">অনুদান ম্যানেজার</h1>
+        <h1 className="text-2xl font-bold font-heading">{t("don_mgr_title")}</h1>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" className="gap-2" onClick={exportCSV}><Download className="h-4 w-4" /> CSV</Button>
           <Dialog open={donOpen} onOpenChange={setDonOpen}>
-            <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" /> ম্যানুয়াল এন্ট্রি</Button></DialogTrigger>
+            <DialogTrigger asChild><Button className="gap-2"><Plus className="h-4 w-4" /> {t("don_mgr_manual_entry")}</Button></DialogTrigger>
             <DialogContent className="max-w-lg">
-              <DialogHeader><DialogTitle>অনুদান এন্ট্রি</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t("don_mgr_entry_title")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <Input placeholder="দাতার নাম" value={donForm.donor_name} onChange={(e) => setDonForm({ ...donForm, donor_name: e.target.value })} />
-                <Input placeholder="ইমেইল" value={donForm.donor_email} onChange={(e) => setDonForm({ ...donForm, donor_email: e.target.value })} />
+                <Input placeholder={t("don_mgr_donor_name")} value={donForm.donor_name} onChange={(e) => setDonForm({ ...donForm, donor_name: e.target.value })} />
+                <Input placeholder={t("contact_email")} value={donForm.donor_email} onChange={(e) => setDonForm({ ...donForm, donor_email: e.target.value })} />
                 <div className="grid grid-cols-2 gap-3">
-                  <Input type="number" placeholder="পরিমাণ (৳)" value={donForm.amount || ""} onChange={(e) => setDonForm({ ...donForm, amount: Number(e.target.value) })} />
+                  <Input type="number" placeholder={t("don_mgr_amount")} value={donForm.amount || ""} onChange={(e) => setDonForm({ ...donForm, amount: Number(e.target.value) })} />
                   <Select value={donForm.method} onValueChange={(v) => setDonForm({ ...donForm, method: v })}>
-                    <SelectTrigger><SelectValue placeholder="পদ্ধতি" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("don_mgr_method")} /></SelectTrigger>
                     <SelectContent>{METHOD_OPTIONS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Select value={donForm.status} onValueChange={(v) => setDonForm({ ...donForm, status: v })}>
-                    <SelectTrigger><SelectValue placeholder="স্ট্যাটাস" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("don_mgr_status")} /></SelectTrigger>
                     <SelectContent>{STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
                   </Select>
                   <Select value={donForm.source} onValueChange={(v) => setDonForm({ ...donForm, source: v })}>
-                    <SelectTrigger><SelectValue placeholder="উৎস" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("don_mgr_source")} /></SelectTrigger>
                     <SelectContent>{SOURCE_OPTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <Select value={donForm.campaign_id} onValueChange={(v) => setDonForm({ ...donForm, campaign_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="ক্যাম্পেইন (ঐচ্ছিক)" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("don_mgr_campaign_optional")} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">কোনো ক্যাম্পেইন নেই</SelectItem>
+                    <SelectItem value="">{t("don_mgr_no_campaign")}</SelectItem>
                     {campaigns.items.filter(c => c.is_active).map(c => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Button onClick={handleDonSubmit} className="w-full">যোগ করুন</Button>
+                <Button onClick={handleDonSubmit} className="w-full">{t("common_add")}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -179,18 +177,18 @@ const DonationManager = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট অনুদান</div><div className="text-2xl font-bold text-primary">৳{totalDonations.toLocaleString("bn-BD")}</div></Card>
-        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">নিশ্চিত অনুদান</div><div className="text-2xl font-bold text-green-600">৳{confirmedTotal.toLocaleString("bn-BD")}</div></Card>
-        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">মোট দাতা</div><div className="text-2xl font-bold">{items.length}</div></Card>
-        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">সক্রিয় ক্যাম্পেইন</div><div className="text-2xl font-bold">{campaigns.items.filter(c => c.is_active).length}</div></Card>
+        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">{t("don_mgr_total_donations")}</div><div className="text-2xl font-bold text-primary">৳{totalDonations.toLocaleString(locale)}</div></Card>
+        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">{t("don_mgr_confirmed")}</div><div className="text-2xl font-bold text-green-600">৳{confirmedTotal.toLocaleString(locale)}</div></Card>
+        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">{t("don_mgr_total_donors")}</div><div className="text-2xl font-bold">{items.length}</div></Card>
+        <Card className="p-4 text-center"><div className="text-sm text-muted-foreground">{t("don_mgr_active_campaigns")}</div><div className="text-2xl font-bold">{campaigns.items.filter(c => c.is_active).length}</div></Card>
       </div>
 
       <Tabs defaultValue="list">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="list">তালিকা</TabsTrigger>
-          <TabsTrigger value="charts">চার্ট</TabsTrigger>
-          <TabsTrigger value="heatmap">হিটম্যাপ</TabsTrigger>
-          <TabsTrigger value="campaigns">ক্যাম্পেইন</TabsTrigger>
+          <TabsTrigger value="list">{t("don_mgr_list")}</TabsTrigger>
+          <TabsTrigger value="charts">{t("don_mgr_charts")}</TabsTrigger>
+          <TabsTrigger value="heatmap">{t("don_mgr_heatmap")}</TabsTrigger>
+          <TabsTrigger value="campaigns">{t("don_mgr_campaigns")}</TabsTrigger>
         </TabsList>
 
         {/* LIST TAB */}
@@ -200,26 +198,26 @@ const DonationManager = () => {
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
+                <SelectItem value="all">{t("don_mgr_all_status")}</SelectItem>
                 {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={filterMethod} onValueChange={setFilterMethod}>
               <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">সব পদ্ধতি</SelectItem>
+                <SelectItem value="all">{t("don_mgr_all_methods")}</SelectItem>
                 {METHOD_OPTIONS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
               </SelectContent>
             </Select>
-            <span className="text-sm text-muted-foreground ml-auto">{filteredItems.length} টি ফলাফল</span>
+            <span className="text-sm text-muted-foreground ml-auto">{filteredItems.length} {t("don_mgr_results")}</span>
           </div>
           <Card className="overflow-x-auto">
             <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
-                  <TableHead>দাতা</TableHead><TableHead>পরিমাণ</TableHead><TableHead>পদ্ধতি</TableHead>
-                  <TableHead>উৎস</TableHead><TableHead>ক্যাম্পেইন</TableHead><TableHead>স্ট্যাটাস</TableHead>
-                  <TableHead>তারিখ</TableHead><TableHead className="text-right">অ্যাকশন</TableHead>
+                  <TableHead>{t("don_mgr_donor")}</TableHead><TableHead>{t("don_mgr_amount")}</TableHead><TableHead>{t("don_mgr_method")}</TableHead>
+                  <TableHead>{t("don_mgr_source")}</TableHead><TableHead>{t("don_mgr_campaigns")}</TableHead><TableHead>{t("don_mgr_status")}</TableHead>
+                  <TableHead>{t("don_mgr_date")}</TableHead><TableHead className="text-right">{t("don_mgr_action")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -228,23 +226,23 @@ const DonationManager = () => {
                   const statusOpt = STATUS_OPTIONS.find(s => s.value === d.status);
                   return (
                     <TableRow key={d.id}>
-                      <TableCell><div className="font-medium">{d.donor_name || "বেনামী"}</div><div className="text-xs text-muted-foreground">{d.donor_email}</div></TableCell>
-                      <TableCell className="font-bold">৳{d.amount?.toLocaleString("bn-BD")}</TableCell>
+                      <TableCell><div className="font-medium">{d.donor_name || t("don_mgr_anonymous")}</div><div className="text-xs text-muted-foreground">{d.donor_email}</div></TableCell>
+                      <TableCell className="font-bold">৳{d.amount?.toLocaleString(locale)}</TableCell>
                       <TableCell>{d.method || "-"}</TableCell>
                       <TableCell><Badge variant="outline">{d.source || "-"}</Badge></TableCell>
                       <TableCell>{camp ? <Badge variant="secondary">{camp.title}</Badge> : "-"}</TableCell>
                       <TableCell><Badge variant={statusOpt?.color as any || "secondary"}>{statusOpt?.label || d.status}</Badge></TableCell>
-                      <TableCell className="text-sm">{new Date(d.created_at).toLocaleDateString("bn-BD")}</TableCell>
+                      <TableCell className="text-sm">{new Date(d.created_at).toLocaleDateString(locale)}</TableCell>
                       <TableCell className="text-right space-x-1">
-                        <Button size="icon" variant="ghost" title="রসিদ" onClick={() => setReceiptDonation(d)}><Printer className="h-4 w-4" /></Button>
-                        <Button size="icon" variant="ghost" title="ইমেইল" onClick={() => setEmailDonation(d)}><Mail className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" title={t("don_mgr_receipt")} onClick={() => setReceiptDonation(d)}><Printer className="h-4 w-4" /></Button>
+                        <Button size="icon" variant="ghost" title={t("contact_email")} onClick={() => setEmailDonation(d)}><Mail className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" title="WhatsApp" onClick={() => setWaDonation(d)}><MessageCircle className="h-4 w-4" /></Button>
                         <Button size="icon" variant="ghost" onClick={() => remove(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </TableCell>
                     </TableRow>
                   );
                 })}
-                {filteredItems.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">কোনো অনুদান নেই</TableCell></TableRow>}
+                {filteredItems.length === 0 && <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">{t("don_mgr_no_donations")}</TableCell></TableRow>}
               </TableBody>
             </Table>
           </Card>
@@ -254,28 +252,28 @@ const DonationManager = () => {
         <TabsContent value="charts" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="p-4">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><CalendarDays className="h-4 w-4" /> মাসভিত্তিক অনুদান</h3>
+              <h3 className="font-semibold mb-4 flex items-center gap-2"><CalendarDays className="h-4 w-4" /> {t("don_mgr_monthly")}</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={monthlyData}>
                   <XAxis dataKey="month" fontSize={11} />
                   <YAxis fontSize={11} />
-                  <Tooltip formatter={(v: number) => [`৳${v.toLocaleString("bn-BD")}`, "অনুদান"]} />
+                  <Tooltip formatter={(v: number) => [`৳${v.toLocaleString(locale)}`, t("dash_donation_label")]} />
                   <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Card>
             <Card className="p-4">
-              <h3 className="font-semibold mb-4">পদ্ধতি অনুযায়ী অনুদান</h3>
+              <h3 className="font-semibold mb-4">{t("don_mgr_by_method")}</h3>
               {methodData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie data={methodData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`} labelLine={false} fontSize={11}>
                       {methodData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => [`৳${v.toLocaleString("bn-BD")}`, "পরিমাণ"]} />
+                    <Tooltip formatter={(v: number) => [`৳${v.toLocaleString(locale)}`, t("don_mgr_amount")]} />
                   </PieChart>
                 </ResponsiveContainer>
-              ) : <div className="h-[280px] flex items-center justify-center text-muted-foreground text-sm">ডেটা নেই</div>}
+              ) : <div className="h-[280px] flex items-center justify-center text-muted-foreground text-sm">{t("common_no_data")}</div>}
             </Card>
           </div>
         </TabsContent>
@@ -283,7 +281,7 @@ const DonationManager = () => {
         {/* HEATMAP TAB */}
         <TabsContent value="heatmap" className="space-y-4">
           <Card className="p-4">
-            <h3 className="font-semibold mb-4">অনুদান হিটম্যাপ ({new Date().getFullYear()})</h3>
+            <h3 className="font-semibold mb-4">{t("don_mgr_heatmap_title")} ({new Date().getFullYear()})</h3>
             <div className="overflow-x-auto">
               <div className="space-y-3 min-w-[600px]">
                 {heatmapData.map((m) => (
@@ -295,7 +293,7 @@ const DonationManager = () => {
                           key={d.day}
                           className="w-3 h-3 rounded-sm cursor-pointer transition-transform hover:scale-150"
                           style={{ background: HEATMAP_COLORS[d.level] }}
-                          title={`${m.month} ${d.day}: ৳${d.amount.toLocaleString("bn-BD")}`}
+                          title={`${m.month} ${d.day}: ৳${d.amount.toLocaleString(locale)}`}
                         />
                       ))}
                     </div>
@@ -303,9 +301,9 @@ const DonationManager = () => {
                 ))}
               </div>
               <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
-                <span>কম</span>
+                <span>{t("don_mgr_less")}</span>
                 {HEATMAP_COLORS.map((c, i) => <div key={i} className="w-3 h-3 rounded-sm" style={{ background: c }} />)}
-                <span>বেশি</span>
+                <span>{t("don_mgr_more")}</span>
               </div>
             </div>
           </Card>
@@ -320,12 +318,12 @@ const DonationManager = () => {
                 <Card key={c.id} className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">{c.title}</h4>
-                    <Badge variant={c.is_active ? "default" : "secondary"}>{c.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}</Badge>
+                    <Badge variant={c.is_active ? "default" : "secondary"}>{c.is_active ? t("don_mgr_active") : t("don_mgr_inactive")}</Badge>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{c.count} জন দাতা</span>
-                      <span className="font-medium">৳{c.raised.toLocaleString("bn-BD")} / ৳{c.target_amount.toLocaleString("bn-BD")}</span>
+                      <span className="text-muted-foreground">{c.count} {t("don_mgr_donors_count")}</span>
+                      <span className="font-medium">৳{c.raised.toLocaleString(locale)} / ৳{c.target_amount.toLocaleString(locale)}</span>
                     </div>
                     <div className="h-3 bg-muted rounded-full overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
@@ -335,7 +333,7 @@ const DonationManager = () => {
                 </Card>
               );
             })}
-            {campaignPerf.length === 0 && <div className="col-span-2 text-center text-muted-foreground py-8">কোনো ক্যাম্পেইন নেই</div>}
+            {campaignPerf.length === 0 && <div className="col-span-2 text-center text-muted-foreground py-8">{t("don_mgr_no_campaigns")}</div>}
           </div>
         </TabsContent>
       </Tabs>
@@ -343,7 +341,7 @@ const DonationManager = () => {
       {/* Receipt Dialog */}
       <Dialog open={!!receiptDonation} onOpenChange={() => setReceiptDonation(null)}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>দানের রসিদ</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("don_mgr_receipt")}</DialogTitle></DialogHeader>
           {receiptDonation && <DonationReceipt donation={receiptDonation} onClose={() => setReceiptDonation(null)} />}
         </DialogContent>
       </Dialog>
@@ -351,7 +349,7 @@ const DonationManager = () => {
       {/* Email Dialog */}
       <Dialog open={!!emailDonation} onOpenChange={() => setEmailDonation(null)}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>দাতাকে ইমেইল</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("don_mgr_email_donor")}</DialogTitle></DialogHeader>
           {emailDonation && <EmailCompose
             to={emailDonation.donor_email}
             subject={`আপনার ৳${emailDonation.amount} অনুদানের জন্য ধন্যবাদ`}
@@ -364,7 +362,7 @@ const DonationManager = () => {
       {/* WhatsApp Dialog */}
       <Dialog open={!!waDonation} onOpenChange={() => setWaDonation(null)}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>WhatsApp মেসেজ</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("don_mgr_wa_msg")}</DialogTitle></DialogHeader>
           {waDonation && <WhatsAppSend
             defaultMessage={`আসসালামু আলাইকুম ${waDonation.donor_name},\n\nআপনার ৳${waDonation.amount} অনুদানের জন্য আন্তরিক ধন্যবাদ। আল্লাহ আপনাকে উত্তম প্রতিদান দিন।\n\n- শিশুফুল ফাউন্ডেশন`}
           />}
