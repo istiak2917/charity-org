@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +14,7 @@ import { BLOCK_TYPES, BLOCK_CATEGORIES, type HomepageSection, type SectionBlock,
 import {
   Plus, Trash2, Copy, ArrowUp, ArrowDown, Eye, EyeOff,
   Settings, Layers, Save, Download, Upload, GripVertical, PanelLeft, PanelRight,
-  Undo2, Redo2, Monitor, RefreshCw
+  Undo2, Redo2, Monitor, RefreshCw, X, ChevronRight
 } from "lucide-react";
 
 // ========== Safe DB helpers ==========
@@ -51,6 +50,201 @@ async function safeUpdateSection(id: string, updates: any): Promise<{ error: any
   return { error: { message: "Column mismatch" } };
 }
 
+// ========== Block Content Editor ==========
+const BlockContentEditor = ({ block, onChange }: { block: SectionBlock; onChange: (content: any) => void }) => {
+  const content = block.content || block.config || {};
+  const type = block.block_type;
+
+  const updateField = (key: string, value: any) => {
+    onChange({ ...content, [key]: value });
+  };
+
+  const updateArrayItem = (arrKey: string, index: number, field: string, value: any) => {
+    const arr = [...(content[arrKey] || [])];
+    arr[index] = { ...arr[index], [field]: value };
+    onChange({ ...content, [arrKey]: arr });
+  };
+
+  const addArrayItem = (arrKey: string, defaultItem: any) => {
+    const arr = [...(content[arrKey] || []), defaultItem];
+    onChange({ ...content, [arrKey]: arr });
+  };
+
+  const removeArrayItem = (arrKey: string, index: number) => {
+    const arr = (content[arrKey] || []).filter((_: any, i: number) => i !== index);
+    onChange({ ...content, [arrKey]: arr });
+  };
+
+  switch (type) {
+    case "hero":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম (Heading)</Label><Input value={content.heading || ""} onChange={e => updateField("heading", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">উপশিরোনাম (Subheading)</Label><Textarea rows={2} value={content.subheading || ""} onChange={e => updateField("subheading", e.target.value)} className="text-xs" /></div>
+          <div><Label className="text-xs">বাটন টেক্সট</Label><Input value={content.buttonText || ""} onChange={e => updateField("buttonText", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">বাটন লিংক</Label><Input value={content.buttonUrl || ""} onChange={e => updateField("buttonUrl", e.target.value)} className="h-8 text-xs" placeholder="https://..." /></div>
+        </div>
+      );
+    case "about":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.title || ""} onChange={e => updateField("title", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">বিবরণ</Label><Textarea rows={4} value={content.description || ""} onChange={e => updateField("description", e.target.value)} className="text-xs" /></div>
+        </div>
+      );
+    case "mission":
+    case "vision":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.title || ""} onChange={e => updateField("title", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">বিবরণ</Label><Textarea rows={4} value={content.text || ""} onChange={e => updateField("text", e.target.value)} className="text-xs" /></div>
+        </div>
+      );
+    case "cta":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.heading || ""} onChange={e => updateField("heading", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">উপশিরোনাম</Label><Input value={content.subheading || ""} onChange={e => updateField("subheading", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">বাটন টেক্সট</Label><Input value={content.buttonText || ""} onChange={e => updateField("buttonText", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">বাটন লিংক</Label><Input value={content.buttonUrl || ""} onChange={e => updateField("buttonUrl", e.target.value)} className="h-8 text-xs" /></div>
+        </div>
+      );
+    case "feature_grid":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.title || ""} onChange={e => updateField("title", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">কলাম সংখ্যা</Label><Input type="number" min={1} max={6} value={content.columns || 3} onChange={e => updateField("columns", Number(e.target.value))} className="h-8 text-xs" /></div>
+          <Label className="text-xs font-semibold">ফিচারসমূহ</Label>
+          {(content.features || []).map((f: any, i: number) => (
+            <Card key={i} className="p-2 space-y-2">
+              <div className="flex justify-between items-center"><span className="text-xs font-medium">ফিচার {i + 1}</span><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeArrayItem("features", i)}><X className="h-3 w-3 text-destructive" /></Button></div>
+              <Input value={f.icon || ""} onChange={e => updateArrayItem("features", i, "icon", e.target.value)} className="h-7 text-xs" placeholder="আইকন (ইমোজি)" />
+              <Input value={f.title || ""} onChange={e => updateArrayItem("features", i, "title", e.target.value)} className="h-7 text-xs" placeholder="শিরোনাম" />
+              <Input value={f.desc || ""} onChange={e => updateArrayItem("features", i, "desc", e.target.value)} className="h-7 text-xs" placeholder="বিবরণ" />
+            </Card>
+          ))}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => addArrayItem("features", { title: "নতুন ফিচার", desc: "বিবরণ", icon: "⭐" })}>+ ফিচার যোগ</Button>
+        </div>
+      );
+    case "icon_grid":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">কলাম সংখ্যা</Label><Input type="number" min={1} max={6} value={content.columns || 4} onChange={e => updateField("columns", Number(e.target.value))} className="h-8 text-xs" /></div>
+          <Label className="text-xs font-semibold">আইটেমসমূহ</Label>
+          {(content.items || []).map((item: any, i: number) => (
+            <Card key={i} className="p-2 space-y-2">
+              <div className="flex justify-between items-center"><span className="text-xs font-medium">আইটেম {i + 1}</span><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeArrayItem("items", i)}><X className="h-3 w-3 text-destructive" /></Button></div>
+              <Input value={item.icon || ""} onChange={e => updateArrayItem("items", i, "icon", e.target.value)} className="h-7 text-xs" placeholder="আইকন (ইমোজি)" />
+              <Input value={item.label || ""} onChange={e => updateArrayItem("items", i, "label", e.target.value)} className="h-7 text-xs" placeholder="লেবেল" />
+            </Card>
+          ))}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => addArrayItem("items", { icon: "🎓", label: "নতুন আইটেম" })}>+ আইটেম যোগ</Button>
+        </div>
+      );
+    case "counter":
+      return (
+        <div className="space-y-3">
+          <Label className="text-xs font-semibold">কাউন্টার আইটেম</Label>
+          {(content.items || []).map((item: any, i: number) => (
+            <Card key={i} className="p-2 space-y-2">
+              <div className="flex justify-between items-center"><span className="text-xs font-medium">কাউন্টার {i + 1}</span><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeArrayItem("items", i)}><X className="h-3 w-3 text-destructive" /></Button></div>
+              <Input type="number" value={item.value || 0} onChange={e => updateArrayItem("items", i, "value", Number(e.target.value))} className="h-7 text-xs" placeholder="সংখ্যা" />
+              <Input value={item.label || ""} onChange={e => updateArrayItem("items", i, "label", e.target.value)} className="h-7 text-xs" placeholder="লেবেল" />
+              <Input value={item.suffix || ""} onChange={e => updateArrayItem("items", i, "suffix", e.target.value)} className="h-7 text-xs" placeholder="সাফিক্স (যেমন: +)" />
+            </Card>
+          ))}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => addArrayItem("items", { value: 100, label: "নতুন কাউন্টার", suffix: "+" })}>+ কাউন্টার যোগ</Button>
+        </div>
+      );
+    case "testimonial_slider":
+      return (
+        <div className="space-y-3">
+          <Label className="text-xs font-semibold">টেস্টিমোনিয়াল</Label>
+          {(content.testimonials || []).map((t: any, i: number) => (
+            <Card key={i} className="p-2 space-y-2">
+              <div className="flex justify-between items-center"><span className="text-xs font-medium">মতামত {i + 1}</span><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeArrayItem("testimonials", i)}><X className="h-3 w-3 text-destructive" /></Button></div>
+              <Input value={t.name || ""} onChange={e => updateArrayItem("testimonials", i, "name", e.target.value)} className="h-7 text-xs" placeholder="নাম" />
+              <Input value={t.role || ""} onChange={e => updateArrayItem("testimonials", i, "role", e.target.value)} className="h-7 text-xs" placeholder="পদবী" />
+              <Textarea rows={2} value={t.text || ""} onChange={e => updateArrayItem("testimonials", i, "text", e.target.value)} className="text-xs" placeholder="মন্তব্য" />
+            </Card>
+          ))}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => addArrayItem("testimonials", { name: "নাম", role: "সদস্য", text: "মন্তব্য" })}>+ মতামত যোগ</Button>
+        </div>
+      );
+    case "faq_accordion":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.title || ""} onChange={e => updateField("title", e.target.value)} className="h-8 text-xs" /></div>
+          <Label className="text-xs font-semibold">প্রশ্নোত্তর</Label>
+          {(content.items || []).map((item: any, i: number) => (
+            <Card key={i} className="p-2 space-y-2">
+              <div className="flex justify-between items-center"><span className="text-xs font-medium">FAQ {i + 1}</span><Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeArrayItem("items", i)}><X className="h-3 w-3 text-destructive" /></Button></div>
+              <Input value={item.question || ""} onChange={e => updateArrayItem("items", i, "question", e.target.value)} className="h-7 text-xs" placeholder="প্রশ্ন" />
+              <Textarea rows={2} value={item.answer || ""} onChange={e => updateArrayItem("items", i, "answer", e.target.value)} className="text-xs" placeholder="উত্তর" />
+            </Card>
+          ))}
+          <Button variant="outline" size="sm" className="w-full" onClick={() => addArrayItem("items", { question: "নতুন প্রশ্ন?", answer: "উত্তর" })}>+ FAQ যোগ</Button>
+        </div>
+      );
+    case "donation_progress":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.title || ""} onChange={e => updateField("title", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">লক্ষ্যমাত্রা (৳)</Label><Input type="number" value={content.goal || 100000} onChange={e => updateField("goal", Number(e.target.value))} className="h-8 text-xs" /></div>
+        </div>
+      );
+    case "blog_preview":
+    case "events_preview":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.title || ""} onChange={e => updateField("title", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">সর্বোচ্চ সংখ্যা</Label><Input type="number" min={1} max={20} value={content.limit || 3} onChange={e => updateField("limit", Number(e.target.value))} className="h-8 text-xs" /></div>
+        </div>
+      );
+    case "gallery_grid":
+    case "team_grid":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">শিরোনাম</Label><Input value={content.title || ""} onChange={e => updateField("title", e.target.value)} className="h-8 text-xs" /></div>
+          <div><Label className="text-xs">কলাম সংখ্যা</Label><Input type="number" min={1} max={6} value={content.columns || 3} onChange={e => updateField("columns", Number(e.target.value))} className="h-8 text-xs" /></div>
+          {type === "gallery_grid" && <div><Label className="text-xs">সর্বোচ্চ সংখ্যা</Label><Input type="number" min={1} max={30} value={content.limit || 8} onChange={e => updateField("limit", Number(e.target.value))} className="h-8 text-xs" /></div>}
+        </div>
+      );
+    case "custom_html":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">HTML কোড</Label><Textarea rows={8} value={content.html || ""} onChange={e => updateField("html", e.target.value)} className="text-xs font-mono" /></div>
+        </div>
+      );
+    case "spacer":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">উচ্চতা</Label><Input value={content.height || "40px"} onChange={e => updateField("height", e.target.value)} className="h-8 text-xs" placeholder="40px" /></div>
+        </div>
+      );
+    case "divider":
+      return (
+        <div className="space-y-3">
+          <div><Label className="text-xs">স্টাইল</Label><Input value={content.style || "solid"} onChange={e => updateField("style", e.target.value)} className="h-8 text-xs" placeholder="solid, dashed, dotted" /></div>
+          <div><Label className="text-xs">রঙ</Label><Input value={content.color || ""} onChange={e => updateField("color", e.target.value)} className="h-8 text-xs" placeholder="#e5e7eb" /></div>
+          <div><Label className="text-xs">প্রস্থ</Label><Input value={content.width || "100%"} onChange={e => updateField("width", e.target.value)} className="h-8 text-xs" placeholder="100%" /></div>
+        </div>
+      );
+    default:
+      return (
+        <div className="space-y-3">
+          <Label className="text-xs">কন্টেন্ট JSON</Label>
+          <Textarea
+            rows={8}
+            value={JSON.stringify(content, null, 2)}
+            onChange={e => { try { onChange(JSON.parse(e.target.value)); } catch {} }}
+            className="font-mono text-[10px]"
+          />
+        </div>
+      );
+  }
+};
+
 const HomepageBuilder = () => {
   const { toast } = useToast();
 
@@ -60,24 +254,23 @@ const HomepageBuilder = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-  const [showLeftPanel, setShowLeftPanel] = useState(true);
-  const [showRightPanel, setShowRightPanel] = useState(true);
-  const [inspectorTab, setInspectorTab] = useState("content");
   const [showPreview, setShowPreview] = useState(false);
   const previewRef = useRef<HTMLIFrameElement>(null);
+
+  // Mobile panel state
+  const [mobilePanel, setMobilePanel] = useState<"sections" | "canvas" | "inspector">("sections");
 
   // Draft tracking
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Snapshot of DB state for dirty tracking
+  // Snapshot of DB state
   const [dbSections, setDbSections] = useState<HomepageSection[]>([]);
   const [dbBlocks, setDbBlocks] = useState<Record<string, SectionBlock[]>>({});
 
   // Pending deletes
   const [deletedSectionIds, setDeletedSectionIds] = useState<string[]>([]);
   const [deletedBlockIds, setDeletedBlockIds] = useState<string[]>([]);
-  const [newBlockQueue, setNewBlockQueue] = useState<Partial<SectionBlock>[]>([]);
 
   // Undo/Redo
   type Snapshot = { sections: HomepageSection[]; blocks: Record<string, SectionBlock[]> };
@@ -139,13 +332,12 @@ const HomepageBuilder = () => {
     setHasChanges(false);
     setDeletedSectionIds([]);
     setDeletedBlockIds([]);
-    setNewBlockQueue([]);
     setLoading(false);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // ========== LOCAL Section Operations (no DB writes) ==========
+  // ========== LOCAL Section Operations ==========
   const addSectionLocal = () => {
     if (!newSectionKey.trim() || !newSectionTitle.trim()) return;
     pushSnapshot();
@@ -169,9 +361,7 @@ const HomepageBuilder = () => {
 
   const deleteSectionLocal = (id: string) => {
     pushSnapshot();
-    // Track for DB delete
     if (!id.startsWith("temp_")) setDeletedSectionIds(prev => [...prev, id]);
-    // Also mark blocks for deletion
     const sblocks = blocks[id] || [];
     setDeletedBlockIds(prev => [...prev, ...sblocks.filter(b => !b.id.startsWith("temp_")).map(b => b.id)]);
     setSections(prev => prev.filter(s => s.id !== id));
@@ -193,7 +383,6 @@ const HomepageBuilder = () => {
       is_visible: false,
     };
     setSections(prev => [...prev, dup]);
-    // Dup blocks
     const sblocks = blocks[section.id] || [];
     if (sblocks.length > 0) {
       const dupBlocks = sblocks.map((b, i) => ({
@@ -217,11 +406,9 @@ const HomepageBuilder = () => {
     pushSnapshot();
     setSections(prev => {
       const arr = [...prev];
-      // Swap positions
       const tmpPos = arr[index].position;
       arr[index] = { ...arr[index], position: arr[index - 1].position };
       arr[index - 1] = { ...arr[index - 1], position: tmpPos };
-      // Also swap array order
       [arr[index], arr[index - 1]] = [arr[index - 1], arr[index]];
       return arr;
     });
@@ -266,6 +453,9 @@ const HomepageBuilder = () => {
       ...prev,
       [sectionId]: [...(prev[sectionId] || []), newBlock],
     }));
+    setSelectedBlockId(tempId);
+    setSelectedSectionId(sectionId);
+    setMobilePanel("inspector");
     setHasChanges(true);
     toast({ title: "ব্লক যোগ হয়েছে (সেভ করুন)" });
   };
@@ -336,17 +526,14 @@ const HomepageBuilder = () => {
   const saveAll = async () => {
     setIsSaving(true);
     try {
-      // 1. Delete removed sections
       for (const id of deletedSectionIds) {
         await supabase.from("section_blocks").delete().eq("section_id", id);
         await supabase.from("homepage_sections").delete().eq("id", id);
       }
-      // 2. Delete removed blocks
       for (const id of deletedBlockIds) {
         await supabase.from("section_blocks").delete().eq("id", id);
       }
 
-      // 3. Upsert sections (normalize positions)
       for (let i = 0; i < sections.length; i++) {
         const s = sections[i];
         const payload: any = {
@@ -359,16 +546,13 @@ const HomepageBuilder = () => {
         };
 
         if (s.id.startsWith("temp_")) {
-          // Insert new
           let p = { ...payload };
           for (let j = 0; j < 5; j++) {
             const { data, error } = await supabase.from("homepage_sections").insert(p).select();
             if (!error && data?.[0]) {
-              // Update local id for block references
               const oldId = s.id;
               const newId = data[0].id;
               sections[i] = { ...s, id: newId, position: i };
-              // Update block section_ids
               if (blocks[oldId]) {
                 blocks[newId] = blocks[oldId];
                 delete blocks[oldId];
@@ -382,18 +566,16 @@ const HomepageBuilder = () => {
             break;
           }
         } else {
-          // Update existing
           await safeUpdateSection(s.id, payload);
         }
       }
 
-      // 4. Upsert blocks
       for (const sectionId of Object.keys(blocks)) {
         const sblocks = blocks[sectionId];
         for (let i = 0; i < sblocks.length; i++) {
           const b = sblocks[i];
           if (b.id.startsWith("temp_")) {
-            const { data, error } = await safeUpsertBlock({
+            const { error } = await safeUpsertBlock({
               section_id: sectionId,
               block_type: b.block_type,
               content: b.content,
@@ -401,9 +583,7 @@ const HomepageBuilder = () => {
               position: i,
               is_visible: b.is_visible ?? true,
             });
-            if (error) {
-              toast({ title: "ব্লক সেভ ব্যর্থ", variant: "destructive" });
-            }
+            if (error) toast({ title: "ব্লক সেভ ব্যর্থ", variant: "destructive" });
           } else {
             await safeUpsertBlock({
               id: b.id,
@@ -417,13 +597,8 @@ const HomepageBuilder = () => {
       }
 
       toast({ title: "✅ সব পরিবর্তন সেভ হয়েছে!" });
-      // Reload fresh from DB
       await fetchAll();
-
-      // Refresh preview iframe
-      if (previewRef.current) {
-        previewRef.current.src = previewRef.current.src;
-      }
+      if (previewRef.current) previewRef.current.src = previewRef.current.src;
     } catch (err: any) {
       toast({ title: "সেভ ব্যর্থ", description: err?.message, variant: "destructive" });
     } finally {
@@ -431,7 +606,6 @@ const HomepageBuilder = () => {
     }
   };
 
-  // Discard all changes
   const discardChanges = () => {
     setSections(JSON.parse(JSON.stringify(dbSections)));
     setBlocks(JSON.parse(JSON.stringify(dbBlocks)));
@@ -443,7 +617,6 @@ const HomepageBuilder = () => {
     toast({ title: "পরিবর্তন বাতিল করা হয়েছে" });
   };
 
-  // Template
   const exportTemplate = () => {
     const template = {
       sections: sections.map(s => ({
@@ -468,7 +641,6 @@ const HomepageBuilder = () => {
     }
   };
 
-  // ========== Selected items ==========
   const selectedBlock = selectedBlockId
     ? Object.values(blocks).flat().find(b => b.id === selectedBlockId)
     : null;
@@ -477,51 +649,52 @@ const HomepageBuilder = () => {
     ? sections.find(s => s.id === selectedSectionId)
     : null;
 
-  // ========== Render ==========
+  // Get block content preview text
+  const getBlockPreview = (block: SectionBlock): string => {
+    const c = block.content || {};
+    if (c.heading) return c.heading;
+    if (c.title) return c.title;
+    if (c.text) return c.text?.substring(0, 40);
+    if (c.description) return c.description?.substring(0, 40);
+    return block.block_type;
+  };
+
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col">
+    <div className="space-y-0">
       {/* Top Bar */}
-      <div className="flex items-center gap-2 p-3 border-b bg-background flex-wrap">
-        <Button variant="ghost" size="icon" onClick={() => setShowLeftPanel(!showLeftPanel)}>
-          <PanelLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-lg font-bold font-heading">হোমপেজ বিল্ডার</h1>
+      <div className="flex items-center gap-1 sm:gap-2 p-2 sm:p-3 border-b bg-background flex-wrap sticky top-0 z-20">
+        <h1 className="text-sm sm:text-lg font-bold font-heading">হোমপেজ বিল্ডার</h1>
 
         {hasChanges && (
-          <span className="text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full font-medium">
-            অসংরক্ষিত পরিবর্তন
+          <span className="text-[10px] sm:text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full font-medium">
+            অসংরক্ষিত
           </span>
         )}
 
         <div className="flex-1" />
 
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={undo} disabled={undoStack.length === 0} title="আনডু">
-          <Undo2 className="h-4 w-4" />
+        <Button variant="outline" size="icon" className="h-7 w-7 sm:h-8 sm:w-8" onClick={undo} disabled={undoStack.length === 0} title="আনডু">
+          <Undo2 className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={redo} disabled={redoStack.length === 0} title="রিডু">
-          <Redo2 className="h-4 w-4" />
-        </Button>
-
-        <Button
-          variant={showPreview ? "default" : "outline"}
-          size="sm"
-          onClick={() => setShowPreview(!showPreview)}
-          title="লাইভ প্রিভিউ"
-        >
-          <Monitor className="h-3 w-3 mr-1" />প্রিভিউ
+        <Button variant="outline" size="icon" className="h-7 w-7 sm:h-8 sm:w-8" onClick={redo} disabled={redoStack.length === 0} title="রিডু">
+          <Redo2 className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
 
-        <Button variant="outline" size="sm" onClick={exportTemplate}>
+        <Button variant={showPreview ? "default" : "outline"} size="sm" className="h-7 sm:h-8 text-xs" onClick={() => setShowPreview(!showPreview)}>
+          <Monitor className="h-3 w-3 mr-1" /><span className="hidden sm:inline">প্রিভিউ</span>
+        </Button>
+
+        <Button variant="outline" size="sm" className="h-7 sm:h-8 text-xs hidden sm:flex" onClick={exportTemplate}>
           <Download className="h-3 w-3 mr-1" />এক্সপোর্ট
         </Button>
-        <Button variant="outline" size="sm" onClick={() => { setTemplateJson(""); setTemplateDialog("import"); }}>
+        <Button variant="outline" size="sm" className="h-7 sm:h-8 text-xs hidden sm:flex" onClick={() => { setTemplateJson(""); setTemplateDialog("import"); }}>
           <Upload className="h-3 w-3 mr-1" />ইমপোর্ট
         </Button>
 
         {hasChanges && (
-          <Button variant="outline" size="sm" onClick={discardChanges}>
+          <Button variant="outline" size="sm" className="h-7 sm:h-8 text-xs" onClick={discardChanges}>
             বাতিল
           </Button>
         )}
@@ -530,329 +703,301 @@ const HomepageBuilder = () => {
           size="sm"
           onClick={saveAll}
           disabled={!hasChanges || isSaving}
-          className="bg-green-600 hover:bg-green-700 text-white gap-1"
+          className="bg-green-600 hover:bg-green-700 text-white gap-1 h-7 sm:h-8 text-xs"
         >
           {isSaving ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
           সেভ করুন
         </Button>
-
-        <Button variant="ghost" size="icon" onClick={() => setShowRightPanel(!showRightPanel)}>
-          <PanelRight className="h-4 w-4" />
-        </Button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* LEFT PANEL */}
-        {showLeftPanel && (
-          <div className="w-72 border-r bg-muted/30 flex flex-col">
-            <Tabs defaultValue="sections" className="flex flex-col flex-1">
-              <TabsList className="mx-2 mt-2">
-                <TabsTrigger value="sections" className="text-xs">সেকশন</TabsTrigger>
-                <TabsTrigger value="blocks" className="text-xs">ব্লক</TabsTrigger>
-              </TabsList>
+      {/* Mobile Tab Navigation */}
+      <div className="lg:hidden flex border-b bg-muted/30">
+        <button
+          onClick={() => setMobilePanel("sections")}
+          className={`flex-1 py-2 text-xs font-medium text-center border-b-2 transition-colors ${mobilePanel === "sections" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
+        >
+          সেকশন
+        </button>
+        <button
+          onClick={() => setMobilePanel("canvas")}
+          className={`flex-1 py-2 text-xs font-medium text-center border-b-2 transition-colors ${mobilePanel === "canvas" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
+        >
+          ক্যানভাস
+        </button>
+        <button
+          onClick={() => setMobilePanel("inspector")}
+          className={`flex-1 py-2 text-xs font-medium text-center border-b-2 transition-colors ${mobilePanel === "inspector" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
+        >
+          সেটিংস
+        </button>
+      </div>
 
-              <TabsContent value="sections" className="flex-1 overflow-hidden m-0">
-                <ScrollArea className="h-full">
-                  <div className="p-2 space-y-1">
-                    <Button size="sm" className="w-full mb-2" onClick={() => setNewSectionDialog(true)}>
-                      <Plus className="h-3 w-3 mr-1" />নতুন সেকশন
-                    </Button>
-                    {sections.map((section, idx) => (
-                      <Card
-                        key={section.id}
-                        className={`p-2 cursor-pointer transition-colors ${selectedSectionId === section.id ? "ring-2 ring-primary" : ""} ${!section.is_visible ? "opacity-50" : ""}`}
-                        onClick={() => { setSelectedSectionId(section.id); setSelectedBlockId(null); }}
-                      >
-                        <div className="flex items-center gap-1">
-                          <GripVertical className="h-3 w-3 text-muted-foreground shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-medium truncate">{section.title}</div>
-                            <div className="text-[10px] text-muted-foreground">{section.section_key} • pos:{section.position}</div>
-                          </div>
-                          <div className="flex items-center gap-0.5 shrink-0">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveSectionUp(idx); }} disabled={idx === 0}>
-                              <ArrowUp className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveSectionDown(idx); }} disabled={idx === sections.length - 1}>
-                              <ArrowDown className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); toggleVisibilityLocal(section); }}>
-                              {section.is_visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); duplicateSectionLocal(section); }}>
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={(e) => { e.stopPropagation(); deleteSectionLocal(section.id); }}>
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </TabsContent>
+      {/* Main Content - Desktop: 3 panels, Mobile: tab-based */}
+      <div className="lg:flex lg:h-[calc(100vh-160px)]">
+        {/* LEFT PANEL: Sections & Blocks */}
+        <div className={`lg:w-72 lg:border-r bg-muted/30 lg:flex lg:flex-col overflow-y-auto ${mobilePanel === "sections" ? "block" : "hidden lg:flex"}`} style={{ maxHeight: "calc(100vh - 160px)" }}>
+          <Tabs defaultValue="sections" className="flex flex-col flex-1">
+            <TabsList className="mx-2 mt-2">
+              <TabsTrigger value="sections" className="text-xs">সেকশন</TabsTrigger>
+              <TabsTrigger value="blocks" className="text-xs">ব্লক</TabsTrigger>
+            </TabsList>
 
-              <TabsContent value="blocks" className="flex-1 overflow-hidden m-0">
-                <ScrollArea className="h-full">
-                  <div className="p-2 space-y-3">
-                    {!selectedSectionId && (
-                      <p className="text-xs text-muted-foreground text-center py-4">প্রথমে একটি সেকশন সিলেক্ট করুন</p>
-                    )}
-                    {selectedSectionId && BLOCK_CATEGORIES.map(cat => (
-                      <div key={cat}>
-                        <h4 className="text-[10px] font-semibold uppercase text-muted-foreground mb-1 px-1">{cat}</h4>
-                        <div className="grid grid-cols-2 gap-1">
-                          {BLOCK_TYPES.filter(bt => bt.category === cat).map(bt => (
-                            <button
-                              key={bt.type}
-                              onClick={() => addBlockLocal(selectedSectionId!, bt.type)}
-                              className="flex flex-col items-center gap-1 p-2 rounded-lg border bg-card hover:bg-accent transition text-center"
-                            >
-                              <span className="text-lg">{bt.icon}</span>
-                              <span className="text-[10px] font-medium leading-tight">{bt.label}</span>
-                            </button>
-                          ))}
-                        </div>
+            <TabsContent value="sections" className="flex-1 m-0 overflow-y-auto p-2 space-y-1">
+              <Button size="sm" className="w-full mb-2" onClick={() => setNewSectionDialog(true)}>
+                <Plus className="h-3 w-3 mr-1" />নতুন সেকশন
+              </Button>
+              {sections.map((section, idx) => {
+                const sblocks = blocks[section.id] || [];
+                return (
+                  <Card
+                    key={section.id}
+                    className={`p-2 cursor-pointer transition-colors ${selectedSectionId === section.id ? "ring-2 ring-primary" : ""} ${!section.is_visible ? "opacity-50" : ""}`}
+                    onClick={() => { setSelectedSectionId(section.id); setSelectedBlockId(null); }}
+                  >
+                    <div className="flex items-center gap-1">
+                      <GripVertical className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate">{section.title}</div>
+                        <div className="text-[10px] text-muted-foreground">{section.section_key} • pos:{section.position}</div>
+                        {/* Show block content previews */}
+                        {sblocks.length > 0 && (
+                          <div className="mt-1 space-y-0.5">
+                            {sblocks.slice(0, 3).map(b => (
+                              <div key={b.id} className="text-[9px] text-muted-foreground truncate flex items-center gap-1">
+                                <ChevronRight className="h-2 w-2 shrink-0" />
+                                <span className="text-primary/70">{b.block_type}:</span> {getBlockPreview(b)}
+                              </div>
+                            ))}
+                            {sblocks.length > 3 && <div className="text-[9px] text-muted-foreground">+{sblocks.length - 3} আরো</div>}
+                          </div>
+                        )}
                       </div>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveSectionUp(idx); }} disabled={idx === 0}>
+                          <ArrowUp className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); moveSectionDown(idx); }} disabled={idx === sections.length - 1}>
+                          <ArrowDown className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); toggleVisibilityLocal(section); }}>
+                          {section.is_visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); duplicateSectionLocal(section); }}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={(e) => { e.stopPropagation(); deleteSectionLocal(section.id); }}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </TabsContent>
+
+            <TabsContent value="blocks" className="flex-1 m-0 overflow-y-auto p-2 space-y-3">
+              {!selectedSectionId && (
+                <p className="text-xs text-muted-foreground text-center py-4">প্রথমে একটি সেকশন সিলেক্ট করুন</p>
+              )}
+              {selectedSectionId && BLOCK_CATEGORIES.map(cat => (
+                <div key={cat}>
+                  <h4 className="text-[10px] font-semibold uppercase text-muted-foreground mb-1 px-1">{cat}</h4>
+                  <div className="grid grid-cols-2 gap-1">
+                    {BLOCK_TYPES.filter(bt => bt.category === cat).map(bt => (
+                      <button
+                        key={bt.type}
+                        onClick={() => addBlockLocal(selectedSectionId!, bt.type)}
+                        className="flex flex-col items-center gap-1 p-2 rounded-lg border bg-card hover:bg-accent transition text-center"
+                      >
+                        <span className="text-lg">{bt.icon}</span>
+                        <span className="text-[10px] font-medium leading-tight">{bt.label}</span>
+                      </button>
                     ))}
                   </div>
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+                </div>
+              ))}
+            </TabsContent>
+          </Tabs>
+        </div>
 
         {/* CENTER: Canvas or Preview */}
-        <div className="flex-1 overflow-auto bg-muted/20">
+        <div className={`flex-1 overflow-auto bg-muted/20 ${mobilePanel === "canvas" ? "block" : "hidden lg:block"}`} style={{ maxHeight: "calc(100vh - 160px)" }}>
           {showPreview ? (
             <iframe
               ref={previewRef}
               src="/"
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 min-h-[60vh]"
               title="লাইভ প্রিভিউ"
             />
           ) : (
-            <ScrollArea className="h-full">
-              <div className="max-w-5xl mx-auto py-4">
-                {sections.length === 0 && (
-                  <div className="text-center py-20 text-muted-foreground">
-                    <Layers className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                    <p>"নতুন সেকশন" বাটনে ক্লিক করে শুরু করুন</p>
-                  </div>
-                )}
+            <div className="max-w-5xl mx-auto py-4 px-2">
+              {sections.length === 0 && (
+                <div className="text-center py-20 text-muted-foreground">
+                  <Layers className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                  <p>"নতুন সেকশন" বাটনে ক্লিক করে শুরু করুন</p>
+                </div>
+              )}
 
-                {sections.map((section) => {
-                  const sectionBlocks = blocks[section.id] || [];
-                  const sectionConfig: SectionConfig = section.content || {};
-                  const isSelected = selectedSectionId === section.id;
+              {sections.map((section) => {
+                const sectionBlocks = blocks[section.id] || [];
+                const sectionConfig: SectionConfig = section.content || {};
+                const isSelected = selectedSectionId === section.id;
 
-                  const sectionStyle: React.CSSProperties = {};
-                  if (sectionConfig.background?.color) sectionStyle.backgroundColor = sectionConfig.background.color;
-                  if (sectionConfig.background?.gradient) sectionStyle.background = sectionConfig.background.gradient;
-                  if (sectionConfig.background?.imageUrl) {
-                    sectionStyle.backgroundImage = `url(${sectionConfig.background.imageUrl})`;
-                    sectionStyle.backgroundSize = "cover";
-                    sectionStyle.backgroundPosition = "center";
-                  }
-                  if (sectionConfig.spacing?.paddingTop) sectionStyle.paddingTop = sectionConfig.spacing.paddingTop;
-                  if (sectionConfig.spacing?.paddingBottom) sectionStyle.paddingBottom = sectionConfig.spacing.paddingBottom;
+                const sectionStyle: React.CSSProperties = {};
+                if (sectionConfig.background?.color) sectionStyle.backgroundColor = sectionConfig.background.color;
+                if (sectionConfig.background?.gradient) sectionStyle.background = sectionConfig.background.gradient;
+                if (sectionConfig.background?.imageUrl) {
+                  sectionStyle.backgroundImage = `url(${sectionConfig.background.imageUrl})`;
+                  sectionStyle.backgroundSize = "cover";
+                  sectionStyle.backgroundPosition = "center";
+                }
+                if (sectionConfig.spacing?.paddingTop) sectionStyle.paddingTop = sectionConfig.spacing.paddingTop;
+                if (sectionConfig.spacing?.paddingBottom) sectionStyle.paddingBottom = sectionConfig.spacing.paddingBottom;
 
-                  return (
-                    <div
-                      key={section.id}
-                      className={`relative mb-4 rounded-lg transition-all ${isSelected ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/30"} ${!section.is_visible ? "opacity-40" : ""}`}
-                      style={sectionStyle}
-                      onClick={() => { setSelectedSectionId(section.id); setSelectedBlockId(null); }}
-                    >
-                      <div className="absolute top-0 left-0 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-br-lg flex items-center gap-1">
-                        {section.title}
-                        {section.id.startsWith("temp_") && <span className="bg-amber-500 text-white text-[8px] px-1 rounded">নতুন</span>}
-                      </div>
-
-                      <div className="pt-6 pb-2">
-                        {sectionBlocks.length === 0 ? (
-                          <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg mx-4">
-                            ব্লক ট্যাব থেকে ব্লক যোগ করুন
-                          </div>
-                        ) : (
-                          sectionBlocks.map((block, bIdx) => (
-                            <BlockRenderer
-                              key={block.id}
-                              block={block}
-                              isEditing={true}
-                              isSelected={selectedBlockId === block.id}
-                              onClick={() => { setSelectedBlockId(block.id); setSelectedSectionId(section.id); }}
-                              onMoveUp={() => moveBlockUp(block, bIdx)}
-                              onMoveDown={() => moveBlockDown(block, bIdx)}
-                              onDelete={() => deleteBlockLocal(block.id, section.id)}
-                              onDuplicate={() => duplicateBlockLocal(block)}
-                            />
-                          ))
-                        )}
-                      </div>
+                return (
+                  <div
+                    key={section.id}
+                    className={`relative mb-4 rounded-lg transition-all ${isSelected ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/30"} ${!section.is_visible ? "opacity-40" : ""}`}
+                    style={sectionStyle}
+                    onClick={() => { setSelectedSectionId(section.id); setSelectedBlockId(null); }}
+                  >
+                    <div className="absolute top-0 left-0 z-10 bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-br-lg flex items-center gap-1">
+                      {section.title}
+                      {section.id.startsWith("temp_") && <span className="bg-amber-500 text-white text-[8px] px-1 rounded">নতুন</span>}
                     </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+
+                    <div className="pt-6 pb-2">
+                      {sectionBlocks.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground text-sm border-2 border-dashed rounded-lg mx-4">
+                          ব্লক ট্যাব থেকে ব্লক যোগ করুন
+                        </div>
+                      ) : (
+                        sectionBlocks.map((block, bIdx) => (
+                          <BlockRenderer
+                            key={block.id}
+                            block={block}
+                            isEditing={true}
+                            isSelected={selectedBlockId === block.id}
+                            onClick={() => { setSelectedBlockId(block.id); setSelectedSectionId(section.id); setMobilePanel("inspector"); }}
+                            onMoveUp={() => moveBlockUp(block, bIdx)}
+                            onMoveDown={() => moveBlockDown(block, bIdx)}
+                            onDelete={() => deleteBlockLocal(block.id, section.id)}
+                            onDuplicate={() => duplicateBlockLocal(block)}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
         {/* RIGHT PANEL: Inspector */}
-        {showRightPanel && (
-          <div className="w-80 border-l bg-muted/30 flex flex-col">
-            <ScrollArea className="flex-1">
-              <div className="p-3">
-                {!selectedBlockId && !selectedSectionId && (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    <Settings className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                    সেকশন বা ব্লক সিলেক্ট করুন
-                  </p>
-                )}
+        <div className={`lg:w-80 lg:border-l bg-muted/30 overflow-y-auto ${mobilePanel === "inspector" ? "block" : "hidden lg:block"}`} style={{ maxHeight: "calc(100vh - 160px)" }}>
+          <div className="p-3">
+            {!selectedBlockId && !selectedSectionId && (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                <Settings className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                সেকশন বা ব্লক সিলেক্ট করুন
+              </p>
+            )}
 
-                {/* Section Inspector */}
-                {selectedSectionId && !selectedBlockId && selectedSection && (
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-sm">সেকশন সেটিংস</h3>
+            {/* Section Inspector */}
+            {selectedSectionId && !selectedBlockId && selectedSection && (
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm">সেকশন সেটিংস</h3>
+                <div><Label className="text-xs">টাইটেল</Label><Input value={selectedSection.title} onChange={(e) => updateSectionLocal(selectedSection.id, { title: e.target.value })} className="h-8 text-xs" /></div>
+                <div><Label className="text-xs">সাবটাইটেল</Label><Input value={selectedSection.subtitle || ""} onChange={(e) => updateSectionLocal(selectedSection.id, { subtitle: e.target.value })} className="h-8 text-xs" /></div>
+                <div className="flex items-center justify-between"><Label className="text-xs">দৃশ্যমান</Label><Switch checked={!!selectedSection.is_visible} onCheckedChange={() => toggleVisibilityLocal(selectedSection)} /></div>
 
-                    <div>
-                      <Label className="text-xs">টাইটেল</Label>
-                      <Input
-                        value={selectedSection.title}
-                        onChange={(e) => updateSectionLocal(selectedSection.id, { title: e.target.value })}
-                        className="h-8 text-xs"
-                      />
+                <hr />
+                <h4 className="text-xs font-semibold">ব্যাকগ্রাউন্ড</h4>
+                <div><Label className="text-xs">রঙ</Label><Input value={(selectedSection.content as SectionConfig)?.background?.color || ""} onChange={(e) => { const cfg = { ...(selectedSection.content || {}), background: { ...(selectedSection.content?.background || {}), color: e.target.value } }; updateSectionLocal(selectedSection.id, { content: cfg }); }} className="h-8 text-xs" placeholder="#ffffff" /></div>
+                <div><Label className="text-xs">ইমেজ URL</Label><Input value={(selectedSection.content as SectionConfig)?.background?.imageUrl || ""} onChange={(e) => { const cfg = { ...(selectedSection.content || {}), background: { ...(selectedSection.content?.background || {}), imageUrl: e.target.value } }; updateSectionLocal(selectedSection.id, { content: cfg }); }} className="h-8 text-xs" placeholder="https://..." /></div>
+
+                <hr />
+                <h4 className="text-xs font-semibold">স্পেসিং</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["paddingTop", "paddingBottom", "paddingLeft", "paddingRight"] as const).map(key => (
+                    <div key={key}>
+                      <Label className="text-[10px]">{key.replace("padding", "Pad ")}</Label>
+                      <Input value={(selectedSection.content as SectionConfig)?.spacing?.[key] || ""} onChange={(e) => { const cfg = { ...(selectedSection.content || {}), spacing: { ...(selectedSection.content?.spacing || {}), [key]: e.target.value } }; updateSectionLocal(selectedSection.id, { content: cfg }); }} className="h-7 text-[10px]" placeholder="0px" />
                     </div>
+                  ))}
+                </div>
 
-                    <div>
-                      <Label className="text-xs">সাবটাইটেল</Label>
-                      <Input
-                        value={selectedSection.subtitle || ""}
-                        onChange={(e) => updateSectionLocal(selectedSection.id, { subtitle: e.target.value })}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs">দৃশ্যমান</Label>
-                      <Switch
-                        checked={!!selectedSection.is_visible}
-                        onCheckedChange={() => toggleVisibilityLocal(selectedSection)}
-                      />
-                    </div>
-
+                {/* Show section's blocks for quick editing */}
+                {(blocks[selectedSection.id] || []).length > 0 && (
+                  <>
                     <hr />
-                    <h4 className="text-xs font-semibold">ব্যাকগ্রাউন্ড</h4>
-                    <div>
-                      <Label className="text-xs">রঙ</Label>
-                      <Input
-                        value={(selectedSection.content as SectionConfig)?.background?.color || ""}
-                        onChange={(e) => {
-                          const cfg = { ...(selectedSection.content || {}), background: { ...(selectedSection.content?.background || {}), color: e.target.value } };
-                          updateSectionLocal(selectedSection.id, { content: cfg });
-                        }}
-                        className="h-8 text-xs"
-                        placeholder="#ffffff"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">ইমেজ URL</Label>
-                      <Input
-                        value={(selectedSection.content as SectionConfig)?.background?.imageUrl || ""}
-                        onChange={(e) => {
-                          const cfg = { ...(selectedSection.content || {}), background: { ...(selectedSection.content?.background || {}), imageUrl: e.target.value } };
-                          updateSectionLocal(selectedSection.id, { content: cfg });
-                        }}
-                        className="h-8 text-xs"
-                        placeholder="https://..."
-                      />
-                    </div>
-
-                    <hr />
-                    <h4 className="text-xs font-semibold">স্পেসিং</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(["paddingTop", "paddingBottom", "paddingLeft", "paddingRight"] as const).map(key => (
-                        <div key={key}>
-                          <Label className="text-[10px]">{key.replace("padding", "Pad ")}</Label>
-                          <Input
-                            value={(selectedSection.content as SectionConfig)?.spacing?.[key] || ""}
-                            onChange={(e) => {
-                              const cfg = { ...(selectedSection.content || {}), spacing: { ...(selectedSection.content?.spacing || {}), [key]: e.target.value } };
-                              updateSectionLocal(selectedSection.id, { content: cfg });
-                            }}
-                            className="h-7 text-[10px]"
-                            placeholder="0px"
-                          />
-                        </div>
+                    <h4 className="text-xs font-semibold">এই সেকশনের ব্লকসমূহ</h4>
+                    <div className="space-y-1">
+                      {(blocks[selectedSection.id] || []).map(b => (
+                        <button
+                          key={b.id}
+                          onClick={() => setSelectedBlockId(b.id)}
+                          className="w-full text-left text-xs p-2 rounded-lg border bg-card hover:bg-accent transition flex items-center gap-2"
+                        >
+                          <span className="text-primary/70 shrink-0">{BLOCK_TYPES.find(bt => bt.type === b.block_type)?.icon || "📦"}</span>
+                          <div className="min-w-0">
+                            <div className="font-medium truncate">{BLOCK_TYPES.find(bt => bt.type === b.block_type)?.label || b.block_type}</div>
+                            <div className="text-[10px] text-muted-foreground truncate">{getBlockPreview(b)}</div>
+                          </div>
+                          <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground ml-auto" />
+                        </button>
                       ))}
                     </div>
-
-                    <hr />
-                    <h4 className="text-xs font-semibold">অ্যাডভান্সড</h4>
-                    <div>
-                      <Label className="text-xs">কাস্টম CSS ক্লাস</Label>
-                      <Input
-                        value={(selectedSection.content as SectionConfig)?.advanced?.customClass || ""}
-                        onChange={(e) => {
-                          const cfg = { ...(selectedSection.content || {}), advanced: { ...(selectedSection.content?.advanced || {}), customClass: e.target.value } };
-                          updateSectionLocal(selectedSection.id, { content: cfg });
-                        }}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">কাস্টম ID</Label>
-                      <Input
-                        value={(selectedSection.content as SectionConfig)?.advanced?.customId || ""}
-                        onChange={(e) => {
-                          const cfg = { ...(selectedSection.content || {}), advanced: { ...(selectedSection.content?.advanced || {}), customId: e.target.value } };
-                          updateSectionLocal(selectedSection.id, { content: cfg });
-                        }}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Block Inspector */}
-                {selectedBlock && (
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-sm">ব্লক সেটিংস — {selectedBlock.block_type}</h3>
-
-                    <Tabs value={inspectorTab} onValueChange={setInspectorTab}>
-                      <TabsList className="w-full">
-                        <TabsTrigger value="content" className="text-xs flex-1">কন্টেন্ট</TabsTrigger>
-                        <TabsTrigger value="style" className="text-xs flex-1">স্টাইল</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="content" className="space-y-3 mt-3">
-                        <div>
-                          <Label className="text-xs">কন্টেন্ট JSON</Label>
-                          <Textarea
-                            rows={12}
-                            value={JSON.stringify(selectedBlock.content || selectedBlock.config || {}, null, 2)}
-                            onChange={(e) => {
-                              try {
-                                const parsed = JSON.parse(e.target.value);
-                                updateBlockContentLocal(selectedBlock.id, selectedBlock.section_id, parsed);
-                              } catch { /* user is typing */ }
-                            }}
-                            className="font-mono text-[10px]"
-                          />
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="style" className="space-y-3 mt-3">
-                        <p className="text-xs text-muted-foreground">স্টাইল কন্টেন্ট JSON-এ config হিসেবে সেট করুন</p>
-                      </TabsContent>
-                    </Tabs>
-                  </div>
+                  </>
                 )}
               </div>
-            </ScrollArea>
+            )}
+
+            {/* Block Inspector - User-friendly forms */}
+            {selectedBlock && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-sm flex items-center gap-1">
+                    {BLOCK_TYPES.find(bt => bt.type === selectedBlock.block_type)?.icon} {BLOCK_TYPES.find(bt => bt.type === selectedBlock.block_type)?.label || selectedBlock.block_type}
+                  </h3>
+                  <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => setSelectedBlockId(null)}>
+                    ← সেকশনে ফিরুন
+                  </Button>
+                </div>
+
+                <Tabs defaultValue="content">
+                  <TabsList className="w-full">
+                    <TabsTrigger value="content" className="text-xs flex-1">কন্টেন্ট</TabsTrigger>
+                    <TabsTrigger value="json" className="text-xs flex-1">JSON</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="content" className="mt-3">
+                    <BlockContentEditor
+                      block={selectedBlock}
+                      onChange={(content) => updateBlockContentLocal(selectedBlock.id, selectedBlock.section_id, content)}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="json" className="mt-3">
+                    <Label className="text-xs">Raw JSON</Label>
+                    <Textarea
+                      rows={12}
+                      value={JSON.stringify(selectedBlock.content || selectedBlock.config || {}, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const parsed = JSON.parse(e.target.value);
+                          updateBlockContentLocal(selectedBlock.id, selectedBlock.section_id, parsed);
+                        } catch {}
+                      }}
+                      className="font-mono text-[10px]"
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Dialogs */}
@@ -860,14 +1005,8 @@ const HomepageBuilder = () => {
         <DialogContent>
           <DialogHeader><DialogTitle>নতুন সেকশন</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div>
-              <Label>সেকশন কী (ইংরেজিতে)</Label>
-              <Input value={newSectionKey} onChange={e => setNewSectionKey(e.target.value)} placeholder="e.g. hero_2" />
-            </div>
-            <div>
-              <Label>টাইটেল</Label>
-              <Input value={newSectionTitle} onChange={e => setNewSectionTitle(e.target.value)} placeholder="যেমন: হিরো সেকশন ২" />
-            </div>
+            <div><Label>সেকশন কী (ইংরেজিতে)</Label><Input value={newSectionKey} onChange={e => setNewSectionKey(e.target.value)} placeholder="e.g. hero_2" /></div>
+            <div><Label>টাইটেল</Label><Input value={newSectionTitle} onChange={e => setNewSectionTitle(e.target.value)} placeholder="যেমন: হিরো সেকশন ২" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNewSectionDialog(false)}>বাতিল</Button>
@@ -881,9 +1020,7 @@ const HomepageBuilder = () => {
           <DialogHeader><DialogTitle>টেমপ্লেট এক্সপোর্ট</DialogTitle></DialogHeader>
           <Textarea rows={15} value={templateJson} readOnly className="font-mono text-xs" />
           <DialogFooter>
-            <Button onClick={() => { navigator.clipboard.writeText(templateJson); toast({ title: "কপি হয়েছে!" }); }}>
-              কপি করুন
-            </Button>
+            <Button onClick={() => { navigator.clipboard.writeText(templateJson); toast({ title: "কপি হয়েছে!" }); }}>কপি করুন</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
