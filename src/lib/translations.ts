@@ -135,7 +135,9 @@ export const translations: Record<string, Record<string, string>> = {
   hero_default_subtext: { bn: "আমরা একসাথে গড়ি মানবতার সুন্দর ভবিষ্যৎ।", en: "Together we build a beautiful future for humanity." },
   hero_cta_donate: { bn: "অনুদান করুন", en: "Donate Now" },
   hero_cta_volunteer: { bn: "স্বেচ্ছাসেবক হোন", en: "Become a Volunteer" },
-  hero_cta_learn_more: { bn: "আরও জানুন", en: "Learn More" },
+  hero_cta_learn_more: { bn: "আমাদের সম্পর্কে জানুন", en: "Learn About Us" },
+  about_us_page_title: { bn: "আমাদের পরিচয়", en: "About Us" },
+  about_our_team: { bn: "আমাদের টিম", en: "Our Team" },
 
   // ─── About Section ───
   about_identity: { bn: "আমাদের পরিচয়", en: "Who We Are" },
