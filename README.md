@@ -1,73 +1,167 @@
-# Welcome to your Lovable project
+# Charity Organization Website
 
-## Project info
+This is a complete website system for running a charity or organization website.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+You can use this project to create your own website by making a copy and setting up your own database.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+# 🚀 How To Make Your Own Copy (Fork This Project)
 
-**Use Lovable**
+## 📱 Using Mobile
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+1. Log in to your GitHub account.
+2. Open this repository page.
+3. Tap the **Fork** button at the top right.
+4. Select your profile.
+5. Wait a few seconds.
 
-Changes made via Lovable will be committed automatically to this repo.
+Now this project is copied into your own GitHub account.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# 💻 Download to Your Computer (Clone)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+1. Open your forked repository.
+2. Tap the green **Code** button.
+3. Copy the HTTPS link.
+4. Run the following commands:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+git clone YOUR_REPOSITORY_LINK
+cd PROJECT_NAME
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+# 🗄 Database Setup (Supabase)
 
-**Use GitHub Codespaces**
+1. Go to: https://supabase.com
+2. Create a new account or log in.
+3. Click **New Project**.
+4. After creation, go to:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+   Project Settings → API
 
-## What technologies are used for this project?
+5. Copy:
+   - Project URL
+   - anon public key
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
+# 🔐 Create Environment File
+
+In your project root folder, create a file named:
+
+```
+.env
+```
+
+Inside that file, paste:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+Save the file.
+
+⚠ Never upload the `.env` file to GitHub.
+
+---
+
+# 🌍 Deploy on Vercel (Recommended)
+
+1. Go to: https://vercel.com
+2. Log in using GitHub.
+3. Click **New Project**.
+4. Select your forked repository.
+5. Add Environment Variables (same values from `.env`).
+6. Click **Deploy**.
+
+Your site will be live in a few minutes.
+
+---
+
+# 🌐 Connect a Custom Domain
+
+1. Open your project on Vercel.
+2. Go to Settings → Domains.
+3. Add your domain.
+4. Follow the DNS instructions shown by Vercel.
+
+---
+
+# 🌍 Deploy on Custom Hosting
+
+If using your own hosting provider:
+
+1. Run:
+
+```sh
+npm run build
+```
+
+2. Upload the generated build folder.
+3. Make sure Node.js is supported.
+4. Set the environment variables correctly.
+
+---
+
+# 🔄 How To Get Future Updates
+
+If you forked this repository:
+
+1. Open your fork.
+2. Tap **Sync fork**.
+3. Click **Update branch**.
+
+You will receive the latest updates.
+
+---
+
+# 🛡 Important Rules
+
+- Do NOT upload `.env` file.
+- Do NOT share your Supabase keys.
+- Each organization must create its own Supabase project.
+- Do not use another organization’s database.
+
+---
+
+# 🧠 Technologies Used
+
 - React
-- shadcn-ui
+- TypeScript
 - Tailwind CSS
+- Supabase
+- Vite
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+# 📜 Usage License
 
-## Can I connect a custom domain to my Lovable project?
+This project can be used for free only with permission from the project creator.
 
-Yes, you can!
+You are allowed to:
+- Use it for your organization
+- Modify it for your needs
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+You are NOT allowed to:
+- Resell this project
+- Redistribute without permission
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Please contact the project creator before using.
+
+---
+
+# ❤️ Final Note
+
+Make your copy.
+Set up your database.
+Deploy.
+Launch your organization website.
+
+Success 🚀
